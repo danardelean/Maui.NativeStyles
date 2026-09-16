@@ -1,0 +1,16 @@
+# Normalize line endings; C# diffs use the csharp driver
+* text=auto encoding=UTF-8
+*.cs text diff=csharp
+*.xaml text
+*.csproj text
+*.sln text
+*.md text
+*.sh text eol=lf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.gif binary
+*.ttf binary
+*.otf binary
+*.keystore binary

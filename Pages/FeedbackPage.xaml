@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MauiNativeStyle.Pages.FeedbackPage"
+             Title="Feedback"
+             StyleClass="Grouped">
+    <ScrollView>
+        <VerticalStackLayout Spacing="12" Padding="0,8,0,24">
+
+            <Label Text="Progress" Style="{StaticResource SectionHeader}" />
+            <VerticalStackLayout Padding="16,0" Spacing="16">
+                <ProgressBar x:Name="Progress" Progress="0.35" />
+                <HorizontalStackLayout Spacing="24">
+                    <ActivityIndicator IsRunning="True" />
+                    <Label Text="Loading…" StyleClass="Secondary" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <Button Text="Animate progress" StyleClass="Tonal" Clicked="OnAnimateProgress" />
+            </VerticalStackLayout>
+
+            <Label Text="Alerts" Style="{StaticResource SectionHeader}" />
+            <VerticalStackLayout Padding="16,0" Spacing="12">
+                <Button Text="Show alert" StyleClass="Filled" Clicked="OnShowAlert" />
+                <Button Text="Show action sheet" StyleClass="Outlined" Clicked="OnShowActionSheet" />
+                <Button Text="Show prompt" StyleClass="Text" Clicked="OnShowPrompt" />
+            </VerticalStackLayout>
+            <Label Text="Alerts and sheets are native UIAlertController / MaterialAlertDialog: they follow the platform automatically."
+                   Style="{StaticResource SectionFooter}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

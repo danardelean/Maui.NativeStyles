@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material 3 baseline seed. Only used by the splash screen and the M2 fallback theme;
+         the runtime Material 3 theme (UseMaterial3=true) uses Theme.Material3.DayNight defaults. -->
+    <color name="colorPrimary">#6750A4</color>
+    <color name="colorPrimaryDark">#4F378B</color>
+    <color name="colorAccent">#6750A4</color>
+</resources>

@@ -108,6 +108,7 @@ react to runtime changes:
 | TabbedPage / NavigationPage | glass tab bar (supports `NativeShell.TabBarMinimizeBehavior`), transparent navigation bar in the page color with large titles | navigation bar at the bottom (flexible, 64 dp), flat app bar in the page color, trailing toolbar icons in `onSurfaceVariant` |
 | RefreshView | system `UIRefreshControl` | `primary` arrow on a `surfaceContainerHigh` disc |
 | Label `EmptyState` | title 3 semibold, `secondaryLabel`, centered | body large, `onSurfaceVariant`, centered |
+| Button `Icon` (`NativeButton.TintsImage`) | the button image is a template in the label color (`UIButtonConfiguration`) | `MaterialButton` icon tinted with the label colors (enabled / disabled) |
 | ImageButton `Icon` | template image in the tint color (visible in dark mode) | M3 standard icon button: icon in `onSurfaceVariant` |
 | `native:NativeImage.TintColor` | template rendering with `tintColor` | `SrcIn` color filter |
 | CarouselView + Border `CarouselItem` | leading-aligned paging: card on the 20 pt content margin, 12 pt gap, next card peeking from the trailing edge, no loop | M3 **uncontained carousel**: 16 dp leading padding, 8 dp gaps, 28 dp item corners, items bleed off the trailing edge, no loop |

@@ -98,12 +98,16 @@ public static partial class NativeStylesExtensions
 		MainThread.BeginInvokeOnMainThread(() =>
 		{
 			ApplyTabBarMinimizeBehavior(shell);
+			ApplyLargeTitles(shell);
 			ApplySegmentedTopTabs(shell);
 			ApplySearchFieldColors(shell);
 		});
 		// A section shown for the first time builds its header while its view loads, after this callback
+		// A flyout item shown for the first time swaps its controllers in a little later still
+		shell.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(250), () => ApplyLargeTitles(shell, expandCollapsedBar: true));
 		shell.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(60), () =>
 		{
+			ApplyLargeTitles(shell);
 			ApplySegmentedTopTabs(shell);
 			ApplySearchFieldColors(shell);
 		});
@@ -203,6 +207,59 @@ public static partial class NativeStylesExtensions
 		if (page.CurrentPage?.BackgroundColor is { } background && renderer.View is { } view)
 			view.BackgroundColor = background.ToPlatform();
 	}
+
+	/// <summary>
+	/// MAUI's Shell applies Page.LargeTitleDisplay through the tab controller's selected navigation controller, which is
+	/// not set yet when a flyout item is displayed for the first time, so those pages got an inline title. Re-apply it
+	/// once navigation has completed. (Top-tab pages are switched back to inline by ApplySegmentedTopTabs.)
+	/// </summary>
+	static void ApplyLargeTitles(Shell shell, bool expandCollapsedBar = false)
+	{
+		if ((shell.Handler as IPlatformViewHandler)?.ViewController is not { } root || shell.CurrentPage is not { } page
+			|| !page.IsSet(Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.LargeTitleDisplayProperty))
+		{
+			return;
+		}
+		var mode = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetLargeTitleDisplay(page);
+		// Top-tab sections use an inline title (see ApplySegmentedTopTabs)
+		if (shell.CurrentItem?.CurrentItem is IShellSectionController section && section.GetItems().Count > 1)
+			mode = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Never;
+		foreach (var tabBarController in EnumerateTabBarControllers(root))
+		{
+			if (tabBarController.SelectedViewController is not UINavigationController navigation)
+				continue;
+			navigation.NavigationBar.PrefersLargeTitles = mode != Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Never;
+			if (navigation.TopViewController is { } top)
+				top.NavigationItem.LargeTitleDisplayMode = mode switch
+				{
+					Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Always => UINavigationItemLargeTitleDisplayMode.Always,
+					Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Never => UINavigationItemLargeTitleDisplayMode.Never,
+					_ => UINavigationItemLargeTitleDisplayMode.Automatic,
+				};
+
+			// UIKit leaves the bar collapsed when large titles are enabled after the content was laid out. The first time a
+			// page is shown, if its bar is collapsed while the content rests at the top, expand it (never again, so a
+			// position the user scrolled to is kept).
+			if (expandCollapsedBar && navigation.NavigationBar.PrefersLargeTitles
+				&& mode == Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Always
+				&& !s_largeTitleExpanded.TryGetValue(page, out _)
+				&& navigation.TopViewController?.View is { Window: not null } view && FindScrollView(view) is { } scrollView)
+			{
+				s_largeTitleExpanded.Add(page, page);
+				var collapsed = navigation.NavigationBar.Frame.Height < 60;
+				var atRest = Math.Abs(scrollView.ContentOffset.Y + scrollView.AdjustedContentInset.Top) < 1;
+				if (collapsed && atRest)
+				{
+					navigation.NavigationBar.SizeToFit();
+					navigation.View?.SetNeedsLayout();
+					navigation.View?.LayoutIfNeeded();
+					scrollView.SetContentOffset(new CGPoint(scrollView.ContentOffset.X, -scrollView.AdjustedContentInset.Top), false);
+				}
+			}
+		}
+	}
+
+	static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Page, object> s_largeTitleExpanded = new();
 
 	/// <summary>
 	/// Shell.SearchHandler: MAUI builds the navigation-bar search field's placeholder and text with colors resolved once,
@@ -504,6 +561,17 @@ public static partial class NativeStylesExtensions
 			handler.PlatformView.Font = UIFont.SystemFontOfSize(current.PointSize, w)!;
 	}
 
+	static readonly UIButtonConfigurationUpdateHandler TemplateImageUpdateHandler = button =>
+	{
+		var image = button.Configuration?.Image ?? button.ImageForState(UIControlState.Normal);
+		if (image is not { RenderingMode: not UIImageRenderingMode.AlwaysTemplate } || button.Configuration is not { } current)
+			return;
+		current.Image = image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+		if (current.ImagePadding == 0)
+			current.ImagePadding = 8;
+		button.Configuration = current;
+	};
+
 	static void MapButtonConfiguration(IButtonHandler handler, IButton button)
 	{
 		if (!OperatingSystem.IsIOSVersionAtLeast(15) || button is not BindableObject bindable)
@@ -561,11 +629,18 @@ public static partial class NativeStylesExtensions
 		else if (destructive && !prominent)
 			config.BaseForegroundColor = UIColor.SystemRed;
 
+		// NativeButton.TintsImage / NativeImage.TintColor: template image in the label color (or an explicit one)
+		var explicitTint = NativeImage.GetTintColor(bindable)?.ToPlatform();
+		var tintsImage = explicitTint is not null || NativeButton.GetTintsImage(bindable);
 		if (platformButton.CurrentImage is { } image)
 		{
-			config.Image = image;
+			config.Image = tintsImage ? image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate) : image;
 			config.ImagePadding = 8;
 		}
+		if (explicitTint is not null)
+			config.ImageColorTransformer = _ => explicitTint;
+		// MAUI assigns the image when its source finishes loading, after this mapping ran: convert it then
+		platformButton.ConfigurationUpdateHandler = tintsImage ? TemplateImageUpdateHandler : null;
 
 		// Keep MAUI's measurement and UIKit's rendering in agreement: the configuration owns the insets.
 		var padding = button.Padding;

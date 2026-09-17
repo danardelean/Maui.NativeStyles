@@ -49,6 +49,11 @@ public static partial class NativeStylesExtensions
 		// Stepper: MAUI draws its own two-button LinearLayout; style them as M3 outlined icon buttons.
 		StepperHandler.Mapper.AppendToMapping(MappingKey, MapStepperButtons);
 
+		// NativeButton.TintsImage / NativeImage.TintColor: MAUI keeps button icons in their original colors (transparent
+		// tint in Add mode); a Material button icon follows the label color.
+		ButtonHandler.Mapper.AppendToMapping(MappingKey, MapButtonIconTint);
+		ButtonHandler.Mapper.AppendToMapping(nameof(ITextStyle.TextColor), MapButtonIconTint);
+
 		// Destructive combined with Text/Outlined: error-colored label instead of an error-filled container.
 		// Everything else is expressed in MaterialStyles.xaml and by the Material 3 theme (UseMaterial3).
 		ButtonHandler.Mapper.AppendToMapping(MappingKey, MapDestructiveText);
@@ -514,6 +519,26 @@ public static partial class NativeStylesExtensions
 				handler.PlatformView.SetTypeface(current, TypefaceStyle.Bold);
 				break;
 		}
+	}
+
+	static void MapButtonIconTint(IButtonHandler handler, IButton button)
+	{
+		if (button is not BindableObject bindable || handler.PlatformView is not Google.Android.Material.Button.MaterialButton platformButton)
+			return;
+		var explicitTint = NativeImage.GetTintColor(bindable);
+		if (explicitTint is null && !NativeButton.GetTintsImage(bindable))
+		{
+			if (platformButton.IconTintMode == PorterDuff.Mode.SrcIn)
+			{
+				platformButton.IconTintMode = PorterDuff.Mode.Add;
+				platformButton.IconTint = Android.Content.Res.ColorStateList.ValueOf(AColor.Transparent);
+			}
+			return;
+		}
+		platformButton.IconTintMode = PorterDuff.Mode.SrcIn;
+		platformButton.IconTint = explicitTint is not null
+			? Android.Content.Res.ColorStateList.ValueOf(explicitTint.ToPlatform())
+			: platformButton.TextColors; // enabled / disabled label colors
 	}
 
 	static void MapDestructiveText(IButtonHandler handler, IButton button)

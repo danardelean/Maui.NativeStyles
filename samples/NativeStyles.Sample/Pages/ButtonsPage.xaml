@@ -36,7 +36,7 @@
             <VerticalStackLayout Spacing="12" Padding="{StaticResource ContentMargin}">
                 <Button Text="Disabled filled" StyleClass="Filled" IsEnabled="False" />
                 <Button Text="Disabled plain" IsEnabled="False" />
-                <Button Text="With icon" StyleClass="Tonal" ImageSource="tab_feedback.svg" />
+                <Button Text="With icon" StyleClass="Tonal, Icon" ImageSource="tab_feedback.svg" />
             </VerticalStackLayout>
 
             <Label Text="Floating over content (Liquid Glass)" Style="{StaticResource SectionHeader}" />

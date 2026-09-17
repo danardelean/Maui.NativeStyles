@@ -108,6 +108,10 @@
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnError}, Dark={StaticResource OnErrorDark}}" />
         <Setter Property="BackgroundColor" Value="{native:SystemColor Destructive}" />
     </Style>
+    <Style TargetType="Button" Class="Icon">
+        <!-- The button image is a template drawn in the label color -->
+        <Setter Property="native:NativeButton.TintsImage" Value="True" />
+    </Style>
     <Style TargetType="Button" Class="Small">
         <!-- M3 Expressive extra-small -->
         <Setter Property="native:NativeButton.Size" Value="Small" />

@@ -3,6 +3,11 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.1.3] - 2026-09-17
+
+### Fixed
+- iOS: inset grouped sections and cards use the iOS 26 corner radius (26 pt); `DatePicker`/`TimePicker` compact pills are 34 pt capsules; row separators are inset 16 pt on both sides, matching Settings.
+
 ## [1.1.2] - 2026-09-17
 
 ### Fixed

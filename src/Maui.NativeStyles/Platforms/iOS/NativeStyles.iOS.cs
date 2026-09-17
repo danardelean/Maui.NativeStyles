@@ -139,12 +139,12 @@ public static partial class NativeStylesExtensions
 		}
 	}
 
-	/// <summary>Compact UIDatePicker look: tertiarySystemFill pill with 8 pt corners and 12 pt horizontal padding.</summary>
+	/// <summary>Compact UIDatePicker look (iOS 26): tertiarySystemFill capsule, 34 pt tall, 12 pt horizontal padding.</summary>
 	static void MapCompactPickerChrome(UITextField field, IView view)
 	{
 		field.BorderStyle = UITextBorderStyle.None;
 		field.BackgroundColor = (view.Background as SolidPaint)?.Color?.ToPlatform() ?? UIColor.TertiarySystemFill;
-		field.Layer.CornerRadius = 8;
+		field.Layer.CornerRadius = 17; // capsule for the 34 pt height set by the style
 		field.ClipsToBounds = true;
 		field.TextAlignment = UITextAlignment.Center;
 		if (field.LeftView is null)

@@ -131,7 +131,7 @@
 
     <!-- Pickers: UITextField + UIPickerView/UIDatePicker input views (glass automatically).
          The iOS handler removes the text-field border: Picker renders as a pull-down value with chevrons,
-         DatePicker/TimePicker as the compact tertiarySystemFill pill. -->
+         DatePicker/TimePicker as the compact tertiarySystemFill capsule (34pt, iOS 26 Settings > Date & Time). -->
     <Style TargetType="Picker">
         <Setter Property="FontSize" Value="17" />
         <Setter Property="TextColor" Value="{native:SystemColor TextSecondary}" />
@@ -144,11 +144,13 @@
         <Setter Property="FontSize" Value="17" />
         <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
         <Setter Property="MinimumHeightRequest" Value="34" />
+        <Setter Property="VerticalOptions" Value="Center" />
     </Style>
     <Style TargetType="TimePicker">
         <Setter Property="FontSize" Value="17" />
         <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
         <Setter Property="MinimumHeightRequest" Value="34" />
+        <Setter Property="VerticalOptions" Value="Center" />
     </Style>
 
     <!-- Selection: Switch / Slider / Stepper intentionally have NO style (fully native) -->
@@ -194,9 +196,9 @@
 
     <!-- Containers -->
     <Style TargetType="Border">
-        <!-- Inset grouped section / card: secondarySystemGroupedBackground, 10pt continuous corners, no stroke -->
+        <!-- Inset grouped section / card: secondarySystemGroupedBackground, 26pt corners (iOS 26 Settings), no stroke -->
         <Setter Property="StrokeThickness" Value="0" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 10" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 26" />
         <Setter Property="Background" Value="{native:SystemColor CardBackground}" />
     </Style>
     <Style TargetType="Border" Class="Card">
@@ -235,16 +237,17 @@
         </Setter>
     </Style>
     <Style TargetType="BoxView" Class="Separator">
+        <!-- iOS 26 grouped rows: hairline inset 16pt on both sides -->
         <Setter Property="HeightRequest" Value="0.5" />
         <Setter Property="Color" Value="{native:SystemColor Separator}" />
-        <Setter Property="Margin" Value="16,0,0,0" />
+        <Setter Property="Margin" Value="16,0" />
         <Setter Property="HorizontalOptions" Value="Fill" />
     </Style>
     <Style TargetType="BoxView" Class="Gap">
         <!-- Same as Separator on iOS: rows in a grouped section are divided by a hairline -->
         <Setter Property="HeightRequest" Value="0.5" />
         <Setter Property="Color" Value="{native:SystemColor Separator}" />
-        <Setter Property="Margin" Value="16,0,0,0" />
+        <Setter Property="Margin" Value="16,0" />
         <Setter Property="HorizontalOptions" Value="Fill" />
     </Style>
     <Style TargetType="Label" Class="Chevron">

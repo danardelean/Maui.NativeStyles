@@ -12,4 +12,10 @@ public partial class AppShell : Shell
 		if (Application.Current?.Windows.FirstOrDefault() is { } window)
 			window.Page = new Pages.ClassicTabbedPage();
 	}
+
+	void OnClassicTopTabsClicked(object? sender, EventArgs e)
+	{
+		if (Application.Current?.Windows.FirstOrDefault() is { } window)
+			window.Page = new Pages.ClassicTabbedPage(topTabs: true);
+	}
 }

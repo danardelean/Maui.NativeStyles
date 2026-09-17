@@ -88,3 +88,19 @@ public static class NativeEntry
 	public static bool GetIsContained(BindableObject view) => (bool)view.GetValue(IsContainedProperty);
 	public static void SetIsContained(BindableObject view, bool value) => view.SetValue(IsContainedProperty, value);
 }
+
+/// <summary>List item shaping for Material 3 Expressive segmented lists.</summary>
+public static class NativeList
+{
+	/// <summary>
+	/// Corner radius (dp) of a list item's own container. Android: the view background is drawn as a rounded shape
+	/// (4 dp at rest, 16 dp when selected); the enclosing GroupedCell clips the outer corners to 16 dp. No effect on iOS,
+	/// where the grouped section provides the shape. A negative value (default) leaves the background untouched.
+	/// </summary>
+	public static readonly BindableProperty ItemCornerRadiusProperty = BindableProperty.CreateAttached(
+		"ItemCornerRadius", typeof(double), typeof(NativeList), -1d,
+		propertyChanged: (b, _, _) => NativeStylesExtensions.Refresh(b));
+
+	public static double GetItemCornerRadius(BindableObject view) => (double)view.GetValue(ItemCornerRadiusProperty);
+	public static void SetItemCornerRadius(BindableObject view, double value) => view.SetValue(ItemCornerRadiusProperty, value);
+}

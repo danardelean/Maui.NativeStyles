@@ -29,6 +29,7 @@ public class NativePropertiesTests
 		NativeText.SetWeight(label, TextWeight.Semibold);
 		NativeEntry.SetIsPlain(entry, true);
 		NativeEntry.SetIsContained(entry, true);
+		NativeList.SetItemCornerRadius(entry, 4);
 		NativeShell.SetTabBarMinimizeBehavior(shell, TabBarMinimizeBehavior.OnScrollDown);
 
 		Assert.Equal(ButtonKind.GlassProminent, NativeButton.GetKind(button));
@@ -37,6 +38,8 @@ public class NativePropertiesTests
 		Assert.Equal(TextWeight.Semibold, NativeText.GetWeight(label));
 		Assert.True(NativeEntry.GetIsPlain(entry));
 		Assert.True(NativeEntry.GetIsContained(entry));
+		Assert.Equal(4, NativeList.GetItemCornerRadius(entry));
+		Assert.Equal(-1, NativeList.GetItemCornerRadius(new Grid()));
 		Assert.Equal(TabBarMinimizeBehavior.OnScrollDown, NativeShell.GetTabBarMinimizeBehavior(shell));
 	}
 

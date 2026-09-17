@@ -12,7 +12,7 @@
         <VerticalStackLayout Spacing="0" Padding="0,0,0,24">
 
             <Label Text="Search" Style="{StaticResource SectionHeader}" />
-            <SearchBar Placeholder="Search" Margin="{OnPlatform iOS='12,0', Default='8,0'}" />
+            <SearchBar Placeholder="Search" Margin="{OnPlatform iOS='12,0', Default='16,0'}" />
             <Label Text="Standalone SearchBar (60pt glass capsule on iOS 26). The navigation bar above uses Shell.SearchHandler, the system search field." Style="{StaticResource SectionFooter}" />
 
             <Label Text="Text fields" Style="{StaticResource SectionHeader}" />

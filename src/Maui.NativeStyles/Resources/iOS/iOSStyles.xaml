@@ -71,6 +71,10 @@
     <Style TargetType="Button" Class="Destructive">
         <Setter Property="native:NativeButton.IsDestructive" Value="True" />
     </Style>
+    <Style TargetType="Button" Class="Icon">
+        <!-- The button image is a template drawn in the label color -->
+        <Setter Property="native:NativeButton.TintsImage" Value="True" />
+    </Style>
     <Style TargetType="Button" Class="Small">
         <Setter Property="native:NativeButton.Size" Value="Small" />
         <Setter Property="FontSize" Value="15" />

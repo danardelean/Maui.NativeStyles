@@ -12,6 +12,32 @@ This project replaces that file with **one set of ResourceDictionaries per platf
 |---|---|
 | Liquid Glass tab bar and buttons, large titles, inset grouped lists, native switches and alerts | Pill buttons, outlined text fields, M3 switches and checkboxes, navigation bar with active indicator, M3 dialogs |
 
+## Before / after
+
+The same app created with `dotnet new maui` and the same page ([ComparisonPage.xaml](https://github.com/danardelean/Maui.NativeStyles/blob/main/docs/comparison/ComparisonPage.xaml):
+standard controls only, no library types), first with the template's `Styles.xaml`, then with the three changes from
+[Getting started](#getting-started): `<UseMaterial3>`, `<native:NativeStyleDictionary />` instead of the template
+styles, and `.UseNativeStyles()`.
+
+<table>
+<tr><th></th><th>Default MAUI template</th><th>Maui.NativeStyles</th></tr>
+<tr>
+<td align="center"><b>iOS 26</b></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-before.png" width="220" alt="Default MAUI template on iOS"></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-after.png" width="220" alt="Maui.NativeStyles on iOS"></td>
+</tr>
+<tr>
+<td align="center"><b>Android</b></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-before.png" width="220" alt="Default MAUI template on Android"></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-after.png" width="220" alt="Maui.NativeStyles on Android"></td>
+</tr>
+</table>
+
+The template paints the same purple rectangle button, OpenSans 14 and custom-colored switch, slider and checkbox on
+both platforms, and a magenta tab selection. With the library iOS gets large titles, borderless fields on a grouped
+background, a plain text button, the system green switch and blue tint; Android gets Material 3 outlined fields, the
+search bar, a pill button, the M3 switch and slider, and the flexible navigation bar.
+
 ## Screenshots
 
 The same XAML on both platforms: the sample app on iOS 26 (iPhone 17 Pro) and Android 16 (Pixel 10 Pro), with the

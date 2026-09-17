@@ -16,7 +16,7 @@
 		<!-- NuGet -->
 		<IsPackable>true</IsPackable>
 		<PackageId>Maui.NativeStyles</PackageId>
-		<Version>1.3.0</Version>
+		<Version>1.4.0</Version>
 		<Authors>Dan Ardelean</Authors>
 		<Description>Native-looking .NET MAUI styles: iOS 26 Liquid Glass and Android Material 3. Per-platform resource dictionaries plus a few handler mappings that let the native rendering through instead of the generic MAUI template look.</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>

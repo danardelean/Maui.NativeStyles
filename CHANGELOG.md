@@ -3,6 +3,25 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.4.0] - 2026-09-17
+
+Android audit against the current Material 3 Expressive component specs on m3.material.io.
+
+### Changed
+- Android: `GroupedCell` is now the M3 Expressive **segmented list** (baseline lists are "not recommended" by the spec): transparent group with 16 dp outer corners, `ListRow` items on `surfaceBright` with 4 dp corners, 16×10 dp padding and 12 dp slot spacing; the selected item morphs to `secondaryContainer` with 16 dp corners. `Separator` (and `Gap`) render the 2 dp segment gap. `Expressive` on `Border` is kept as a no-op.
+- Android: `Grouped` pages use `surfaceContainer` for the page and the app bar (including the strip behind the status bar); `SystemColorRole.GroupedBackground` → `colorSurfaceContainer`, `GroupContainer` → `colorSurfaceBright`.
+- Android: Shell bottom navigation follows the **flexible navigation bar**: 64 dp, 56×32 dp active indicator, 6 dp vertical padding, `secondary` active label, `surfaceContainer` container.
+- Android: buttons use the M3 Expressive paddings (16 dp default, 12 dp `Small`, 24 dp `Large`), `Large` is fully round with title-medium text, `Outlined` uses `outlineVariant` / `onSurfaceVariant`.
+- Android: `GlassView` uses the floating-toolbar container color (`surfaceContainer`).
+
+### Added
+- `NativeList.ItemCornerRadius` attached property (Android: rounded item container; no-op on iOS).
+- `Divider` class for `BoxView`, `Leading` class for `CheckBox`; native `RadioButton` rows are list items aligned on the 16 dp keyline.
+
+### Fixed
+- Android: `SearchBar` and `Shell.SearchHandler` render the M3 search bar (56 dp pill, `surfaceContainerHigh`) instead of an underlined field / elevated white card.
+- Android: `Plain` entries inside list rows no longer inflate the row height.
+
 ## [1.3.0] - 2026-09-17
 
 ### Added

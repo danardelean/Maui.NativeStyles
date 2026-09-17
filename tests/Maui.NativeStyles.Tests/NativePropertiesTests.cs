@@ -26,6 +26,7 @@ public class NativePropertiesTests
 		NativeButton.SetKind(button, ButtonKind.GlassProminent);
 		NativeButton.SetIsDestructive(button, true);
 		NativeButton.SetSize(button, ControlSize.Large);
+		NativeButton.SetTintsImage(button, true);
 		NativeText.SetWeight(label, TextWeight.Semibold);
 		NativeEntry.SetIsPlain(entry, true);
 		NativeEntry.SetIsContained(entry, true);
@@ -35,6 +36,8 @@ public class NativePropertiesTests
 		Assert.Equal(ButtonKind.GlassProminent, NativeButton.GetKind(button));
 		Assert.True(NativeButton.GetIsDestructive(button));
 		Assert.Equal(ControlSize.Large, NativeButton.GetSize(button));
+		Assert.True(NativeButton.GetTintsImage(button));
+		Assert.False(NativeButton.GetTintsImage(new Button()));
 		Assert.Equal(TextWeight.Semibold, NativeText.GetWeight(label));
 		Assert.True(NativeEntry.GetIsPlain(entry));
 		Assert.True(NativeEntry.GetIsContained(entry));

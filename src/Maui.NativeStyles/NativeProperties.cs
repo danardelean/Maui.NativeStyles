@@ -44,6 +44,17 @@ public static class NativeButton
 	public static readonly BindableProperty SizeProperty = BindableProperty.CreateAttached(
 		"Size", typeof(ControlSize), typeof(NativeButton), ControlSize.Default, propertyChanged: OnChanged);
 
+	/// <summary>
+	/// Draws the button image as a template in the label color, like an SF Symbol in a UIButton or the icon of a Material
+	/// button. Off by default because MAUI button images may be full-color artwork. For a specific color use
+	/// <see cref="NativeImage.TintColorProperty"/> instead.
+	/// </summary>
+	public static readonly BindableProperty TintsImageProperty = BindableProperty.CreateAttached(
+		"TintsImage", typeof(bool), typeof(NativeButton), false, propertyChanged: OnChanged);
+
+	public static bool GetTintsImage(BindableObject view) => (bool)view.GetValue(TintsImageProperty);
+	public static void SetTintsImage(BindableObject view, bool value) => view.SetValue(TintsImageProperty, value);
+
 	public static ButtonKind GetKind(BindableObject view) => (ButtonKind)view.GetValue(KindProperty);
 	public static void SetKind(BindableObject view, ButtonKind value) => view.SetValue(KindProperty, value);
 
@@ -105,7 +116,7 @@ public static class NativeList
 	public static void SetItemCornerRadius(BindableObject view, double value) => view.SetValue(ItemCornerRadiusProperty, value);
 }
 
-/// <summary>Template-style tinting for <see cref="Image"/> and <see cref="ImageButton"/> (tintColor / color filter).</summary>
+/// <summary>Template-style tinting for <see cref="Image"/>, <see cref="ImageButton"/> and <see cref="Button"/> images (tintColor / color filter).</summary>
 public static class NativeImage
 {
 	/// <summary>Draws the image as a single-color template. Null (default) keeps the original colors.</summary>

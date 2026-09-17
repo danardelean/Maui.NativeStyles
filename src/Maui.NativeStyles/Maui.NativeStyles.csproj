@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net10.0;net10.0-android;net10.0-ios</TargetFrameworks>
+		<UseMaui>true</UseMaui>
+		<SingleProject>true</SingleProject>
+		<RootNamespace>NativeStyles</RootNamespace>
+		<AssemblyName>Maui.NativeStyles</AssemblyName>
+		<MauiXamlInflator>SourceGen</MauiXamlInflator>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591</NoWarn>
+
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+
+		<!-- NuGet -->
+		<IsPackable>true</IsPackable>
+		<PackageId>Maui.NativeStyles</PackageId>
+		<Version>1.0.0</Version>
+		<Authors>Dan Ardelean</Authors>
+		<Description>Native-looking .NET MAUI styles: iOS 26 Liquid Glass and Android Material 3. Per-platform resource dictionaries plus a few handler mappings that let the native rendering through instead of the generic MAUI template look.</Description>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/danardelean/Maui.NativeStyles</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/danardelean/Maui.NativeStyles</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>dotnet-maui;maui;ios;android;liquid-glass;material3;material-design;styles;xaml</PackageTags>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="../../README.md" Pack="true" PackagePath="/" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+	</ItemGroup>
+
+</Project>

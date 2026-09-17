@@ -22,23 +22,46 @@ What gets added are **tokens** (colors, typography, metrics) and opt-in **varian
 ## Structure
 
 ```
-MauiNativeStyle.csproj                 net10.0-ios;net10.0-android, MauiVersion 10.0.101, UseMaterial3=true
-App.xaml.cs                            merges the platform dictionaries with #if IOS / #if ANDROID
-NativeStyles/NativeStylesExtensions.cs builder.UseNativeStyles() + StyleClass names
-NativeStyles/GlassView.cs              Liquid Glass container (iOS 26) / elevated card (Android)
-Platforms/iOS/NativeStyles.iOS.cs      Button mapper (UIButtonConfiguration/glass), Entry Plain, Label Semibold, GlassViewHandler
-Platforms/Android/NativeStyles.Android.cs  Destructive+Text/Outlined mapper, Entry Plain, GlassViewHandler
-Resources/Styles/iOS/                  iOSColors.xaml, iOSTypography.xaml, iOSStyles.xaml
-Resources/Styles/Android/              MaterialColors.xaml, MaterialTypography.xaml, MaterialStyles.xaml
-Pages/                                 demo app: Buttons, Inputs, Selection, Feedback, Lists, Typography
+src/Maui.NativeStyles/            the library (net10.0; net10.0-android; net10.0-ios), packable as Maui.NativeStyles
+  NativeStyleDictionary.cs        merge this into Application.Resources
+  NativeProperties.cs             NativeButton / NativeText / NativeEntry attached properties
+  NativeShell.cs                  NativeShell.TabBarMinimizeBehavior (iOS 26)
+  SystemColors.cs                 {native:SystemColor} markup extension + SystemColors API
+  GlassView.cs                    Liquid Glass container
+  Platforms/iOS/                  UIButtonConfiguration / glass mappers, GlassViewHandler, UIColor system colors
+  Platforms/Android/              Material 3 mappers (destructive text, plain Entry, Stepper), theme attributes, dynamic colors
+  Resources/iOS/                  iOSColors.xaml, iOSTypography.xaml, iOSStyles.xaml
+  Resources/Android/              MaterialColors.xaml, MaterialTypography.xaml, MaterialStyles.xaml
+samples/NativeStyles.Sample/      demo app: Buttons, Inputs, Selection, Feedback, Lists, Views, Typography
+tests/Maui.NativeStyles.Tests/    xunit tests (net10.0)
 ```
 
-## Using the styles in an existing project
+## Getting started
 
-1. Copy `Resources/Styles/`, `NativeStyles/`, `Platforms/iOS/NativeStyles.iOS.cs` and `Platforms/Android/NativeStyles.Android.cs`.
-2. In the `.csproj`: `<MauiVersion>10.0.101</MauiVersion>` (or >= 10.0.60) and `<UseMaterial3>true</UseMaterial3>`; remove the OpenSans `ConfigureFonts` registration.
-3. Delete the template's `Resources/Styles/Styles.xaml` and `Colors.xaml` and the `MergedDictionaries` in `App.xaml`.
-4. In `App.xaml.cs` merge the three platform dictionaries (see `App.xaml.cs`); in `MauiProgram.cs` call `.UseNativeStyles()`.
+1. Reference the library (project reference, or the `Maui.NativeStyles` NuGet package once published).
+2. In the app `.csproj`: `<UseMaterial3>true</UseMaterial3>` and Microsoft.Maui.Controls >= 10.0.60 (this repo pins 10.0.101 in `Directory.Build.props`); remove the OpenSans `ConfigureFonts` registration so the system fonts are used.
+3. Delete the template's `Resources/Styles/Styles.xaml` and `Colors.xaml`.
+4. Merge the platform dictionary and register the handlers:
+
+```xml
+<!-- App.xaml -->
+<Application xmlns:native="clr-namespace:NativeStyles;assembly=Maui.NativeStyles" ...>
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <native:NativeStyleDictionary />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
+```
+
+```csharp
+// MauiProgram.cs
+builder.UseMauiApp<App>()
+       .UseNativeStyles();                                   // or .UseNativeStyles(o => o.AndroidDynamicColors = true)
+```
+
 5. Do not set `UIDesignRequiresCompatibility` in `Info.plist` (it disables Liquid Glass and is ignored from the iOS 27 SDK on).
 
 ## Shared StyleClass names
@@ -81,6 +104,32 @@ Shared color keys: `AccentColor`, `DestructiveColor`, `TextPrimary`, `TextSecond
 `CardBackground`, `DividerColor` (plus a `Dark` suffix). Native keys: `SystemBlue … SystemGray6`, `LabelColor`, `SeparatorColor`,
 `SystemBackground`… (iOS 26 values, updated by Apple in June 2025: `systemBlue` is now `#0088FF`) and the M3 roles `Primary … OutlineVariant`.
 
+## System colors
+
+`{native:SystemColor Role}` produces a theme-aware binding whose light and dark values come from the platform:
+`UIColor` system colors on iOS (they follow Increased Contrast) and Material theme attributes on Android.
+With `AndroidDynamicColors = true` the Android values come from Material You (wallpaper-based) on Android 12+.
+On the plain `net10.0` target, or when an attribute cannot be resolved, the static iOS 26 / Material 3 baseline palette is used.
+
+```xml
+<Label TextColor="{native:SystemColor TextSecondary}" />
+<BoxView Color="{native:SystemColor Separator}" />
+```
+
+Roles: `Accent`, `OnAccent`, `Destructive`, `Success`, `Warning`, `TextPrimary`, `TextSecondary`, `TextTertiary`, `Placeholder`,
+`Separator`, `PageBackground`, `GroupedBackground`, `CardBackground`, `Fill`, `SecondaryFill`, `TonalContainer`, `OnTonalContainer`.
+The same values are available in code through `SystemColors.Get(role)` and `SystemColors.Resolve(role)`.
+The library's own styles use these roles, so an app that only uses the shared `StyleClass` names picks up dynamic colors automatically.
+
+## iOS 26 tab bar
+
+```xml
+<Shell native:NativeShell.TabBarMinimizeBehavior="OnScrollDown" ...>
+```
+
+The floating Liquid Glass tab bar collapses into a pill while the page scrolls down and expands again on scroll up.
+The library registers the page's scroll view with UIKit on every navigation; no effect on iOS 15–18 or Android.
+
 ## GlassView
 
 ```xml
@@ -102,14 +151,31 @@ Per the HIG, use it only for floating controls above content, never in the conte
 - **iOS `Switch`** may show glass artifacts on the active side ([dotnet/maui#34560](https://github.com/dotnet/maui/issues/34560)).
 - **Do not set `Shell.TabBarBackgroundColor` on iOS**: it paints an opaque slab behind the glass tab bar ([#37423](https://github.com/dotnet/maui/issues/37423)).
 - iOS `CheckBox` is drawn by MAUI (iOS has no checkbox); it is tinted with the accent color. iOS `RadioButton` uses a "row with checkmark" `ControlTemplate`.
-- Android `Stepper` is a MAUI-drawn control (Android has no stepper).
+- Android `Stepper` is a MAUI-drawn control (Android has no stepper); the library restyles its two buttons as Material 3 outlined icon buttons.
+- The iOS 15–18 fallback paths are guarded by `OperatingSystem.IsIOSVersionAtLeast(26)` but were not exercised on an iOS 18 simulator during development.
 - With `UseMaterial3`, Entry and the other input controls use internal `*Handler2` handlers; their mappers are reached through reflection (see `NativeStyles.Android.cs`), and a debug message is logged if the type is not found. These types become public in MAUI 11.
 - All iOS 26 APIs are guarded by `OperatingSystem.IsIOSVersionAtLeast(26)`: on iOS 15–18 the same binary shows the classic appearance.
 
 ## Requirements
 
 - .NET 10 SDK with the `maui` workload, Xcode 26 (iOS 26 SDK), Android SDK 36.
-- Microsoft.Maui.Controls 10.0.60 or later (pinned to 10.0.101 via `MauiVersion`).
+- Microsoft.Maui.Controls 10.0.60 or later (pinned to 10.0.101 via `MauiVersion` in `Directory.Build.props`).
+
+## Building
+
+```bash
+dotnet build Maui.NativeStyles.slnx
+```
+
+```bash
+dotnet test tests/Maui.NativeStyles.Tests/Maui.NativeStyles.Tests.csproj
+```
+
+```bash
+dotnet pack src/Maui.NativeStyles/Maui.NativeStyles.csproj -c Release -o artifacts
+```
+
+Contributions follow gitflow; see [CONTRIBUTING.md](CONTRIBUTING.md). Changes are tracked in [CHANGELOG.md](CHANGELOG.md).
 
 ## Sources
 

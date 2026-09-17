@@ -3,6 +3,11 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.1] - 2026-09-17
+
+### Documentation
+- README: screenshot gallery of the sample on iOS 26 and Android (default palette, dark mode and a brand palette), referenced through absolute URLs so it also renders on nuget.org.
+
 ## [1.9.0] - 2026-09-17
 
 ### Added

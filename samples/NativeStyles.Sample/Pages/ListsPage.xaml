@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:NativeStyles.Sample.Pages"
+             x:Class="NativeStyles.Sample.Pages.ListsPage"
+             x:DataType="pages:ListsPage"
+             Title="Lists"
+             StyleClass="Grouped">
+    <ScrollView>
+        <VerticalStackLayout Spacing="12" Padding="0,8,0,24">
+
+            <Label Text="Inset grouped" Style="{StaticResource SectionHeader}" />
+            <Border StyleClass="GroupedCell">
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="pages:ListItem">
+                            <VerticalStackLayout>
+                                <Grid StyleClass="ListRow" ColumnDefinitions="Auto,*,Auto,Auto">
+                                    <BoxView WidthRequest="28" HeightRequest="28" CornerRadius="7" Color="{Binding Color}" VerticalOptions="Center" />
+                                    <Label Grid.Column="1" Text="{Binding Title}" VerticalOptions="Center" />
+                                    <Label Grid.Column="2" Text="{Binding Detail}" StyleClass="Secondary" VerticalOptions="Center" />
+                                    <Label Grid.Column="3" StyleClass="Chevron" />
+                                </Grid>
+                                <BoxView StyleClass="Separator" IsVisible="{Binding HasSeparator}" />
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Text="Two-line items (selectable)" Style="{StaticResource SectionHeader}" />
+            <Border StyleClass="GroupedCell">
+                <CollectionView ItemsSource="{Binding Contacts}" SelectionMode="Single" HeightRequest="360">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="pages:ListItem">
+                            <Grid StyleClass="ListRow" ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
+                                <Border Grid.RowSpan="2" WidthRequest="40" HeightRequest="40" StrokeShape="Ellipse" Background="{Binding Color}" Padding="0" VerticalOptions="Center">
+                                    <Label Text="{Binding Initial}" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" />
+                                </Border>
+                                <Label Grid.Column="1" Text="{Binding Title}" VerticalOptions="End" />
+                                <Label Grid.Column="1" Grid.Row="1" Text="{Binding Detail}" Style="{StaticResource BodySecondary}" VerticalOptions="Start" />
+                                <Label Grid.Column="2" Grid.RowSpan="2" StyleClass="Chevron" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

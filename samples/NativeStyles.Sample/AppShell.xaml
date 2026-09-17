@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell x:Class="NativeStyles.Sample.AppShell"
+       xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:pages="clr-namespace:NativeStyles.Sample.Pages"
+       xmlns:native="clr-namespace:NativeStyles;assembly=Maui.NativeStyles"
+       native:NativeShell.TabBarMinimizeBehavior="OnScrollDown"
+       Title="NativeStyles">
+
+    <TabBar>
+        <ShellContent Title="Buttons" Icon="tab_buttons.svg" ContentTemplate="{DataTemplate pages:ButtonsPage}" Route="buttons" />
+        <ShellContent Title="Inputs" Icon="tab_inputs.svg" ContentTemplate="{DataTemplate pages:InputsPage}" Route="inputs" />
+        <ShellContent Title="Selection" Icon="tab_selection.svg" ContentTemplate="{DataTemplate pages:SelectionPage}" Route="selection" />
+        <ShellContent Title="Feedback" Icon="tab_feedback.svg" ContentTemplate="{DataTemplate pages:FeedbackPage}" Route="feedback" />
+        <ShellContent Title="Lists" Icon="tab_lists.svg" ContentTemplate="{DataTemplate pages:ListsPage}" Route="lists" />
+        <ShellContent Title="Views" Icon="tab_views.svg" ContentTemplate="{DataTemplate pages:ViewsPage}" Route="views" />
+        <ShellContent Title="Type" Icon="tab_typography.svg" ContentTemplate="{DataTemplate pages:TypographyPage}" Route="typography" />
+    </TabBar>
+
+</Shell>

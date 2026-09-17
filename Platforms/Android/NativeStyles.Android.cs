@@ -1,11 +1,21 @@
+using Android.Graphics;
+using Color = Microsoft.Maui.Graphics.Color;
 using Android.Graphics.Drawables;
+using Android.Util;
+using Google.Android.Material.TextField;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using AContext = Android.Content.Context;
+using AColor = Android.Graphics.Color;
 
 namespace MauiNativeStyle.NativeStyles;
 
 public static partial class NativeStylesExtensions
 {
+	// Marks buttons whose colors were overridden by MapDestructiveText, so they can be restored.
+	static readonly BindableProperty DestructiveAppliedProperty =
+		BindableProperty.CreateAttached("DestructiveApplied", typeof(bool), typeof(NativeStylesExtensions), false);
+
 	static partial void RegisterPlatformHandlers(IMauiHandlersCollection handlers)
 	{
 		handlers.AddHandler<GlassView, GlassViewHandler>();
@@ -13,29 +23,36 @@ public static partial class NativeStylesExtensions
 
 	static partial void RegisterPlatformMappers()
 	{
-		// "Destructive" combined with Text/Outlined: error-colored label instead of an error-filled container.
+		// Destructive combined with Text/Outlined: error-colored label instead of an error-filled container.
 		// Everything else is expressed in MaterialStyles.xaml and by the Material 3 theme (UseMaterial3).
-		ButtonHandler.Mapper.AppendToMapping("NativeStyle", MapDestructiveText);
+		ButtonHandler.Mapper.AppendToMapping(MappingKey, MapDestructiveText);
 
-		// Entry "Plain": no Material box, for fields embedded in list rows.
-		// With UseMaterial3 the Entry is served by the internal EntryHandler2 (TextInputLayout), so its
-		// Mapper is reached through reflection; the classic EntryHandler is covered for the non-M3 case.
-		EntryHandler.Mapper.AppendToMapping("NativeStyle", (handler, entry) =>
+		// Label weight: Roboto Medium for Medium/Semibold, bold for Bold.
+		LabelHandler.Mapper.AppendToMapping(MappingKey, MapLabelWeight);
+		LabelHandler.Mapper.AppendToMapping(nameof(ILabel.Font), MapLabelWeight);
+
+		// Entry IsPlain: no Material box, for fields embedded in list rows.
+		EntryHandler.Mapper.AppendToMapping(MappingKey, (handler, entry) =>
 		{
-			if (entry.HasClass(Classes.Plain))
+			if (entry is BindableObject b && NativeEntry.GetIsPlain(b))
 				handler.PlatformView.Background = null;
 		});
+
+		// With UseMaterial3 the Entry is served by the internal EntryHandler2 (TextInputLayout); its Mapper is a
+		// public static field on an internal type, reached through reflection (public in MAUI 11).
 		var material3EntryMapper = typeof(EntryHandler).Assembly
 			.GetType("Microsoft.Maui.Handlers.EntryHandler2")?
 			.GetField("Mapper", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)?
 			.GetValue(null) as IPropertyMapper<IEntry, IElementHandler>; // covariant cast
-		material3EntryMapper?.Add("NativeStyle", (handler, entry) =>
+		if (material3EntryMapper is null)
+			System.Diagnostics.Debug.WriteLine("[NativeStyles] EntryHandler2.Mapper not found: NativeEntry.IsPlain has no effect under Material 3.");
+		material3EntryMapper?.Add(MappingKey, (handler, entry) =>
 		{
-			if (!entry.HasClass(Classes.Plain))
+			if (entry is not BindableObject b || !NativeEntry.GetIsPlain(b))
 				return;
-			if (handler.PlatformView is Google.Android.Material.TextField.TextInputLayout layout)
+			if (handler.PlatformView is TextInputLayout layout)
 			{
-				layout.BoxBackgroundMode = Google.Android.Material.TextField.TextInputLayout.BoxBackgroundNone;
+				layout.BoxBackgroundMode = TextInputLayout.BoxBackgroundNone;
 				layout.BoxStrokeWidth = 0;
 				layout.BoxStrokeWidthFocused = 0;
 				if (layout.EditText is { } editText)
@@ -44,24 +61,72 @@ public static partial class NativeStylesExtensions
 		});
 	}
 
-	static void MapDestructiveText(IButtonHandler handler, IButton button)
+	static void MapLabelWeight(ILabelHandler handler, ILabel label)
 	{
-		if (button is not Button b || !b.HasClass(Classes.Destructive) || !(b.HasClass(Classes.Text) || b.HasClass(Classes.Outlined)))
+		if (label is not BindableObject bindable)
 			return;
-
-		// Local values win over the "Destructive" style setters (error-filled container).
-		var app = Application.Current;
-		b.BackgroundColor = Colors.Transparent;
-		b.TextColor = app?.Resources.TryGetValue("Error", out var e) == true && e is Color error
-			? new AppThemeBindingColor(error, (Color)app.Resources["ErrorDark"]).Resolve(app)
-			: Color.FromArgb("#B3261E");
-		if (b.HasClass(Classes.Outlined))
-			b.BorderColor = b.TextColor;
+		var current = handler.PlatformView.Typeface;
+		switch (NativeText.GetWeight(bindable))
+		{
+			case TextWeight.Medium:
+			case TextWeight.Semibold:
+				handler.PlatformView.SetTypeface(Typeface.Create("sans-serif-medium", TypefaceStyle.Normal), TypefaceStyle.Normal);
+				break;
+			case TextWeight.Bold:
+				handler.PlatformView.SetTypeface(current, TypefaceStyle.Bold);
+				break;
+		}
 	}
 
-	readonly record struct AppThemeBindingColor(Color Light, Color Dark)
+	static void MapDestructiveText(IButtonHandler handler, IButton button)
 	{
-		public Color Resolve(Application app) => app.RequestedTheme == AppTheme.Dark ? Dark : Light;
+		if (button is not Button b)
+			return;
+
+		var kind = NativeButton.GetKind(b);
+		var applies = NativeButton.GetIsDestructive(b) && kind is ButtonKind.Text or ButtonKind.Outlined;
+		var applied = (bool)b.GetValue(DestructiveAppliedProperty);
+
+		if (applies)
+		{
+			// Theme-aware local values win over the "Destructive" style setters (error-filled container).
+			var (error, errorDark) = ResolveThemeColors("Error", "#B3261E", "#F2B8B5");
+			b.SetAppThemeColor(Button.TextColorProperty, error, errorDark);
+			b.SetValue(Button.BackgroundColorProperty, Colors.Transparent);
+			if (kind == ButtonKind.Outlined)
+				b.SetAppThemeColor(Button.BorderColorProperty, error, errorDark);
+			b.SetValue(DestructiveAppliedProperty, true);
+		}
+		else if (applied)
+		{
+			b.RemoveBinding(Button.TextColorProperty);
+			b.ClearValue(Button.TextColorProperty);
+			b.ClearValue(Button.BackgroundColorProperty);
+			b.RemoveBinding(Button.BorderColorProperty);
+			b.ClearValue(Button.BorderColorProperty);
+			b.SetValue(DestructiveAppliedProperty, false);
+		}
+	}
+
+	static (Color light, Color dark) ResolveThemeColors(string key, string lightFallback, string darkFallback)
+	{
+		var resources = Application.Current?.Resources;
+		var light = resources?.TryGetValue(key, out var l) == true && l is Color lc ? lc : Color.FromArgb(lightFallback);
+		var dark = resources?.TryGetValue(key + "Dark", out var d) == true && d is Color dc ? dc : Color.FromArgb(darkFallback);
+		return (light, dark);
+	}
+
+	/// <summary>Resolves a color attribute from the current Android theme (follows dark mode and Material You dynamic colors).</summary>
+	internal static AColor? ResolveThemeAttribute(AContext context, int attribute)
+	{
+		var value = new TypedValue();
+		if (context.Theme?.ResolveAttribute(attribute, value, true) != true)
+			return null;
+		if (value.Type >= DataType.FirstColorInt && value.Type <= DataType.LastColorInt)
+			return new AColor(value.Data);
+		if (value.ResourceId != 0)
+			return new AColor(context.GetColor(value.ResourceId));
+		return null;
 	}
 }
 
@@ -80,15 +145,37 @@ public class GlassViewHandler : ContentViewHandler
 	{
 	}
 
+	protected override void ConnectHandler(ContentViewGroup platformView)
+	{
+		base.ConnectHandler(platformView);
+		if (Application.Current is { } app)
+			app.RequestedThemeChanged += OnThemeChanged;
+	}
+
+	protected override void DisconnectHandler(ContentViewGroup platformView)
+	{
+		if (Application.Current is { } app)
+			app.RequestedThemeChanged -= OnThemeChanged;
+		base.DisconnectHandler(platformView);
+	}
+
+	void OnThemeChanged(object? sender, AppThemeChangedEventArgs e)
+	{
+		if (VirtualView is GlassView view)
+			MapSurface(this, view);
+	}
+
 	static void MapSurface(GlassViewHandler handler, GlassView view)
 	{
 		var context = handler.Context;
-		var dark = Application.Current?.RequestedTheme == AppTheme.Dark;
-		// surfaceContainerLow (light) / surfaceContainerLow (dark) from the M3 baseline scheme
-		var color = view.TintColor ?? (dark ? Color.FromArgb("#1D1B20") : Color.FromArgb("#F7F2FA"));
+		// surfaceContainerLow from the running theme (dark mode / dynamic colors aware), baseline fallback.
+		var themeColor = NativeStylesExtensions.ResolveThemeAttribute(context, Resource.Attribute.colorSurfaceContainerLow);
+		var color = view.TintColor?.ToPlatform()
+			?? themeColor
+			?? (Application.Current?.RequestedTheme == AppTheme.Dark ? AColor.ParseColor("#1D1B20") : AColor.ParseColor("#F7F2FA"));
 
 		var drawable = new GradientDrawable();
-		drawable.SetColor(color.ToPlatform());
+		drawable.SetColor(color);
 		var radiusPx = view.CornerRadius < 0 ? context.ToPixels(28) : context.ToPixels(view.CornerRadius);
 		drawable.SetCornerRadius(radiusPx);
 

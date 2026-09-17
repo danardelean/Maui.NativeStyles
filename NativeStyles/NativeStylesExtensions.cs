@@ -7,20 +7,23 @@ namespace MauiNativeStyle.NativeStyles;
 /// </summary>
 public static partial class NativeStylesExtensions
 {
-	/// <summary>Well-known StyleClass names understood on both platforms.</summary>
+	/// <summary>Mapper key under which every native-style mapping is registered.</summary>
+	public const string MappingKey = "NativeStyle";
+
+	/// <summary>Well-known StyleClass names. Each one is a XAML style that sets the matching attached property.</summary>
 	public static class Classes
 	{
-		public const string Filled = "Filled";           // iOS filled (tint bg)      | M3 filled
-		public const string Tonal = "Tonal";             // iOS tinted (15% tint bg)  | M3 filled tonal
-		public const string Outlined = "Outlined";       // iOS gray                  | M3 outlined
-		public const string Text = "Text";               // iOS plain                 | M3 text
-		public const string Glass = "Glass";             // iOS 26 glass              | M3 elevated
-		public const string GlassProminent = "GlassProminent"; // iOS 26 prominent glass | M3 filled
-		public const string Destructive = "Destructive"; // iOS systemRed             | M3 error
-		public const string Small = "Small";             // iOS .small / M3 xsmall size
-		public const string Large = "Large";             // iOS .large / M3 medium size
-		public const string Plain = "Plain";             // Entry without border (grouped cell)
-		public const string Semibold = "Semibold";       // Label weight 600 (iOS Headline/Title3)
+		public const string Filled = "Filled";                 // NativeButton.Kind = Filled
+		public const string Tonal = "Tonal";                   // NativeButton.Kind = Tonal
+		public const string Outlined = "Outlined";             // NativeButton.Kind = Outlined
+		public const string Text = "Text";                     // NativeButton.Kind = Text
+		public const string Glass = "Glass";                   // NativeButton.Kind = Glass
+		public const string GlassProminent = "GlassProminent"; // NativeButton.Kind = GlassProminent
+		public const string Destructive = "Destructive";       // NativeButton.IsDestructive = true
+		public const string Small = "Small";                   // NativeButton.Size = Small
+		public const string Large = "Large";                   // NativeButton.Size = Large
+		public const string Plain = "Plain";                   // NativeEntry.IsPlain = true
+		public const string Semibold = "Semibold";             // NativeText.Weight = Semibold
 	}
 
 	public static MauiAppBuilder UseNativeStyles(this MauiAppBuilder builder)
@@ -33,6 +36,10 @@ public static partial class NativeStylesExtensions
 	static partial void RegisterPlatformHandlers(IMauiHandlersCollection handlers);
 	static partial void RegisterPlatformMappers();
 
-	internal static bool HasClass(this IView view, string cls) =>
-		view is NavigableElement e && e.StyleClass is { } classes && classes.Contains(cls);
+	/// <summary>Re-runs the native-style mapping after an attached property changed at runtime.</summary>
+	internal static void Refresh(BindableObject bindable)
+	{
+		if (bindable is Element { Handler: { } handler })
+			handler.UpdateValue(MappingKey);
+	}
 }

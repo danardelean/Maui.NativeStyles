@@ -44,6 +44,15 @@ Pages/                                 demo app: Buttons, Inputs, Selection, Fee
 ## Shared StyleClass names
 
 Same markup on both platforms; each class maps to the equivalent native role.
+Every class is a XAML style that sets a typed attached property, so the two forms are equivalent and both
+react to runtime changes:
+
+```xml
+<Button Text="Save" StyleClass="Filled, Large" />
+<Button Text="Save" native:NativeButton.Kind="Filled" native:NativeButton.Size="Large" />
+<Label Text="Title" native:NativeText.Weight="Semibold" />
+<Entry Placeholder="Name" native:NativeEntry.IsPlain="True" />
+```
 
 | StyleClass | iOS 26 | Android (M3) |
 |---|---|---|
@@ -94,7 +103,7 @@ Per the HIG, use it only for floating controls above content, never in the conte
 - **Do not set `Shell.TabBarBackgroundColor` on iOS**: it paints an opaque slab behind the glass tab bar ([#37423](https://github.com/dotnet/maui/issues/37423)).
 - iOS `CheckBox` is drawn by MAUI (iOS has no checkbox); it is tinted with the accent color. iOS `RadioButton` uses a "row with checkmark" `ControlTemplate`.
 - Android `Stepper` is a MAUI-drawn control (Android has no stepper).
-- With `UseMaterial3`, Entry and the other input controls use internal `*Handler2` handlers; their mappers are reached through reflection (see `NativeStyles.Android.cs`). These types become public in MAUI 11.
+- With `UseMaterial3`, Entry and the other input controls use internal `*Handler2` handlers; their mappers are reached through reflection (see `NativeStyles.Android.cs`), and a debug message is logged if the type is not found. These types become public in MAUI 11.
 - All iOS 26 APIs are guarded by `OperatingSystem.IsIOSVersionAtLeast(26)`: on iOS 15–18 the same binary shows the classic appearance.
 
 ## Requirements

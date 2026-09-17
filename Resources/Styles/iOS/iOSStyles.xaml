@@ -11,7 +11,8 @@
         Switch/Slider/Stepper/ProgressBar/ActivityIndicator colors. The native handler defaults
         (compiled against the iOS 26 SDK) already render Liquid Glass and the system tint.
         Button appearance comes from the UIButtonConfiguration mapper in Platforms/iOS/NativeStyles.iOS.cs,
-        driven by StyleClass: Filled, Tonal, Outlined, Text (default), Glass, GlassProminent, Destructive, Small, Large.
+        driven by the NativeButton attached properties. The StyleClass styles below only set those properties,
+        so StyleClass="Filled" and native:NativeButton.Kind="Filled" are equivalent.
     -->
 
     <!-- Text -->
@@ -25,6 +26,9 @@
     <Style TargetType="Label" Class="Accent">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource SystemBlue}, Dark={StaticResource SystemBlueDark}}" />
     </Style>
+    <Style TargetType="Label" Class="Semibold">
+        <Setter Property="native:NativeText.Weight" Value="Semibold" />
+    </Style>
     <Style TargetType="Span">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LabelColor}, Dark={StaticResource LabelColorDark}}" />
     </Style>
@@ -36,12 +40,35 @@
         <Setter Property="MinimumHeightRequest" Value="44" />
         <Setter Property="MinimumWidthRequest" Value="44" />
     </Style>
+    <Style TargetType="Button" Class="Filled">
+        <Setter Property="native:NativeButton.Kind" Value="Filled" />
+    </Style>
+    <Style TargetType="Button" Class="Tonal">
+        <Setter Property="native:NativeButton.Kind" Value="Tonal" />
+    </Style>
+    <Style TargetType="Button" Class="Outlined">
+        <Setter Property="native:NativeButton.Kind" Value="Outlined" />
+    </Style>
+    <Style TargetType="Button" Class="Text">
+        <Setter Property="native:NativeButton.Kind" Value="Text" />
+    </Style>
+    <Style TargetType="Button" Class="Glass">
+        <Setter Property="native:NativeButton.Kind" Value="Glass" />
+    </Style>
+    <Style TargetType="Button" Class="GlassProminent">
+        <Setter Property="native:NativeButton.Kind" Value="GlassProminent" />
+    </Style>
+    <Style TargetType="Button" Class="Destructive">
+        <Setter Property="native:NativeButton.IsDestructive" Value="True" />
+    </Style>
     <Style TargetType="Button" Class="Small">
+        <Setter Property="native:NativeButton.Size" Value="Small" />
         <Setter Property="FontSize" Value="15" />
         <Setter Property="Padding" Value="14,7" />
         <Setter Property="MinimumHeightRequest" Value="34" />
     </Style>
     <Style TargetType="Button" Class="Large">
+        <Setter Property="native:NativeButton.Size" Value="Large" />
         <Setter Property="Padding" Value="24,15" />
         <Setter Property="MinimumHeightRequest" Value="50" />
     </Style>
@@ -78,6 +105,7 @@
     </Style>
     <Style TargetType="Entry" Class="Plain">
         <!-- Border removed by the Entry handler mapper; used inside grouped cells -->
+        <Setter Property="native:NativeEntry.IsPlain" Value="True" />
         <Setter Property="MinimumHeightRequest" Value="44" />
     </Style>
     <Style TargetType="Editor">

@@ -2,8 +2,8 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
-using PlatformContentView = Microsoft.Maui.Platform.ContentView;
 using UIKit;
+using PlatformContentView = Microsoft.Maui.Platform.ContentView;
 
 namespace MauiNativeStyle.NativeStyles;
 
@@ -16,9 +16,9 @@ public static partial class NativeStylesExtensions
 
 	static partial void RegisterPlatformMappers()
 	{
-		// UIButtonConfiguration (iOS 15+) / Liquid Glass (iOS 26+).
+		// UIButtonConfiguration (iOS 15+) / Liquid Glass (iOS 26+), driven by the NativeButton attached properties.
 		// Re-applied after every MAUI mapping that would otherwise overwrite the configuration.
-		ButtonHandler.Mapper.AppendToMapping("NativeStyle", MapButtonConfiguration);
+		ButtonHandler.Mapper.AppendToMapping(MappingKey, MapButtonConfiguration);
 		ButtonHandler.Mapper.AppendToMapping(nameof(IButton.Background), MapButtonConfiguration);
 		ButtonHandler.Mapper.AppendToMapping(nameof(IButtonStroke.CornerRadius), MapButtonConfiguration);
 		ButtonHandler.Mapper.AppendToMapping(nameof(IButtonStroke.StrokeThickness), MapButtonConfiguration);
@@ -29,69 +29,67 @@ public static partial class NativeStylesExtensions
 		ButtonHandler.Mapper.AppendToMapping(nameof(IPadding.Padding), MapButtonConfiguration);
 		ButtonHandler.Mapper.AppendToMapping("LineBreakMode", MapButtonConfiguration);
 
-		// Entry: MAUI already uses UITextBorderStyle.RoundedRect; "Plain" removes the border (grouped cells).
-		EntryHandler.Mapper.AppendToMapping("NativeStyle", (handler, entry) =>
-		{
-			if (entry.HasClass(Classes.Plain))
-				handler.PlatformView.BorderStyle = UITextBorderStyle.None;
-		});
+		// Entry: MAUI already uses UITextBorderStyle.RoundedRect; NativeEntry.IsPlain removes the border (grouped cells).
+		EntryHandler.Mapper.AppendToMapping(MappingKey, MapEntryBorder);
 
-		// Label: MAUI FontAttributes has no Semibold; iOS Headline/Title3 are semibold.
-		LabelHandler.Mapper.AppendToMapping(nameof(ILabel.Font), (handler, label) =>
+		// Label: MAUI FontAttributes has no Semibold; NativeText.Weight supplies the SF Pro weight.
+		LabelHandler.Mapper.AppendToMapping(MappingKey, MapLabelWeight);
+		LabelHandler.Mapper.AppendToMapping(nameof(ILabel.Font), MapLabelWeight);
+	}
+
+	static void MapEntryBorder(IEntryHandler handler, IEntry entry)
+	{
+		if (entry is not BindableObject bindable)
+			return;
+		handler.PlatformView.BorderStyle = NativeEntry.GetIsPlain(bindable)
+			? UITextBorderStyle.None
+			: UITextBorderStyle.RoundedRect;
+	}
+
+	static void MapLabelWeight(ILabelHandler handler, ILabel label)
+	{
+		if (label is not BindableObject bindable || handler.PlatformView.Font is not { } current)
+			return;
+
+		var weight = NativeText.GetWeight(bindable) switch
 		{
-			if (!label.HasClass(Classes.Semibold))
-				return;
-			if (handler.PlatformView.Font is not { } current) return;
-			handler.PlatformView.Font = UIFont.SystemFontOfSize(current.PointSize, UIFontWeight.Semibold)!;
-		});
+			TextWeight.Medium => UIFontWeight.Medium,
+			TextWeight.Semibold => UIFontWeight.Semibold,
+			TextWeight.Bold => UIFontWeight.Bold,
+			_ => (UIFontWeight?)null,
+		};
+		if (weight is { } w)
+			handler.PlatformView.Font = UIFont.SystemFontOfSize(current.PointSize, w)!;
 	}
 
 	static void MapButtonConfiguration(IButtonHandler handler, IButton button)
 	{
-		if (!OperatingSystem.IsIOSVersionAtLeast(15))
+		if (!OperatingSystem.IsIOSVersionAtLeast(15) || button is not BindableObject bindable)
 			return;
 
 		var platformButton = handler.PlatformView;
 		var glass = OperatingSystem.IsIOSVersionAtLeast(26);
+		var kind = NativeButton.GetKind(bindable);
+		var destructive = NativeButton.GetIsDestructive(bindable);
 
-		UIButtonConfiguration config;
-		bool prominent;
-		if (button.HasClass(Classes.GlassProminent))
+		var (config, prominent) = kind switch
 		{
-			config = glass ? UIButtonConfiguration.ProminentGlassButtonConfiguration : UIButtonConfiguration.FilledButtonConfiguration;
-			prominent = true;
-		}
-		else if (button.HasClass(Classes.Glass))
-		{
-			config = glass ? UIButtonConfiguration.GlassButtonConfiguration : UIButtonConfiguration.GrayButtonConfiguration;
-			prominent = false;
-		}
-		else if (button.HasClass(Classes.Filled))
-		{
-			config = UIButtonConfiguration.FilledButtonConfiguration;
-			prominent = true;
-		}
-		else if (button.HasClass(Classes.Tonal))
-		{
-			config = UIButtonConfiguration.TintedButtonConfiguration;
-			prominent = false;
-		}
-		else if (button.HasClass(Classes.Outlined))
-		{
-			config = UIButtonConfiguration.GrayButtonConfiguration;
-			prominent = false;
-		}
-		else
-		{
-			config = UIButtonConfiguration.PlainButtonConfiguration;
-			prominent = false;
-		}
+			ButtonKind.GlassProminent => (glass ? UIButtonConfiguration.ProminentGlassButtonConfiguration : UIButtonConfiguration.FilledButtonConfiguration, true),
+			ButtonKind.Glass => (glass ? UIButtonConfiguration.GlassButtonConfiguration : UIButtonConfiguration.GrayButtonConfiguration, false),
+			ButtonKind.Filled => (UIButtonConfiguration.FilledButtonConfiguration, true),
+			ButtonKind.Tonal => (UIButtonConfiguration.TintedButtonConfiguration, false),
+			ButtonKind.Outlined => (UIButtonConfiguration.GrayButtonConfiguration, false),
+			_ => (UIButtonConfiguration.PlainButtonConfiguration, false),
+		};
 
 		// iOS 26: every button outside bars is a capsule.
 		config.CornerStyle = UIButtonConfigurationCornerStyle.Capsule;
-		config.ButtonSize = button.HasClass(Classes.Small) ? UIButtonConfigurationSize.Small
-			: button.HasClass(Classes.Large) ? UIButtonConfigurationSize.Large
-			: UIButtonConfigurationSize.Medium;
+		config.ButtonSize = NativeButton.GetSize(bindable) switch
+		{
+			ControlSize.Small => UIButtonConfigurationSize.Small,
+			ControlSize.Large => UIButtonConfigurationSize.Large,
+			_ => UIButtonConfigurationSize.Medium,
+		};
 
 		if (button is IText text)
 			config.Title = text.Text;
@@ -107,10 +105,9 @@ public static partial class NativeStylesExtensions
 				new UIStringAttributes(attrs) { Font = font }.Dictionary;
 		}
 
-		// Explicit XAML colors win; otherwise the system tint / systemRed for destructive.
+		// Explicit XAML colors win; otherwise the system tint, or systemRed for destructive buttons.
 		var textColor = (button as ITextStyle)?.TextColor;
 		var background = (button.Background as SolidPaint)?.Color;
-		var destructive = button.HasClass(Classes.Destructive);
 
 		if (background is not null)
 			config.BaseBackgroundColor = background.ToPlatform();

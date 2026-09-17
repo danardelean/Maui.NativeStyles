@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/NativeStyles.Sample/NativeStyles.Sample.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Maui.NativeStyles/Maui.NativeStyles.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Maui.NativeStyles.Tests/Maui.NativeStyles.Tests.csproj" />
+  </Folder>
+</Solution>

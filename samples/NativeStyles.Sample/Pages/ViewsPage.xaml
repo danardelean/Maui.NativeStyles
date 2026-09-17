@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:NativeStyles.Sample.Pages"
+             x:Class="NativeStyles.Sample.Pages.ViewsPage"
+             x:DataType="pages:ViewsPage"
+             Title="Views"
+             StyleClass="Grouped">
+    <RefreshView x:Name="Refresh" Refreshing="OnRefreshing">
+        <ScrollView>
+            <VerticalStackLayout Spacing="12" Padding="0,8,0,24">
+
+                <Label Text="Pull to refresh" Style="{StaticResource SectionHeader}" />
+                <Label x:Name="RefreshLabel" Text="Pull down to refresh this page." Style="{StaticResource SectionFooter}" Margin="16,0" />
+
+                <Label Text="Image buttons" Style="{StaticResource SectionHeader}" />
+                <HorizontalStackLayout Spacing="8" Padding="16,0">
+                    <ImageButton Source="tab_feedback.svg" />
+                    <ImageButton Source="tab_lists.svg" />
+                    <ImageButton Source="tab_inputs.svg" IsEnabled="False" />
+                </HorizontalStackLayout>
+
+                <Label Text="Carousel + indicator" Style="{StaticResource SectionHeader}" />
+                <CarouselView x:Name="Carousel" ItemsSource="{Binding Cards}" HeightRequest="160" PeekAreaInsets="24" IndicatorView="Indicator">
+                    <CarouselView.ItemTemplate>
+                        <DataTemplate x:DataType="pages:CardItem">
+                            <Border StyleClass="Card" Margin="8,0">
+                                <VerticalStackLayout Spacing="8">
+                                    <Label Text="{Binding Title}" Style="{StaticResource TitleS}" />
+                                    <Label Text="{Binding Body}" Style="{StaticResource BodySecondary}" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CarouselView.ItemTemplate>
+                </CarouselView>
+                <IndicatorView x:Name="Indicator" HorizontalOptions="Center" />
+
+                <Label Text="Swipe actions" Style="{StaticResource SectionHeader}" />
+                <Border StyleClass="GroupedCell">
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Messages}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <SwipeView>
+                                    <SwipeView.RightItems>
+                                        <SwipeItems>
+                                            <SwipeItem Text="Archive" BackgroundColor="{StaticResource AccentColor}" />
+                                            <SwipeItem Text="Delete" BackgroundColor="{StaticResource DestructiveColor}" IsDestructive="True" />
+                                        </SwipeItems>
+                                    </SwipeView.RightItems>
+                                    <Grid StyleClass="ListRow" ColumnDefinitions="*,Auto">
+                                        <Label Text="{Binding .}" VerticalOptions="Center" />
+                                        <Label Grid.Column="1" Text="‹ swipe" StyleClass="Tertiary" VerticalOptions="Center" />
+                                    </Grid>
+                                </SwipeView>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Label Text="Web view" Style="{StaticResource SectionHeader}" />
+                <Border StyleClass="GroupedCell" HeightRequest="180" Padding="0">
+                    <WebView>
+                        <WebView.Source>
+                            <HtmlWebViewSource Html="&lt;html&gt;&lt;body style='font-family:-apple-system,Roboto,sans-serif;padding:16px;color:#444'&gt;&lt;h3&gt;WebView&lt;/h3&gt;&lt;p&gt;WKWebView on iOS, Android WebView on Android. The chrome around it is the host platform's.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;" />
+                        </WebView.Source>
+                    </WebView>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>

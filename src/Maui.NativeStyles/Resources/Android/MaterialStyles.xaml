@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:android="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;assembly=Microsoft.Maui.Controls"
+                    xmlns:native="clr-namespace:NativeStyles"
+                    xmlns:local="clr-namespace:NativeStyles.Resources.Android"
+                    x:Class="NativeStyles.Resources.Android.MaterialStyles">
+
+    <ResourceDictionary.MergedDictionaries>
+        <local:MaterialColors />
+        <local:MaterialTypography />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!--
+        Material 3 implicit styles. Requires <UseMaterial3>true</UseMaterial3> (Microsoft.Maui.Controls >= 10.0.60):
+        Entry/Editor -> TextInputLayout, Switch -> MaterialSwitch, Slider -> Material Slider,
+        ProgressBar -> LinearProgressIndicator, pickers -> Material dialogs.
+        Colors come from {native:SystemColor}: Material theme attributes resolved at runtime, so Material You
+        dynamic colors apply when enabled (UseNativeStyles(o => o.AndroidDynamicColors = true)).
+        Rule: never set FontFamily (Roboto), never paint BackgroundColor on input controls,
+        never override Switch/Slider/CheckBox/ProgressBar colors: the M3 theme owns them.
+        Button variants via StyleClass: Filled (default), Tonal, Outlined, Text, Glass (= Elevated),
+        GlassProminent (= Filled), Destructive, Small, Large. Each class also sets the NativeButton attached
+        property so the handlers (and iOS) see the same intent.
+    -->
+
+    <!-- Text -->
+    <Style TargetType="Label" BasedOn="{StaticResource BodyLarge}" />
+    <Style TargetType="Label" Class="Secondary">
+        <Setter Property="TextColor" Value="{native:SystemColor TextSecondary}" />
+    </Style>
+    <Style TargetType="Label" Class="Tertiary">
+        <Setter Property="TextColor" Value="{native:SystemColor TextTertiary}" />
+    </Style>
+    <Style TargetType="Label" Class="Accent">
+        <Setter Property="TextColor" Value="{native:SystemColor Accent}" />
+    </Style>
+    <Style TargetType="Label" Class="Semibold">
+        <Setter Property="native:NativeText.Weight" Value="Semibold" />
+    </Style>
+    <Style TargetType="Span">
+        <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
+    </Style>
+
+    <!-- Button: M3 common button, 40dp, pill (corner radius left to the M3 default), Label Large -->
+    <Style TargetType="Button">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontFamily" Value="sans-serif-medium" />
+        <Setter Property="CharacterSpacing" Value="0.1" />
+        <Setter Property="Padding" Value="24,8" />
+        <Setter Property="MinimumHeightRequest" Value="40" />
+        <Setter Property="MinimumWidthRequest" Value="48" />
+        <Setter Property="TextColor" Value="{native:SystemColor OnAccent}" />
+        <Setter Property="BackgroundColor" Value="{native:SystemColor Accent}" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal" />
+                    <VisualState x:Name="Disabled">
+                        <VisualState.Setters>
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DisabledContent}, Dark={StaticResource DisabledContentDark}}" />
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource DisabledContainer}, Dark={StaticResource DisabledContainerDark}}" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+    <Style TargetType="Button" Class="Filled">
+        <Setter Property="native:NativeButton.Kind" Value="Filled" />
+    </Style>
+    <Style TargetType="Button" Class="Tonal">
+        <Setter Property="native:NativeButton.Kind" Value="Tonal" />
+        <Setter Property="TextColor" Value="{native:SystemColor OnTonalContainer}" />
+        <Setter Property="BackgroundColor" Value="{native:SystemColor TonalContainer}" />
+    </Style>
+    <Style TargetType="Button" Class="Outlined">
+        <Setter Property="native:NativeButton.Kind" Value="Outlined" />
+        <Setter Property="TextColor" Value="{native:SystemColor Accent}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="BorderColor" Value="{native:SystemColor TextTertiary}" />
+        <Setter Property="BorderWidth" Value="1" />
+    </Style>
+    <Style TargetType="Button" Class="Text">
+        <Setter Property="native:NativeButton.Kind" Value="Text" />
+        <Setter Property="TextColor" Value="{native:SystemColor Accent}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="Padding" Value="12,8" />
+    </Style>
+    <Style TargetType="Button" Class="Glass">
+        <!-- M3 elevated button -->
+        <Setter Property="native:NativeButton.Kind" Value="Glass" />
+        <Setter Property="TextColor" Value="{native:SystemColor Accent}" />
+        <Setter Property="BackgroundColor" Value="{native:SystemColor CardBackground}" />
+        <Setter Property="android:Button.UseDefaultShadow" Value="True" />
+    </Style>
+    <Style TargetType="Button" Class="GlassProminent">
+        <Setter Property="native:NativeButton.Kind" Value="GlassProminent" />
+    </Style>
+    <Style TargetType="Button" Class="Destructive">
+        <Setter Property="native:NativeButton.IsDestructive" Value="True" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnError}, Dark={StaticResource OnErrorDark}}" />
+        <Setter Property="BackgroundColor" Value="{native:SystemColor Destructive}" />
+    </Style>
+    <Style TargetType="Button" Class="Small">
+        <!-- M3 Expressive extra-small -->
+        <Setter Property="native:NativeButton.Size" Value="Small" />
+        <Setter Property="MinimumHeightRequest" Value="32" />
+        <Setter Property="Padding" Value="16,4" />
+    </Style>
+    <Style TargetType="Button" Class="Large">
+        <!-- M3 Expressive medium -->
+        <Setter Property="native:NativeButton.Size" Value="Large" />
+        <Setter Property="MinimumHeightRequest" Value="56" />
+        <Setter Property="Padding" Value="24,12" />
+        <Setter Property="FontSize" Value="16" />
+    </Style>
+    <Style TargetType="ImageButton">
+        <!-- M3 standard icon button: 40dp, 24dp icon -->
+        <Setter Property="MinimumHeightRequest" Value="40" />
+        <Setter Property="MinimumWidthRequest" Value="40" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal" />
+                    <VisualState x:Name="Disabled">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="0.38" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+
+    <!-- Text input: TextInputLayout (outlined) from the M3 theme; only typography and text colors -->
+    <Style TargetType="Entry">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
+        <Setter Property="PlaceholderColor" Value="{native:SystemColor TextSecondary}" />
+    </Style>
+    <Style TargetType="Entry" Class="Plain">
+        <Setter Property="native:NativeEntry.IsPlain" Value="True" />
+    </Style>
+    <Style TargetType="Editor">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
+        <Setter Property="PlaceholderColor" Value="{native:SystemColor TextSecondary}" />
+        <Setter Property="AutoSize" Value="TextChanges" />
+        <Setter Property="MinimumHeightRequest" Value="96" />
+    </Style>
+    <Style TargetType="SearchBar">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
+        <Setter Property="PlaceholderColor" Value="{native:SystemColor TextSecondary}" />
+    </Style>
+
+    <!-- Pickers: Material dialogs from the M3 theme -->
+    <Style TargetType="Picker">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
+        <Setter Property="TitleColor" Value="{native:SystemColor TextSecondary}" />
+    </Style>
+    <Style TargetType="DatePicker">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
+    </Style>
+    <Style TargetType="TimePicker">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
+    </Style>
+
+    <!-- Selection: Switch / Slider / CheckBox / Stepper intentionally have NO style (M3 widgets) -->
+    <Style TargetType="RadioButton">
+        <!-- No ControlTemplate: keeps the native MaterialRadioButton -->
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+    </Style>
+
+    <Style TargetType="IndicatorView">
+        <Setter Property="IndicatorColor" Value="{native:SystemColor Separator}" />
+        <Setter Property="SelectedIndicatorColor" Value="{native:SystemColor Accent}" />
+        <Setter Property="IndicatorSize" Value="8" />
+    </Style>
+
+    <!-- Feedback: ProgressBar / ActivityIndicator intentionally have NO style -->
+
+    <!-- Containers -->
+    <Style TargetType="Border">
+        <!-- M3 elevated card: surfaceContainerLow, 12dp corners, elevation 1 -->
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="Background" Value="{native:SystemColor CardBackground}" />
+        <Setter Property="Shadow">
+            <Shadow Brush="Black" Opacity="0.18" Radius="3" Offset="0,1" />
+        </Setter>
+    </Style>
+    <Style TargetType="Border" Class="Card">
+        <Setter Property="Padding" Value="16" />
+    </Style>
+    <Style TargetType="Border" Class="GroupedCell">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="16,0" />
+    </Style>
+    <Style TargetType="Border" Class="Outlined">
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Stroke" Value="{native:SystemColor Separator}" />
+        <Setter Property="Background" Value="{native:SystemColor PageBackground}" />
+        <Setter Property="Shadow" Value="{x:Null}" />
+    </Style>
+    <Style TargetType="Border" Class="Filled">
+        <Setter Property="Background" Value="{native:SystemColor Fill}" />
+        <Setter Property="Shadow" Value="{x:Null}" />
+    </Style>
+
+    <!-- List item: 56dp one-line / 72dp two-line, 16dp padding, state layer on selection -->
+    <Style TargetType="Grid" Class="ListRow">
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="MinimumHeightRequest" Value="56" />
+        <Setter Property="ColumnSpacing" Value="16" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal" />
+                    <VisualState x:Name="Selected">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PressedStateLayer}, Dark={StaticResource PressedStateLayerDark}}" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+    <Style TargetType="BoxView" Class="Separator">
+        <Setter Property="HeightRequest" Value="1" />
+        <Setter Property="Color" Value="{native:SystemColor Separator}" />
+        <Setter Property="HorizontalOptions" Value="Fill" />
+    </Style>
+    <Style TargetType="Label" Class="Chevron">
+        <!-- Material lists do not use disclosure chevrons -->
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style TargetType="ContentPage" ApplyToDerivedTypes="True">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="BackgroundColor" Value="{native:SystemColor PageBackground}" />
+    </Style>
+    <Style TargetType="ContentPage" Class="Grouped" ApplyToDerivedTypes="True" />
+    <Style TargetType="ScrollView">
+        <Setter Property="Padding" Value="0,0,0,16" />
+    </Style>
+
+    <!-- Shell: the Material 3 theme owns the top app bar and the navigation bar (colors, active indicator,
+         dark mode). Only the shadow is removed, as M3 app bars are flat. -->
+    <Style TargetType="Shell" ApplyToDerivedTypes="True">
+        <Setter Property="Shell.NavBarHasShadow" Value="False" />
+    </Style>
+    <Style TargetType="NavigationPage">
+        <Setter Property="BarBackgroundColor" Value="{native:SystemColor PageBackground}" />
+        <Setter Property="BarTextColor" Value="{native:SystemColor TextPrimary}" />
+        <Setter Property="IconColor" Value="{native:SystemColor TextPrimary}" />
+    </Style>
+
+    <!-- GlassView on Android = M3 elevated card (rounded background + elevation from the handler) -->
+    <Style TargetType="native:GlassView">
+        <Setter Property="Padding" Value="8" />
+    </Style>
+
+</ResourceDictionary>

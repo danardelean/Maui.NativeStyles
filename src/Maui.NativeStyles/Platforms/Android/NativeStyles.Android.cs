@@ -274,25 +274,48 @@ public static partial class NativeStylesExtensions
 	/// </summary>
 	static void StyleTabs(Google.Android.Material.Tabs.TabLayout tabs)
 	{
+		if (tabs.Context is not { } context)
+			return;
 		var primary = MaterialColors.GetColor(tabs, Resource.Attribute.colorPrimary);
 		var mode = tabs.TabCount > 4 ? Google.Android.Material.Tabs.TabLayout.ModeScrollable : Google.Android.Material.Tabs.TabLayout.ModeFixed;
-		if (tabs.TabTextColors?.GetColorForState([Android.Resource.Attribute.StateSelected], AColor.Transparent) == primary && tabs.TabMode == mode)
+
+		// Same color as the app bar above (StyleAppBar records it); a TabbedPage hosts the tabs in a primary-colored strip
+		var container = MaterialColors.GetColor(tabs, Resource.Attribute.colorSurface);
+		for (var parent = tabs.Parent; parent is not null; parent = parent.Parent)
+			if (parent is Google.Android.Material.AppBar.AppBarLayout appBar && appBar.GetTag(Resource.Id.action_bar_container) is Java.Lang.Integer recorded)
+			{
+				container = recorded.IntValue();
+				break;
+			}
+
+		if (tabs.TabTextColors?.GetColorForState([Android.Resource.Attribute.StateSelected], AColor.Transparent) == primary
+			&& tabs.TabMode == mode
+			&& (tabs.GetTag(Resource.Id.action_bar_container) as Java.Lang.Integer)?.IntValue() == container)
+		{
 			return;
-		tabs.SetTabTextColors(MaterialColors.GetColor(tabs, Resource.Attribute.colorOnSurfaceVariant), primary);
+		}
+
+		var onSurfaceVariant = MaterialColors.GetColor(tabs, Resource.Attribute.colorOnSurfaceVariant);
+		tabs.SetTabTextColors(onSurfaceVariant, primary);
+		tabs.TabIconTint = new Android.Content.Res.ColorStateList(
+			[[Android.Resource.Attribute.StateSelected], []], [primary, onSurfaceVariant]);
 		tabs.SetSelectedTabIndicatorColor(primary);
 		tabs.TabMode = mode;
 		tabs.TabGravity = Google.Android.Material.Tabs.TabLayout.GravityFill;
-		// Transparent over the app bar, with the 1 dp outlineVariant divider inside the container (bottom edge)
-		if (OperatingSystem.IsAndroidVersionAtLeast(23) && tabs.Context is { } context)
+		tabs.SetTag(Resource.Id.action_bar_container, Java.Lang.Integer.ValueOf(container));
+
+		// Container color with the 1 dp outlineVariant divider inside it (bottom edge)
+		var background = new ColorDrawable(new AColor(container));
+		if (OperatingSystem.IsAndroidVersionAtLeast(23))
 		{
-			var divider = new LayerDrawable([new ColorDrawable(new AColor(MaterialColors.GetColor(tabs, Resource.Attribute.colorOutlineVariant)))]);
-			divider.SetLayerGravity(0, GravityFlags.Bottom);
-			divider.SetLayerHeight(0, Math.Max(1, (int)context.ToPixels(1)));
-			tabs.Background = divider;
+			var layers = new LayerDrawable([background, new ColorDrawable(new AColor(MaterialColors.GetColor(tabs, Resource.Attribute.colorOutlineVariant)))]);
+			layers.SetLayerGravity(1, GravityFlags.Bottom);
+			layers.SetLayerHeight(1, Math.Max(1, (int)context.ToPixels(1)));
+			tabs.Background = layers;
 		}
 		else
 		{
-			tabs.SetBackgroundColor(AColor.Transparent);
+			tabs.Background = background;
 		}
 	}
 

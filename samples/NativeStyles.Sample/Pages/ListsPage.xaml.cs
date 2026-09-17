@@ -16,6 +16,8 @@ public partial class ListsPage : ContentPage
 		new("Battery", "84%", Color.FromArgb("#34C759"), HasSeparator: false),
 	];
 
+	public IList<ListItem> NoItems { get; } = [];
+
 	public IList<ListItem> Contacts { get; } =
 	[
 		new("Ada Lovelace", "Mathematician", Color.FromArgb("#6750A4")),

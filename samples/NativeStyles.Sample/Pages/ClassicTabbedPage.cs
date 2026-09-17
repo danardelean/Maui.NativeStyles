@@ -3,8 +3,13 @@ namespace NativeStyles.Sample.Pages;
 /// <summary>TabbedPage + NavigationPage, for apps that do not use Shell.</summary>
 public class ClassicTabbedPage : TabbedPage
 {
-	public ClassicTabbedPage()
+	public ClassicTabbedPage(bool topTabs = false)
 	{
+		// The library style places the Android bar at the bottom. MAUI's SetToolbarPlacement() throws when the value
+		// was already set (here: by the style), so a different placement has to be assigned through SetValue.
+		if (topTabs)
+			SetValue(Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage.ToolbarPlacementProperty,
+				Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ToolbarPlacement.Top);
 		Children.Add(new NavigationPage(new ClassicHomePage()) { Title = "Home", IconImageSource = "tab_lists.svg" });
 		Children.Add(new NavigationPage(new SelectionPage()) { Title = "Selection", IconImageSource = "tab_selection.svg" });
 		Children.Add(new NavigationPage(new TypographyPage()) { Title = "Type", IconImageSource = "tab_typography.svg" });

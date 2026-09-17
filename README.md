@@ -223,6 +223,7 @@ intentionally not styled: use `CollectionView` / `GroupedCell` and `Border` (`Ca
 - **Do not set `Shell.TabBarBackgroundColor` on iOS**: it paints an opaque slab behind the glass tab bar ([#37423](https://github.com/dotnet/maui/issues/37423)).
 - iOS `CheckBox` is drawn by MAUI (iOS has no checkbox); it is tinted with the accent color. iOS `RadioButton` uses a "row with checkmark" `ControlTemplate`.
 - M3 Expressive widgets that need Material Components 1.13+ (loading indicator, wavy progress, button shape morph on press, button groups, split buttons) are not available: MAUI 10.0.101 ships Material Components 1.12 and the newer binding pulls conflicting AndroidX versions.
+- Android `TabbedPage`: the library style sets `ToolbarPlacement=Bottom`, and MAUI's `SetToolbarPlacement()` / `On<Android>().SetToolbarPlacement()` throws when asked for a different value afterwards. To get Material top tabs use the XAML attribute or `page.SetValue(TabbedPage.ToolbarPlacementProperty, ToolbarPlacement.Top)`; they are styled as M3 primary tabs too.
 - List rows have no pressed feedback (ripple / highlight): MAUI item containers own the touch handling, and making the row view clickable would break `CollectionView` selection.
 - Android `Stepper` is a MAUI-drawn control (Android has no stepper); the library restyles its two buttons as Material 3 outlined icon buttons.
 - The iOS 15–18 fallback paths are guarded by `OperatingSystem.IsIOSVersionAtLeast(26)` but were not exercised on an iOS 18 simulator during development.

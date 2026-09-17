@@ -30,5 +30,6 @@
     </FlyoutItem>
 
     <MenuItem Text="Classic navigation (TabbedPage)" IconImageSource="tab_views.svg" Clicked="OnClassicNavigationClicked" />
+    <MenuItem Text="Classic navigation (top tabs)" IconImageSource="tab_selection.svg" Clicked="OnClassicTopTabsClicked" />
 
 </Shell>

@@ -48,9 +48,20 @@
             </Border>
             <Label Text="Same markup on both platforms: an inset grouped section with hairlines on iOS, a Material 3 Expressive segmented list on Android (16 dp outer / 4 dp inner corners, 2 dp gaps)." Style="{StaticResource SectionFooter}" />
 
+            <Label Text="Empty state" Style="{StaticResource SectionHeader}" />
+            <Border StyleClass="GroupedCell" HeightRequest="140">
+                <CollectionView ItemsSource="{Binding NoItems}">
+                    <CollectionView.EmptyView>
+                        <Grid StyleClass="ListRow">
+                            <Label Text="No messages" StyleClass="EmptyState" />
+                        </Grid>
+                    </CollectionView.EmptyView>
+                </CollectionView>
+            </Border>
+
             <Label Text="Two-line items (selectable)" Style="{StaticResource SectionHeader}" />
             <Border StyleClass="GroupedCell">
-                <CollectionView ItemsSource="{Binding Contacts}" SelectionMode="Single" HeightRequest="{OnPlatform Android=368, Default=360}">
+                <CollectionView ItemsSource="{Binding Contacts}" SelectionMode="Single" HeightRequest="{OnPlatform Android=328, Default=260}">
                     <CollectionView.ItemsLayout>
                         <!-- Segmented list gap on Android -->
                         <LinearItemsLayout Orientation="Vertical" ItemSpacing="{OnPlatform Android=2, Default=0}" />

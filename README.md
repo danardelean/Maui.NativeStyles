@@ -125,6 +125,22 @@ Roles: `Accent`, `OnAccent`, `Destructive`, `Success`, `Warning`, `TextPrimary`,
 The same values are available in code through `SystemColors.Get(role)` and `SystemColors.Resolve(role)`.
 The library's own styles use these roles, so an app that only uses the shared `StyleClass` names picks up dynamic colors automatically.
 
+## Search on iOS 26
+
+A standalone `SearchBar` is a `UISearchBar`, which iOS 26 draws as a 60 pt Liquid Glass capsule; UIKit lays it out
+internally and the size cannot be reduced. The 44 pt search field seen in Settings or Mail is the navigation-bar
+search, which in MAUI is `Shell.SearchHandler`:
+
+```xml
+<ContentPage ...>
+    <Shell.SearchHandler>
+        <SearchHandler Placeholder="Search" />
+    </Shell.SearchHandler>
+</ContentPage>
+```
+
+On iOS it renders the system search field under the large title; on Android it becomes the Material search view in the app bar.
+
 ## iOS 26 tab bar
 
 ```xml

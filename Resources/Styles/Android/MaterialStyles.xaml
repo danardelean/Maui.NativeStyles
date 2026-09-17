@@ -12,7 +12,8 @@
         Rule: never set FontFamily (Roboto), never paint BackgroundColor on input controls,
         never override Switch/Slider/CheckBox/ProgressBar colors: the M3 theme owns them.
         Button variants via StyleClass: Filled (default), Tonal, Outlined, Text, Glass (= Elevated),
-        GlassProminent (= Filled), Destructive, Small, Large.
+        GlassProminent (= Filled), Destructive, Small, Large. Each class also sets the NativeButton attached
+        property so the handlers (and iOS) see the same intent.
     -->
 
     <!-- Text -->
@@ -27,7 +28,7 @@
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
     </Style>
     <Style TargetType="Label" Class="Semibold">
-        <Setter Property="FontFamily" Value="sans-serif-medium" />
+        <Setter Property="native:NativeText.Weight" Value="Semibold" />
     </Style>
     <Style TargetType="Span">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
@@ -58,39 +59,51 @@
             </VisualStateGroupList>
         </Setter>
     </Style>
+    <Style TargetType="Button" Class="Filled">
+        <Setter Property="native:NativeButton.Kind" Value="Filled" />
+    </Style>
     <Style TargetType="Button" Class="Tonal">
+        <Setter Property="native:NativeButton.Kind" Value="Tonal" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}" />
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource SecondaryContainer}, Dark={StaticResource SecondaryContainerDark}}" />
     </Style>
     <Style TargetType="Button" Class="Outlined">
+        <Setter Property="native:NativeButton.Kind" Value="Outlined" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OutlineDark}}" />
         <Setter Property="BorderWidth" Value="1" />
     </Style>
     <Style TargetType="Button" Class="Text">
+        <Setter Property="native:NativeButton.Kind" Value="Text" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="Padding" Value="12,8" />
     </Style>
     <Style TargetType="Button" Class="Glass">
         <!-- M3 elevated button -->
+        <Setter Property="native:NativeButton.Kind" Value="Glass" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource SurfaceContainerLow}, Dark={StaticResource SurfaceContainerLowDark}}" />
         <Setter Property="android:Button.UseDefaultShadow" Value="True" />
     </Style>
-    <Style TargetType="Button" Class="GlassProminent" />
+    <Style TargetType="Button" Class="GlassProminent">
+        <Setter Property="native:NativeButton.Kind" Value="GlassProminent" />
+    </Style>
     <Style TargetType="Button" Class="Destructive">
+        <Setter Property="native:NativeButton.IsDestructive" Value="True" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnError}, Dark={StaticResource OnErrorDark}}" />
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" />
     </Style>
     <Style TargetType="Button" Class="Small">
         <!-- M3 Expressive extra-small -->
+        <Setter Property="native:NativeButton.Size" Value="Small" />
         <Setter Property="MinimumHeightRequest" Value="32" />
         <Setter Property="Padding" Value="16,4" />
     </Style>
     <Style TargetType="Button" Class="Large">
         <!-- M3 Expressive medium -->
+        <Setter Property="native:NativeButton.Size" Value="Large" />
         <Setter Property="MinimumHeightRequest" Value="56" />
         <Setter Property="Padding" Value="24,12" />
         <Setter Property="FontSize" Value="16" />
@@ -122,7 +135,9 @@
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
         <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
     </Style>
-    <Style TargetType="Entry" Class="Plain" />
+    <Style TargetType="Entry" Class="Plain">
+        <Setter Property="native:NativeEntry.IsPlain" Value="True" />
+    </Style>
     <Style TargetType="Editor">
         <Setter Property="FontSize" Value="16" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />

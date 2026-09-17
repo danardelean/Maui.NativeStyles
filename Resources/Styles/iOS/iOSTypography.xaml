@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:native="clr-namespace:MauiNativeStyle.NativeStyles"
                     x:Class="MauiNativeStyle.Resources.Styles.iOS.iOSTypography">
 
     <!--
         iOS Dynamic Type text styles at the default (Large) content size.
         Sizes/leading from Apple HIG > Typography; CharacterSpacing = SF Pro tracking table (pt).
         FontFamily is never set so the handler resolves the system font (SF Pro).
-        Semibold is applied by the iOS Label handler mapper when StyleClass contains "Semibold".
+        Semibold (Headline, Title3) is applied by the iOS Label handler through native:NativeText.Weight.
     -->
 
     <Style x:Key="BaseText" TargetType="Label">
@@ -31,12 +32,14 @@
         <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="CharacterSpacing" Value="-0.26" />
     </Style>
-    <Style x:Key="Title3" TargetType="Label" BasedOn="{StaticResource BaseText}" Class="Semibold">
+    <Style x:Key="Title3" TargetType="Label" BasedOn="{StaticResource BaseText}">
         <Setter Property="FontSize" Value="20" />
+        <Setter Property="native:NativeText.Weight" Value="Semibold" />
         <Setter Property="CharacterSpacing" Value="-0.45" />
     </Style>
-    <Style x:Key="Headline" TargetType="Label" BasedOn="{StaticResource BaseText}" Class="Semibold">
+    <Style x:Key="Headline" TargetType="Label" BasedOn="{StaticResource BaseText}">
         <Setter Property="FontSize" Value="17" />
+        <Setter Property="native:NativeText.Weight" Value="Semibold" />
         <Setter Property="CharacterSpacing" Value="-0.43" />
     </Style>
     <Style x:Key="Body" TargetType="Label" BasedOn="{StaticResource BaseText}">

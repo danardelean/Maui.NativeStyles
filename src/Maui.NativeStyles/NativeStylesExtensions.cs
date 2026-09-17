@@ -32,6 +32,7 @@ public static partial class NativeStylesExtensions
 	{
 		var options = new NativeStylesOptions();
 		configure?.Invoke(options);
+		SystemColors.Brand = options.Brand;
 		builder.ConfigureMauiHandlers(handlers => RegisterPlatformHandlers(handlers));
 		RegisterPlatformMappers(options);
 		return builder;

@@ -90,6 +90,27 @@ public static partial class SystemColors
 		}
 	}
 
+	/// <summary>The brand palette set through <see cref="NativeStylesOptions.Brand"/>; null means the platform defaults.</summary>
+	public static BrandPalette? Brand { get; internal set; }
+
+	/// <summary>
+	/// Brand-derived value of a role. iOS and the platform-less target derive the accent family from the brand color;
+	/// Android generates the Material scheme from the seed (see SystemColors.Android.cs).
+	/// </summary>
+	static (Color Light, Color Dark)? ResolveBrand(SystemColorRole role, BrandPalette brand)
+	{
+		if (ResolveBrandPlatform(role, brand) is { } platform)
+			return platform;
+		if (DeviceInfo.Platform == DevicePlatform.Android || brand.ResolveAccent() is not { } accent)
+			return null;
+		return role switch
+		{
+			SystemColorRole.Accent or SystemColorRole.OnTonalContainer => accent,
+			SystemColorRole.TonalContainer => (accent.Light.WithAlpha(0.15f), accent.Dark.WithAlpha(0.15f)),
+			_ => null,
+		};
+	}
+
 	/// <summary>The color for the current app theme.</summary>
 	public static Color Get(SystemColorRole role)
 	{
@@ -100,6 +121,13 @@ public static partial class SystemColors
 	/// <summary>Light and dark values: platform first, static baseline palette as fallback.</summary>
 	public static (Color Light, Color Dark) Resolve(SystemColorRole role)
 	{
+		if (Brand is { } brand)
+		{
+			if (brand.TryGetRole(role, out var pinned))
+				return pinned;
+			if (ResolveBrand(role, brand) is { } branded)
+				return branded;
+		}
 		var platform = ResolvePlatform(role);
 		var fallback = Fallback(role);
 		return (platform?.Light ?? fallback.Light, platform?.Dark ?? fallback.Dark);
@@ -161,5 +189,8 @@ public static partial class SystemColors
 
 #if !IOS && !ANDROID
 	static (Color Light, Color Dark)? ResolvePlatform(SystemColorRole role) => null;
+#endif
+#if !ANDROID
+	static (Color Light, Color Dark)? ResolveBrandPlatform(SystemColorRole role, BrandPalette brand) => null;
 #endif
 }

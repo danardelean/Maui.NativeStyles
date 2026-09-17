@@ -19,6 +19,16 @@ public static partial class NativeStylesExtensions
 
 	static partial void RegisterPlatformMappers(NativeStylesOptions options)
 	{
+		// Brand: iOS brands an app through the window tint; every control that draws with the tint color follows
+		// (buttons, links, selection, toolbar and tab bar items, alerts).
+		if (options.Brand?.ResolveAccent() is { } accent)
+		{
+			var light = accent.Light.ToPlatform();
+			var dark = accent.Dark.ToPlatform();
+			var tint = UIColor.FromDynamicProvider(traits => traits.UserInterfaceStyle == UIUserInterfaceStyle.Dark ? dark : light);
+			WindowHandler.Mapper.AppendToMapping(MappingKey, (handler, _) => handler.PlatformView.TintColor = tint);
+		}
+
 		// UIButtonConfiguration (iOS 15+) / Liquid Glass (iOS 26+), driven by the NativeButton attached properties.
 		// Re-applied after every MAUI mapping that would otherwise overwrite the configuration.
 		ButtonHandler.Mapper.AppendToMapping(MappingKey, MapButtonConfiguration);

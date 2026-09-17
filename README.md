@@ -1,7 +1,7 @@
 # Maui.NativeStyles
 
 .NET MAUI styles that respect each platform's design language:
-**iOS 26 (Liquid Glass, Human Interface Guidelines)** and **Android (Material 3 baseline)**.
+**iOS 26 (Liquid Glass, Human Interface Guidelines)** and **Android (Material 3 Expressive)**.
 
 The `dotnet new maui` template ships implicit styles (`Styles.xaml`) that destroy the native look:
 fixed background and corner radius on `Button`, `BackgroundColor="Transparent"` on inputs (which erases the Material underline/box),
@@ -11,6 +11,60 @@ This project replaces that file with **one set of ResourceDictionaries per platf
 | iOS 26 | Android (Material 3) |
 |---|---|
 | Liquid Glass tab bar and buttons, large titles, inset grouped lists, native switches and alerts | Pill buttons, outlined text fields, M3 switches and checkboxes, navigation bar with active indicator, M3 dialogs |
+
+## Screenshots
+
+The same XAML on both platforms: the sample app on iOS 26 (iPhone 17 Pro) and Android 16 (Pixel 10 Pro), with the
+platform default palette unless noted.
+
+<table>
+<tr><th></th><th>iOS 26</th><th>Android (Material 3 Expressive)</th></tr>
+<tr>
+<td align="center"><b>Buttons</b><br><sub>Liquid Glass / tinted / plain &mdash; filled / tonal / outlined / elevated</sub></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-buttons.png" width="220" alt="Buttons on iOS 26"></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-buttons.png" width="220" alt="Buttons on Android"></td>
+</tr>
+<tr>
+<td align="center"><b>Inputs</b><br><sub>borderless 52 pt fields &mdash; outlined text fields, M3 search bar</sub></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-inputs.png" width="220" alt="Inputs on iOS 26"></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-inputs.png" width="220" alt="Inputs on Android"></td>
+</tr>
+<tr>
+<td align="center"><b>Selection</b><br><sub>segmented control, switches, check and radio rows</sub></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-selection.png" width="220" alt="Selection on iOS 26"></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-selection.png" width="220" alt="Selection on Android"></td>
+</tr>
+<tr>
+<td align="center"><b>Lists</b><br><sub>inset grouped &mdash; expressive segmented list; top tabs</sub></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-lists.png" width="220" alt="Lists on iOS 26"></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-lists.png" width="220" alt="Lists on Android"></td>
+</tr>
+<tr>
+<td align="center"><b>Views</b><br><sub>carousel, page indicator, swipe actions</sub></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-views.png" width="220" alt="Views on iOS 26"></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-views.png" width="220" alt="Views on Android"></td>
+</tr>
+<tr>
+<td align="center"><b>Flyout</b><br><sub>sidebar &mdash; navigation drawer</sub></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-flyout.png" width="220" alt="Flyout on iOS 26"></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-flyout.png" width="220" alt="Flyout on Android"></td>
+</tr>
+<tr>
+<td align="center"><b>Dark mode</b></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-selection-dark.png" width="220" alt="Dark mode on iOS 26"></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-selection-dark.png" width="220" alt="Dark mode on Android"></td>
+</tr>
+<tr>
+<td align="center"><b>Dark mode</b></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-buttons-dark.png" width="220" alt="Dark mode on iOS 26"></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-buttons-dark.png" width="220" alt="Dark mode on Android"></td>
+</tr>
+<tr>
+<td align="center"><b>Brand palette</b><br><sub><code>options.Brand</code>: iOS tint &mdash; generated Material scheme</sub></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-brand.png" width="220" alt="Brand palette on iOS 26"></td>
+<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-brand.png" width="220" alt="Brand palette on Android"></td>
+</tr>
+</table>
 
 ## Principle
 

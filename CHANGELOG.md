@@ -3,6 +3,13 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.6.3] - 2026-09-17
+
+### Changed
+- Android: the Shell flyout / `FlyoutPage` sheet follows the M3 modal navigation drawer: at most 360 dp wide leaving 56 dp of scrim, 16 dp corners on the trailing side, and a uniform `surfaceContainerLow` background (the body previously stayed `surface`).
+- Android: primary tabs draw the 1 dp `outlineVariant` divider inside the tab row.
+- Android: trailing toolbar icons and the overflow glyph use `onSurfaceVariant` on a themed (surface) app bar; the navigation icon stays `onSurface`.
+
 ## [1.6.2] - 2026-09-17
 
 ### Added

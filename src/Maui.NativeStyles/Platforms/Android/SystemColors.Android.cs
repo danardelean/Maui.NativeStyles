@@ -19,6 +19,9 @@ public static partial class SystemColors
 
 	static AContext? _lightContext, _darkContext;
 
+	/// <summary>The cached themed contexts wrap an activity: drop them when it goes away.</summary>
+	internal static void ResetThemedContexts() => _lightContext = _darkContext = null;
+
 	/// <summary>The brand seed (ARGB) the Material scheme is generated from.</summary>
 	internal static int? BrandSeed { get; set; }
 

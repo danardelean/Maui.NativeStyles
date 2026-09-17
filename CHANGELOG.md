@@ -3,6 +3,16 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.8.0] - 2026-09-17
+
+### Added
+- Android: **runtime theme switching**. `NativeStylesOptions.AndroidRecreateOnThemeChange` (on by default) recreates the activity when the effective app theme changes (system dark mode or `Application.UserAppTheme`), so native widgets, the navigation bar, status bar icons, dialogs and the brand scheme are re-themed; previously only `{native:SystemColor}` values updated. The page that was showing is moved to the recreated window, so navigation state, the selected tab, control values and view models survive even with the template's `new Window(new AppShell())`.
+- The sample has an in-app light / dark toggle.
+
+### Fixed
+- Android: replaced root pages (for example a Shell swapped for another page) are disconnected before the recreate, and the dead appearance observer MAUI 10 leaves on a replaced Shell is cleared; it caused a `NullReferenceException` inside MAUI on the following theme change.
+- Android: the `GlassView` theme handler no longer uses throwing accessors on a disconnected handler; themed contexts cached for `{native:SystemColor}` are dropped with their activity.
+
 ## [1.7.0] - 2026-09-17
 
 ### Added

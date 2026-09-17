@@ -26,6 +26,7 @@ public static partial class NativeStylesExtensions
 			var light = accent.Light.ToPlatform();
 			var dark = accent.Dark.ToPlatform();
 			var tint = UIColor.FromDynamicProvider(traits => traits.UserInterfaceStyle == UIUserInterfaceStyle.Dark ? dark : light);
+			s_brandTint = tint;
 			WindowHandler.Mapper.AppendToMapping(MappingKey, (handler, _) => handler.PlatformView.TintColor = tint);
 		}
 
@@ -68,7 +69,7 @@ public static partial class NativeStylesExtensions
 
 		// NavigationPage: MAUI installs an opaque bar with a hairline; iOS 26 bars are transparent over the content
 		// (the system scroll-edge effect takes care of legibility) unless the app sets a bar color.
-		foreach (var key in new[] { MappingKey, NavigationPage.BarBackgroundColorProperty.PropertyName, NavigationPage.BarBackgroundProperty.PropertyName, NavigationPage.CurrentPageProperty.PropertyName })
+		foreach (var key in new[] { MappingKey, NavigationPage.BarBackgroundColorProperty.PropertyName, NavigationPage.BarBackgroundProperty.PropertyName, NavigationPage.CurrentPageProperty.PropertyName, NavigationPage.IconColorProperty.PropertyName, NavigationPage.BarTextColorProperty.PropertyName })
 			Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.Mapper.AppendToMapping(key, MapNavigationBar);
 
 		// TabbedPage: NativeShell.TabBarMinimizeBehavior works on it as well.
@@ -83,6 +84,7 @@ public static partial class NativeStylesExtensions
 				return;
 			s.Navigated -= OnShellNavigated;
 			s.Navigated += OnShellNavigated;
+			ObserveAppTheme();
 			ApplyTabBarMinimizeBehavior(s);
 		});
 	}
@@ -110,8 +112,74 @@ public static partial class NativeStylesExtensions
 		page.Dispatcher.Dispatch(() => ApplyTabBarMinimizeBehavior(renderer, behavior));
 	}
 
+	static WeakReference<Application>? s_themeObservedApplication;
+
+	/// <summary>
+	/// A few native colors are copied from MAUI values (the page background behind the top-tabs control and behind a
+	/// transparent navigation bar), so they are refreshed when the app theme changes at runtime.
+	/// </summary>
+	static void ObserveAppTheme()
+	{
+		if (Application.Current is not { } application
+			|| (s_themeObservedApplication is not null && s_themeObservedApplication.TryGetTarget(out var observed) && ReferenceEquals(observed, application)))
+		{
+			return;
+		}
+		s_themeObservedApplication = new WeakReference<Application>(application);
+		// RequestedThemeChanged is a weak event: a static method has no target that could be collected
+		application.RequestedThemeChanged += OnAppThemeChanged;
+	}
+
+	static void OnAppThemeChanged(object? sender, AppThemeChangedEventArgs e)
+	{
+		// After MAUI has pushed the new AppThemeBinding values
+		MainThread.BeginInvokeOnMainThread(() =>
+		{
+			if (Shell.Current is { } shell)
+				ApplySegmentedTopTabs(shell);
+			foreach (var window in Application.Current?.Windows ?? [])
+				RefreshNavigationPages(window.Page, 0);
+		});
+	}
+
+	static void RefreshNavigationPages(Page? page, int depth)
+	{
+		if (page is null || depth > 8)
+			return;
+		switch (page)
+		{
+			case NavigationPage navigation:
+				navigation.Handler?.UpdateValue(MappingKey);
+				RefreshNavigationPages(navigation.CurrentPage, depth + 1);
+				break;
+			case TabbedPage tabbed:
+				foreach (var child in tabbed.Children)
+					RefreshNavigationPages(child, depth + 1);
+				break;
+			case FlyoutPage flyout:
+				RefreshNavigationPages(flyout.Detail, depth + 1);
+				break;
+		}
+		foreach (var modal in page.Navigation?.ModalStack ?? [])
+			if (!ReferenceEquals(modal, page))
+				RefreshNavigationPages(modal, depth + 1);
+	}
+
+	static UIColor? s_brandTint;
+
 	static void MapNavigationBar(Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer renderer, NavigationPage page)
 	{
+		ObserveAppTheme();
+		// MAUI assigns the bar an explicit tint (system blue) when IconColor is not set, which hides the window tint
+		if (s_brandTint is not null && (page.CurrentPage is null || NavigationPage.GetIconColor(page.CurrentPage) is null))
+		{
+			renderer.NavigationBar.TintColor = s_brandTint;
+			// On iOS 26 MAUI copies the bar tint to every bar button item when it creates them, which may have happened
+			// while the bar still reported the inherited system blue
+			foreach (var controller in renderer.ViewControllers ?? [])
+				foreach (var item in (controller.NavigationItem.RightBarButtonItems ?? []).Concat(controller.NavigationItem.LeftBarButtonItems ?? []))
+					item.TintColor = s_brandTint;
+		}
 		if (page.BarBackgroundColor is not null || !Brush.IsNullOrEmpty(page.BarBackground))
 			return;
 		var appearance = new UINavigationBarAppearance();

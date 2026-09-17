@@ -3,6 +3,12 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.8.2] - 2026-09-17
+
+### Fixed
+- iOS: the navigation-bar search field (`Shell.SearchHandler`) kept its previous placeholder and text colors after a runtime light/dark switch (nearly invisible placeholder in dark). Unless the handler sets `TextColor` / `PlaceholderColor`, the field now uses the dynamic `label` / `placeholderText` colors.
+- iOS: on Shell top-tab pages the content could slide under the still-expanded large title while scrolling, because the title does not track the nested scroll view. Top-tab pages now use an inline title, like native screens with a segmented control under the bar.
+
 ## [1.8.1] - 2026-09-17
 
 ### Fixed

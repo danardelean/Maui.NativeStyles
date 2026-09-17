@@ -143,6 +143,10 @@
             </VisualStateGroupList>
         </Setter>
     </Style>
+    <Style TargetType="ImageButton" Class="Icon">
+        <!-- M3 standard icon button: the icon is drawn in onSurfaceVariant (light and dark) -->
+        <Setter Property="native:NativeImage.TintColor" Value="{native:SystemColor TextSecondary}" />
+    </Style>
 
     <!-- Text input: TextInputLayout (outlined) from the M3 theme; only typography and text colors -->
     <Style TargetType="Entry">

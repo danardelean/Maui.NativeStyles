@@ -34,6 +34,7 @@ public static partial class SystemColors
 			SystemColorRole.PageBackground => Resource.Attribute.colorSurface,
 			SystemColorRole.GroupedBackground => Resource.Attribute.colorSurface,
 			SystemColorRole.CardBackground => Resource.Attribute.colorSurfaceContainerLow,
+			SystemColorRole.GroupContainer => Resource.Attribute.colorSurfaceContainer,
 			SystemColorRole.Fill => Resource.Attribute.colorSurfaceContainerHighest,
 			SystemColorRole.SecondaryFill => Resource.Attribute.colorSurfaceContainerHigh,
 			SystemColorRole.TonalContainer => Resource.Attribute.colorSecondaryContainer,

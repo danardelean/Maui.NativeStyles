@@ -3,6 +3,18 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.7.0] - 2026-09-17
+
+### Added
+- **Branding**: `NativeStylesOptions.Brand` (`BrandPalette`). One brand color serves both platforms: on iOS it becomes the window tint (with an optional dark-mode variant) and the accent roles; on Android it is the seed of a generated Material 3 scheme (light and dark, tinted surfaces included) that is resolved by every `{native:SystemColor}` role and also replaces Material's color resources for each activity (Android 11+), so native widgets, the navigation bar, tabs and dialogs are branded. Per-platform overrides (`Brand.IOS`, `Brand.Android`), per-role pins (`Brand.Set`) and `MaterialColorMatch` (exact brand color as light-theme primary).
+- The shared `AccentColor` / `DestructiveColor` resources follow the brand; Android typography colors resolve through `{native:SystemColor}`.
+
+### Fixed
+- Android: dynamic color overlays are now applied from `OnActivityCreated`. Applied earlier (as `DynamicColors.ApplyToActivitiesIfAvailable` does), the overlay is discarded by MAUI's `SetTheme()` call in `OnCreate`; this was observed with the brand seed and the same path serves `AndroidDynamicColors`.
+
+### Changed
+- The sample application sets a brand palette.
+
 ## [1.6.4] - 2026-09-17
 
 ### Fixed

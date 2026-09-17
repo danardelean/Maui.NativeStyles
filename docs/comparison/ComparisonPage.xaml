@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CompareApp.MainPage"
+             Title="Profile"
+             StyleClass="Grouped">
+    <!-- Standard controls only: no library types; the Grouped class is ignored by the default template. The same file is used with the default template
+         styles ("before") and with Maui.NativeStyles ("after"). -->
+    <ScrollView>
+        <VerticalStackLayout Padding="20,12" Spacing="14">
+            <Entry Placeholder="Name" />
+            <Entry Placeholder="Email" Keyboard="Email" />
+            <SearchBar Placeholder="Search" />
+            <Picker Title="Language" SelectedIndex="0">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>English</x:String>
+                        <x:String>Italiano</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="Notifications" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="True" />
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="Birthday" VerticalOptions="Center" />
+                <DatePicker Grid.Column="1" />
+            </Grid>
+            <HorizontalStackLayout Spacing="8">
+                <CheckBox IsChecked="True" VerticalOptions="Center" />
+                <Label Text="Accept terms" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+            <Slider Minimum="0" Maximum="100" Value="40" />
+            <ProgressBar Progress="0.6" />
+            <Button Text="Save" />
+            <Button Text="Disabled" IsEnabled="False" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

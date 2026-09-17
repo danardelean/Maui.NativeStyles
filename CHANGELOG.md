@@ -3,6 +3,11 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.6.2] - 2026-09-17
+
+### Added
+- `Icon` class for `ImageButton`, and `NativeImage.TintColor` now also applies to `ImageButton`: the image is drawn as a template (iOS tint color / Material `onSurfaceVariant`), so monochrome icons stay visible in dark mode.
+
 ## [1.6.1] - 2026-09-17
 
 ### Fixed

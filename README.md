@@ -91,9 +91,10 @@ react to runtime changes:
 | Entry `Plain` | `UITextBorderStyle.None` (grouped cells) | no Material box |
 | Label `Secondary` / `Tertiary` / `Accent` | `secondaryLabel` / `tertiaryLabel` / `systemBlue` | `onSurfaceVariant` / `outline` / `primary` |
 | Label `Semibold` | SF Pro Semibold | Roboto Medium |
-| Border `Card` / `GroupedCell` / `Outlined` | inset grouped, 10 pt radius, `secondarySystemGroupedBackground` | M3 card, 12 dp radius, `surfaceContainerLow` |
+| Border `Card` / `Outlined` | inset grouped card, 10 pt radius, `secondarySystemGroupedBackground` | M3 card, 12 dp radius, `surfaceContainerLow` |
+| Border `GroupedCell` | inset grouped section (10 pt radius, 16 pt margins) | flat edge-to-edge list section (M3 lists are not cards) |
 | Grid `ListRow` | 44 pt row, `systemGray5` selection | 56 dp row, 12% state layer |
-| BoxView `Separator` | 0.5 pt `separator`, 16 pt inset | 1 dp `outlineVariant` |
+| BoxView `Separator` | 0.5 pt `separator`, 16 pt inset | 1 dp `outlineVariant`, 16 dp inset |
 | Label `Chevron` | `›` in `tertiaryLabel` | hidden (Material lists have no chevrons) |
 | ContentPage `Grouped` | `systemGroupedBackground` | `surface` |
 

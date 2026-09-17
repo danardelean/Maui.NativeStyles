@@ -3,6 +3,20 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.6.0] - 2026-09-17
+
+### Added
+- `NativeSwipeItem` (`SwipeItemView`): swipe actions drawn like the platform instead of MAUI's square color blocks. iOS 26: separated, continuously rounded actions; Android: M3 swipe-to-reveal round tonal / primary / error buttons. `SwipeRole` (`Default`, `Primary`, `Destructive`).
+- `SegmentedControl`: `UISegmentedControl` on iOS, Material 3 Expressive connected button group on Android.
+- `NativeImage.TintColor` attached property (template tinting of bitmap images on both platforms) and `SystemColorRole.Gray`.
+- Shell flyout styling through `Shell.ItemTemplate` / `Shell.MenuItemTemplate` and the `FlyoutHeader` label class: iOS sidebar look, Android M3 navigation drawer.
+- Shell top tabs: a `UISegmentedControl` replaces MAUI's underlined strip on iOS; M3 primary tabs on Android (also for `TabbedPage` top tabs).
+- `TabbedPage` / `NavigationPage` styles for apps without Shell: Android bottom navigation bar with the flexible metrics, content margin kept in sync with the 64 dp bar, flat app bar in the page color; iOS transparent navigation bar in the page color, and `NativeShell.TabBarMinimizeBehavior` now works on `TabbedPage`.
+- `RefreshView` style (Android) and the `EmptyState` label class for `CollectionView.EmptyView`.
+
+### Notes
+- The legacy `ListView`, `TableView` and `Frame` controls are intentionally left unstyled.
+
 ## [1.5.0] - 2026-09-17
 
 ### Added

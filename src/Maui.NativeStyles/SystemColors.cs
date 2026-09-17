@@ -25,11 +25,11 @@ public enum SystemColorRole
 	Separator,
 	/// <summary>iOS systemBackground / Android colorSurface.</summary>
 	PageBackground,
-	/// <summary>iOS systemGroupedBackground / Android colorSurface.</summary>
+	/// <summary>Page behind grouped lists: iOS systemGroupedBackground / Android colorSurfaceContainer (M3 Expressive lists sit on a tinted surface).</summary>
 	GroupedBackground,
 	/// <summary>iOS secondarySystemGroupedBackground / Android colorSurfaceContainerLow.</summary>
 	CardBackground,
-	/// <summary>List group container: iOS secondarySystemGroupedBackground / Android colorSurfaceContainer (M3 Expressive groups).</summary>
+	/// <summary>List item container: iOS secondarySystemGroupedBackground / Android colorSurfaceBright (M3 Expressive segmented list items).</summary>
 	GroupContainer,
 	/// <summary>iOS systemFill / Android colorSurfaceContainerHighest.</summary>
 	Fill,
@@ -143,9 +143,9 @@ public static partial class SystemColors
 		SystemColorRole.Placeholder => Pair("#49454F", "#CAC4D0"),
 		SystemColorRole.Separator => Pair("#CAC4D0", "#49454F"),
 		SystemColorRole.PageBackground => Pair("#FEF7FF", "#141218"),
-		SystemColorRole.GroupedBackground => Pair("#FEF7FF", "#141218"),
+		SystemColorRole.GroupedBackground => Pair("#F3EDF7", "#211F26"),
 		SystemColorRole.CardBackground => Pair("#F7F2FA", "#1D1B20"),
-		SystemColorRole.GroupContainer => Pair("#F3EDF7", "#211F26"),
+		SystemColorRole.GroupContainer => Pair("#FEF7FF", "#3B383E"),
 		SystemColorRole.Fill => Pair("#E6E0E9", "#36343B"),
 		SystemColorRole.SecondaryFill => Pair("#ECE6F0", "#2B2930"),
 		SystemColorRole.TonalContainer => Pair("#E8DEF8", "#4A4458"),

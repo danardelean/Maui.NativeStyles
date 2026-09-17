@@ -23,5 +23,15 @@ public class NativeStyleDictionary : ResourceDictionary
 #elif ANDROID
 		MergedDictionaries.Add(new Resources.Android.MaterialStyles());
 #endif
+		// The static shared keys follow the brand too (entries of this dictionary win over the merged ones)
+		if (SystemColors.Brand is not null)
+		{
+			var accent = SystemColors.Resolve(SystemColorRole.Accent);
+			this["AccentColor"] = accent.Light;
+			this["AccentColorDark"] = accent.Dark;
+			var destructive = SystemColors.Resolve(SystemColorRole.Destructive);
+			this["DestructiveColor"] = destructive.Light;
+			this["DestructiveColorDark"] = destructive.Dark;
+		}
 	}
 }

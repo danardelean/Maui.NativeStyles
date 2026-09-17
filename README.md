@@ -192,6 +192,42 @@ views created by MAUI after navigation, so the library restyles them from an act
 (`ShellChromeStyler`). Text fields, cards (12 dp), switches, sliders and progress indicators already match through
 `UseMaterial3` and are left untouched.
 
+## Branding
+
+```csharp
+builder.UseNativeStyles(options =>
+{
+    options.Brand = new BrandPalette(Color.FromArgb("#0B7A75"), accentDark: Color.FromArgb("#3FC1B4"))
+    {
+        MaterialColorMatch = true,   // Android: keep the exact brand color as the light-theme primary
+    };
+});
+```
+
+**One palette, two resolutions.** A single brand definition is enough as input, but the two design languages use
+color so differently that it resolves into two platform palettes:
+
+| | iOS 26 | Android (Material 3) |
+|---|---|---|
+| What branding means | one tint color; backgrounds, labels and semantic colors stay Apple's | a whole tonal scheme derived from a seed: primary / secondary / tertiary families, tinted surfaces, outlines, light **and** dark |
+| `Accent` | the window tint: buttons, links, selection, tab bar and toolbar items, alerts, and the `Accent` / `TonalContainer` roles | the seed. The library generates the scheme with Material's own algorithm (`SchemeContent`) |
+| `AccentDark` | tint in dark mode (a brighter variant, as Apple does with its system colors); defaults to `Accent` | ignored: Material computes the dark tones from the seed |
+| Native controls | follow the tint automatically (`UISwitch` stays green, as on iOS) | the generated scheme replaces Material's color resources for every activity (Android 11+), so Switch, CheckBox, RadioButton, Slider, progress indicators, text fields, the navigation bar, tabs and dialogs are branded too |
+
+- `options.Brand.IOS.Accent` / `options.Brand.Android.Accent` give one platform a different brand color.
+- `options.Brand.Set(SystemColorRole.Destructive, light, dark)` pins an individual role (it wins over everything, but only
+  for colors resolved through `{native:SystemColor}`; native Android widgets keep the generated scheme).
+- `MaterialColorMatch`: Material puts `primary` at a fixed tone of the seed's palette (usually darker than the brand color,
+  which becomes `primaryContainer`). Set it to keep the exact color as the light-theme primary, like "color match" in
+  Material Theme Builder.
+- Every `{native:SystemColor}` role, the shared `AccentColor` / `DestructiveColor` resources, `NativeSwipeItem`,
+  `SegmentedControl` and the Shell chrome follow the brand. The static per-platform keys (`Primary`, `SystemBlue`, …)
+  stay the baseline palette.
+- A brand wins over `AndroidDynamicColors` (a branded app keeps its colors instead of following the wallpaper).
+- Below Android 11 only the colors resolved through `{native:SystemColor}` are branded. The Material color utilities
+  used to generate the scheme are flagged by Google as internal API: the library guards their use and falls back to
+  branding the accent only if they ever disappear.
+
 ## Swipe actions, segmented choice and navigation chrome
 
 ```xml

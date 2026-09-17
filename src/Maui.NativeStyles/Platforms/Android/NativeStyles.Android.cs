@@ -27,13 +27,24 @@ public static partial class NativeStylesExtensions
 
 	static partial void RegisterPlatformMappers(NativeStylesOptions options)
 	{
-		if (options.AndroidDynamicColors && OperatingSystem.IsAndroidVersionAtLeast(31)
-			&& Android.App.Application.Context is Android.App.Application application)
+		// Per-activity color setup happens in ShellChromeStyler.OnActivityCreated: MauiAppCompatActivity.OnCreate calls
+		// SetTheme() (splash -> main theme) before base.OnCreate, which would wipe a theme overlay applied earlier, as
+		// DynamicColors.ApplyToActivitiesIfAvailable does from onActivityPreCreated.
+		DynamicColorsOptions? dynamicColors = null;
+		if (options.Brand?.ResolveAccent() is { } accent)
+		{
+			// Brand seed: the Material 3 scheme generated from it replaces the baseline color resources of every activity
+			// (Android 11+), so native widgets are branded too; {native:SystemColor} resolves from the same scheme on
+			// every Android version. A brand wins over the wallpaper-based option.
+			SystemColors.BrandSeed = accent.Light.ToPlatform().ToArgb();
+		}
+		else if (options.AndroidDynamicColors && OperatingSystem.IsAndroidVersionAtLeast(31))
 		{
 			// Material You: wallpaper-derived palette on every activity, and for {native:SystemColor}.
-			DynamicColors.ApplyToActivitiesIfAvailable(application);
 			SystemColors.DynamicColorsEnabled = true;
+			dynamicColors = new DynamicColorsOptions.Builder().Build();
 		}
+		s_dynamicColors = dynamicColors;
 
 		// Stepper: MAUI draws its own two-button LinearLayout; style them as M3 outlined icon buttons.
 		StepperHandler.Mapper.AppendToMapping(MappingKey, MapStepperButtons);
@@ -265,6 +276,8 @@ public static partial class NativeStylesExtensions
 		}
 		return (navigation, page);
 	}
+
+	internal static DynamicColorsOptions? s_dynamicColors;
 
 	static Android.Content.Res.ColorStateList? s_navigationLabelColors;
 
@@ -638,7 +651,13 @@ sealed class ShellChromeStyler : Java.Lang.Object, Android.App.Application.IActi
 		decor.ViewTreeObserver!.GlobalLayout += (_, _) => NativeStylesExtensions.StyleShellChrome(decor, 0);
 	}
 
-	public void OnActivityCreated(Android.App.Activity activity, Android.OS.Bundle? savedInstanceState) { }
+	public void OnActivityCreated(Android.App.Activity activity, Android.OS.Bundle? savedInstanceState)
+	{
+		if (SystemColors.ApplyBrandToActivity(activity))
+			return;
+		if (NativeStylesExtensions.s_dynamicColors is { } options)
+			DynamicColors.ApplyToActivityIfAvailable(activity, options);
+	}
 	public void OnActivityDestroyed(Android.App.Activity activity) { }
 	public void OnActivityPaused(Android.App.Activity activity) { }
 	public void OnActivitySaveInstanceState(Android.App.Activity activity, Android.OS.Bundle outState) { }

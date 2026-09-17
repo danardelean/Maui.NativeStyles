@@ -3,6 +3,8 @@ using Xunit;
 
 namespace NativeStyles.Tests;
 
+// SystemColors.Brand is static: keep these classes out of parallel execution
+[Collection("SystemColors")]
 public class SystemColorsTests
 {
 	public static IEnumerable<object[]> Roles() =>

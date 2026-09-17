@@ -3,6 +3,7 @@ using Xunit;
 
 namespace NativeStyles.Tests;
 
+[Collection("SystemColors")]
 public class NativeStyleDictionaryTests
 {
 	[Fact]

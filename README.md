@@ -101,6 +101,8 @@ react to runtime changes:
 | BoxView `Divider` | full-width hairline | M3 divider: 1 dp `outlineVariant` |
 | CheckBox `Leading` | — | leading control of a list row on the 16 dp keyline (native `RadioButton` rows are aligned automatically) |
 | SearchBar / `Shell.SearchHandler` | 60 pt glass capsule / system navigation-bar search | M3 search bar: 56 dp pill, `surfaceContainerHigh` |
+| CarouselView + Border `CarouselItem` | leading-aligned paging: card on the 20 pt content margin, 12 pt gap, next card peeking from the trailing edge, no loop | M3 **uncontained carousel**: 16 dp leading padding, 8 dp gaps, 28 dp item corners, items bleed off the trailing edge, no loop |
+| IndicatorView | native `UIPageControl` at its natural size (`label` / `tertiaryLabel`) | 8 dp dots, `primary` / `outlineVariant` (Material has no page-indicator component) |
 | Label `Chevron` | `›` in `tertiaryLabel` | hidden (Material lists have no chevrons) |
 | ContentPage `Grouped` | `systemGroupedBackground` | `surfaceContainer` page and app bar (tinted surface behind segmented lists, as in Android 16 Settings) |
 

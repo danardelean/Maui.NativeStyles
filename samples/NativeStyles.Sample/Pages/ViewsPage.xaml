@@ -11,7 +11,7 @@
             <VerticalStackLayout Spacing="0" Padding="0,0,0,24">
 
                 <Label Text="Pull to refresh" Style="{StaticResource SectionHeader}" />
-                <Label x:Name="RefreshLabel" Text="Pull down to refresh this page." Style="{StaticResource SectionFooter}" Margin="{StaticResource ContentMargin}" />
+                <Label x:Name="RefreshLabel" Text="Pull down to refresh this page." Style="{StaticResource SectionFooter}" />
 
                 <Label Text="Image buttons" Style="{StaticResource SectionHeader}" />
                 <HorizontalStackLayout Spacing="8" Padding="{StaticResource ContentMargin}">
@@ -21,10 +21,10 @@
                 </HorizontalStackLayout>
 
                 <Label Text="Carousel + indicator" Style="{StaticResource SectionHeader}" />
-                <CarouselView x:Name="Carousel" ItemsSource="{Binding Cards}" HeightRequest="160" PeekAreaInsets="24" IndicatorView="Indicator">
+                <CarouselView x:Name="Carousel" ItemsSource="{Binding Cards}" HeightRequest="160" IndicatorView="Indicator">
                     <CarouselView.ItemTemplate>
                         <DataTemplate x:DataType="pages:CardItem">
-                            <Border StyleClass="Card" Margin="8,0">
+                            <Border StyleClass="Card, CarouselItem">
                                 <VerticalStackLayout Spacing="8">
                                     <Label Text="{Binding Title}" Style="{StaticResource TitleS}" />
                                     <Label Text="{Binding Body}" Style="{StaticResource BodySecondary}" />
@@ -33,7 +33,7 @@
                         </DataTemplate>
                     </CarouselView.ItemTemplate>
                 </CarouselView>
-                <IndicatorView x:Name="Indicator" HorizontalOptions="Center" />
+                <IndicatorView x:Name="Indicator" />
 
                 <Label Text="Swipe actions" Style="{StaticResource SectionHeader}" />
                 <Border StyleClass="GroupedCell">

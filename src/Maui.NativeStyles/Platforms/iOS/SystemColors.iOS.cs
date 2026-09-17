@@ -29,6 +29,7 @@ public static partial class SystemColors
 			SystemColorRole.PageBackground => UIColor.SystemBackground,
 			SystemColorRole.GroupedBackground => UIColor.SystemGroupedBackground,
 			SystemColorRole.CardBackground => UIColor.SecondarySystemGroupedBackground,
+			SystemColorRole.GroupContainer => UIColor.SecondarySystemGroupedBackground,
 			SystemColorRole.Fill => UIColor.SystemFill,
 			SystemColorRole.SecondaryFill => UIColor.TertiarySystemFill,
 			SystemColorRole.TonalContainer => UIColor.SystemBlue.ColorWithAlpha(0.15f),

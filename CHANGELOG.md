@@ -3,6 +3,12 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-09-17
+
+### Added
+- `Expressive` class for `Border` (Android): Material 3 Expressive list group as in Android 16 Settings, `surfaceContainer` with 28 dp corners; `Gap` class for `BoxView` renders the 2 dp gap between rows (hairline separator on iOS).
+- `SystemColorRole.GroupContainer` (iOS secondarySystemGroupedBackground / Android colorSurfaceContainer).
+
 ## [1.0.1] - 2026-09-17
 
 ### Changed

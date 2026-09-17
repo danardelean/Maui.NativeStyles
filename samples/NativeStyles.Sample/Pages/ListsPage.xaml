@@ -28,6 +28,26 @@
                 </VerticalStackLayout>
             </Border>
 
+            <Label Text="Expressive group (Android 16 style)" Style="{StaticResource SectionHeader}" />
+            <Border StyleClass="GroupedCell, Expressive">
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="pages:ListItem">
+                            <VerticalStackLayout>
+                                <Grid StyleClass="ListRow" ColumnDefinitions="Auto,*,Auto,Auto">
+                                    <BoxView WidthRequest="28" HeightRequest="28" CornerRadius="7" Color="{Binding Color}" VerticalOptions="Center" />
+                                    <Label Grid.Column="1" Text="{Binding Title}" VerticalOptions="Center" />
+                                    <Label Grid.Column="2" Text="{Binding Detail}" StyleClass="Secondary" VerticalOptions="Center" />
+                                    <Label Grid.Column="3" StyleClass="Chevron" />
+                                </Grid>
+                                <BoxView StyleClass="Gap" IsVisible="{Binding HasSeparator}" />
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </Border>
+            <Label Text="On Android: surfaceContainer group with 28 dp corners and 2 dp gaps; on iOS the same inset grouped section." Style="{StaticResource SectionFooter}" />
+
             <Label Text="Two-line items (selectable)" Style="{StaticResource SectionHeader}" />
             <Border StyleClass="GroupedCell">
                 <CollectionView ItemsSource="{Binding Contacts}" SelectionMode="Single" HeightRequest="360">

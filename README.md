@@ -93,6 +93,8 @@ react to runtime changes:
 | Label `Semibold` | SF Pro Semibold | Roboto Medium |
 | Border `Card` / `Outlined` | inset grouped card, 10 pt radius, `secondarySystemGroupedBackground` | M3 card, 12 dp radius, `surfaceContainerLow` |
 | Border `GroupedCell` | inset grouped section (10 pt radius, 16 pt margins) | flat edge-to-edge list section (M3 lists are not cards) |
+| Border `GroupedCell, Expressive` | same inset grouped section | M3 Expressive group (Android 16 Settings): `surfaceContainer`, 28 dp corners, 16 dp margins |
+| BoxView `Gap` | hairline separator | 2 dp page-background gap between rows of an Expressive group |
 | Grid `ListRow` | 44 pt row, `systemGray5` selection | 56 dp row, 12% state layer |
 | BoxView `Separator` | 0.5 pt `separator`, 16 pt inset | 1 dp `outlineVariant`, 16 dp inset |
 | Label `Chevron` | `›` in `tertiaryLabel` | hidden (Material lists have no chevrons) |
@@ -118,7 +120,7 @@ On the plain `net10.0` target, or when an attribute cannot be resolved, the stat
 ```
 
 Roles: `Accent`, `OnAccent`, `Destructive`, `Success`, `Warning`, `TextPrimary`, `TextSecondary`, `TextTertiary`, `Placeholder`,
-`Separator`, `PageBackground`, `GroupedBackground`, `CardBackground`, `Fill`, `SecondaryFill`, `TonalContainer`, `OnTonalContainer`.
+`Separator`, `PageBackground`, `GroupedBackground`, `CardBackground`, `GroupContainer`, `Fill`, `SecondaryFill`, `TonalContainer`, `OnTonalContainer`.
 The same values are available in code through `SystemColors.Get(role)` and `SystemColors.Resolve(role)`.
 The library's own styles use these roles, so an app that only uses the shared `StyleClass` names picks up dynamic colors automatically.
 

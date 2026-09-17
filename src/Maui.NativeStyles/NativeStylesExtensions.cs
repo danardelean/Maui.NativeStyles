@@ -24,6 +24,8 @@ public static partial class NativeStylesExtensions
 		public const string Large = "Large";                   // NativeButton.Size = Large
 		public const string Plain = "Plain";                   // NativeEntry.IsPlain = true
 		public const string Semibold = "Semibold";             // NativeText.Weight = Semibold
+		public const string Expressive = "Expressive";         // Border: M3 Expressive 28 dp list group (Android only)
+		public const string Gap = "Gap";                       // BoxView: 2 dp gap in Expressive groups (hairline on iOS)
 	}
 
 	public static MauiAppBuilder UseNativeStyles(this MauiAppBuilder builder, Action<NativeStylesOptions>? configure = null)

@@ -3,6 +3,11 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.2] - 2026-09-17
+
+### Documentation
+- README: before / after comparison of the same `dotnet new maui` app and page with the default template styles and with Maui.NativeStyles, on iOS 26 and Android. The shared page is in `docs/comparison/ComparisonPage.xaml`.
+
 ## [1.9.1] - 2026-09-17
 
 ### Documentation

@@ -99,9 +99,14 @@ public static partial class NativeStylesExtensions
 		{
 			ApplyTabBarMinimizeBehavior(shell);
 			ApplySegmentedTopTabs(shell);
+			ApplySearchFieldColors(shell);
 		});
 		// A section shown for the first time builds its header while its view loads, after this callback
-		shell.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(60), () => ApplySegmentedTopTabs(shell));
+		shell.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(60), () =>
+		{
+			ApplySegmentedTopTabs(shell);
+			ApplySearchFieldColors(shell);
+		});
 	}
 
 	static void MapTabbedPageMinimize(Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer renderer, TabbedPage page)
@@ -136,7 +141,10 @@ public static partial class NativeStylesExtensions
 		MainThread.BeginInvokeOnMainThread(() =>
 		{
 			if (Shell.Current is { } shell)
+			{
 				ApplySegmentedTopTabs(shell);
+				ApplySearchFieldColors(shell);
+			}
 			foreach (var window in Application.Current?.Windows ?? [])
 				RefreshNavigationPages(window.Page, 0);
 		});
@@ -196,6 +204,29 @@ public static partial class NativeStylesExtensions
 			view.BackgroundColor = background.ToPlatform();
 	}
 
+	/// <summary>
+	/// Shell.SearchHandler: MAUI builds the navigation-bar search field's placeholder and text with colors resolved once,
+	/// so they keep the previous appearance after a runtime light/dark switch. Unless the handler sets its own colors,
+	/// use the dynamic system colors, which follow the trait collection by themselves.
+	/// </summary>
+	static void ApplySearchFieldColors(Shell shell)
+	{
+		if ((shell.Handler as IPlatformViewHandler)?.ViewController is not { } root
+			|| shell.CurrentPage is not { } page || Shell.GetSearchHandler(page) is not { } search)
+		{
+			return;
+		}
+		foreach (var controller in EnumerateControllers<UIViewController>(root))
+		{
+			if (controller.NavigationItem?.SearchController?.SearchBar.SearchTextField is not { } field)
+				continue;
+			if (search.TextColor is null)
+				field.TextColor = UIColor.Label;
+			if (search.PlaceholderColor is null && !string.IsNullOrEmpty(search.Placeholder))
+				field.AttributedPlaceholder = new NSAttributedString(search.Placeholder, foregroundColor: UIColor.PlaceholderText);
+		}
+	}
+
 	const int TopTabsOverlayTag = 0x4E5354;
 
 	/// <summary>
@@ -240,6 +271,12 @@ public static partial class NativeStylesExtensions
 			{
 				control = (UISegmentedControl)overlay.Subviews[0];
 			}
+
+			// A large title does not track the scroll view of a top-tab page (it is nested below MAUI's header), so content
+			// would slide under the still-expanded title. Like native screens with a segmented control under the bar, use
+			// an inline title here.
+			if (header.ParentViewController is { } host)
+				host.NavigationItem.LargeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Never;
 
 			overlay.BackgroundColor = (shell.CurrentPage?.BackgroundColor)?.ToPlatform() ?? UIColor.SystemBackground;
 			strip.BringSubviewToFront(overlay);

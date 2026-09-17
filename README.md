@@ -89,15 +89,15 @@ react to runtime changes:
 | `Destructive` | `systemRed` tint | `error` / `onError` (error label with `Text`/`Outlined`) |
 | `Small` / `Large` | `UIButtonConfigurationSize.Small` / `Large` | 32 dp / 56 dp (M3 Expressive sizes) |
 | Entry `Plain` | `UITextBorderStyle.None` (grouped cells) | no Material box |
-| Picker / DatePicker / TimePicker | pull-down value with chevrons / compact `tertiarySystemFill` pill (no text-field border) | secondary text with trailing menu arrow / calendar / clock icon, no underline; Material dialogs on tap |
+| Picker / DatePicker / TimePicker | pull-down value with chevrons / compact `tertiarySystemFill` capsule (no text-field border) | secondary text with trailing menu arrow / calendar / clock icon, no underline; Material dialogs on tap |
 | Label `Secondary` / `Tertiary` / `Accent` | `secondaryLabel` / `tertiaryLabel` / `systemBlue` | `onSurfaceVariant` / `outline` / `primary` |
 | Label `Semibold` | SF Pro Semibold | Roboto Medium |
-| Border `Card` / `Outlined` | inset grouped card, 10 pt radius, `secondarySystemGroupedBackground` | M3 card, 12 dp radius, `surfaceContainerLow` |
-| Border `GroupedCell` | inset grouped section (10 pt radius, 16 pt margins) | flat edge-to-edge list section (M3 lists are not cards) |
+| Border `Card` / `Outlined` | inset grouped card, 26 pt radius (iOS 26), `secondarySystemGroupedBackground` | M3 card, 12 dp radius, `surfaceContainerLow` |
+| Border `GroupedCell` | inset grouped section (26 pt radius, 16 pt margins) | flat edge-to-edge list section (M3 lists are not cards) |
 | Border `GroupedCell, Expressive` | same inset grouped section | M3 Expressive group (Android 16 Settings): `surfaceContainer`, 28 dp corners, 16 dp margins |
 | BoxView `Gap` | hairline separator | 2 dp page-background gap between rows of an Expressive group |
 | Grid `ListRow` | 44 pt row, `systemGray5` selection | 56 dp row, 12% state layer |
-| BoxView `Separator` | 0.5 pt `separator`, 16 pt inset | 1 dp `outlineVariant`, 16 dp inset |
+| BoxView `Separator` | 0.5 pt `separator`, 16 pt inset both sides | 1 dp `outlineVariant`, 16 dp inset |
 | Label `Chevron` | `›` in `tertiaryLabel` | hidden (Material lists have no chevrons) |
 | ContentPage `Grouped` | `systemGroupedBackground` | `surface` |
 

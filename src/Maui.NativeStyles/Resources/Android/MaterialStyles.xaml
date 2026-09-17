@@ -204,8 +204,14 @@
         <Setter Property="Padding" Value="16" />
     </Style>
     <Style TargetType="Border" Class="GroupedCell">
+        <!-- Material 3 lists are flat and edge-to-edge on the surface: no card, no corners, no elevation.
+             (The inset grouped card is an iOS pattern; on Android the same markup renders as a plain list section.) -->
         <Setter Property="Padding" Value="0" />
-        <Setter Property="Margin" Value="16,0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="StrokeShape" Value="Rectangle" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Shadow" Value="{x:Null}" />
     </Style>
     <Style TargetType="Border" Class="Outlined">
         <Setter Property="StrokeThickness" Value="1" />
@@ -238,8 +244,10 @@
         </Setter>
     </Style>
     <Style TargetType="BoxView" Class="Separator">
+        <!-- M3 inset divider: 1 dp outlineVariant, 16 dp from the leading edge -->
         <Setter Property="HeightRequest" Value="1" />
         <Setter Property="Color" Value="{native:SystemColor Separator}" />
+        <Setter Property="Margin" Value="16,0,0,0" />
         <Setter Property="HorizontalOptions" Value="Fill" />
     </Style>
     <Style TargetType="Label" Class="Chevron">

@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:native="clr-namespace:NativeStyles;assembly=Maui.NativeStyles"
              x:Class="NativeStyles.Sample.Pages.SelectionPage"
              Title="Selection"
              StyleClass="Grouped">
     <ScrollView>
         <VerticalStackLayout Spacing="0" Padding="0,0,0,24">
+
+            <Label Text="Segmented choice" Style="{StaticResource SectionHeader}" />
+            <native:SegmentedControl Margin="{StaticResource ContentMargin}" SelectedIndex="1">
+                <x:String>Day</x:String>
+                <x:String>Week</x:String>
+                <x:String>Month</x:String>
+            </native:SegmentedControl>
 
             <Label Text="Toggles" Style="{StaticResource SectionHeader}" />
             <Border StyleClass="GroupedCell">

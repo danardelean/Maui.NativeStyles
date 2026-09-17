@@ -39,6 +39,8 @@ public enum SystemColorRole
 	TonalContainer,
 	/// <summary>iOS accent / Android colorOnSecondaryContainer.</summary>
 	OnTonalContainer,
+	/// <summary>Opaque neutral for secondary actions: iOS systemGray / Android colorOutline.</summary>
+	Gray,
 }
 
 /// <summary>
@@ -127,6 +129,7 @@ public static partial class SystemColors
 		SystemColorRole.SecondaryFill => Pair("#1F767680", "#3D767680"),
 		SystemColorRole.TonalContainer => Pair("#260088FF", "#260091FF"),
 		SystemColorRole.OnTonalContainer => Pair("#0088FF", "#0091FF"),
+		SystemColorRole.Gray => Pair("#8E8E93", "#8E8E93"),
 		_ => Pair("#000000", "#FFFFFF"),
 	};
 
@@ -150,6 +153,7 @@ public static partial class SystemColors
 		SystemColorRole.SecondaryFill => Pair("#ECE6F0", "#2B2930"),
 		SystemColorRole.TonalContainer => Pair("#E8DEF8", "#4A4458"),
 		SystemColorRole.OnTonalContainer => Pair("#1D192B", "#E8DEF8"),
+		SystemColorRole.Gray => Pair("#79747E", "#938F99"),
 		_ => Pair("#1D1B20", "#E6E0E9"),
 	};
 

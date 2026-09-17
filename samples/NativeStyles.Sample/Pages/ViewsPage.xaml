@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:pages="clr-namespace:NativeStyles.Sample.Pages"
+             xmlns:native="clr-namespace:NativeStyles;assembly=Maui.NativeStyles"
              x:Class="NativeStyles.Sample.Pages.ViewsPage"
              x:DataType="pages:ViewsPage"
              Title="Views"
@@ -42,9 +43,11 @@
                             <DataTemplate x:DataType="x:String">
                                 <SwipeView>
                                     <SwipeView.RightItems>
-                                        <SwipeItems>
-                                            <SwipeItem Text="Archive" BackgroundColor="{StaticResource AccentColor}" />
-                                            <SwipeItem Text="Delete" BackgroundColor="{StaticResource DestructiveColor}" IsDestructive="True" />
+                                        <!-- MAUI lays RightItems out from the trailing edge: declare the primary action first so it ends up on the edge -->
+                                        <SwipeItems Mode="Reveal">
+                                            <native:NativeSwipeItem Text="Archive" Icon="tab_lists.svg" Role="Primary" />
+                                            <native:NativeSwipeItem Text="Delete" Role="Destructive" />
+                                            <native:NativeSwipeItem Text="Flag" Icon="tab_feedback.svg" />
                                         </SwipeItems>
                                     </SwipeView.RightItems>
                                     <Grid StyleClass="ListRow" ColumnDefinitions="*,Auto">

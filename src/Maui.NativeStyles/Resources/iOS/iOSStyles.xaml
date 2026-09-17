@@ -218,6 +218,16 @@
         <Setter Property="Margin" Value="0,0,12,0" />
     </Style>
     <!-- UIPageControl: IndicatorSize 6 keeps MAUI from scaling the native dots; system colors for a light/dark page -->
+    <!-- Pull to refresh: UIRefreshControl keeps its system gray spinner (no RefreshColor) -->
+    <Style TargetType="Label" Class="EmptyState">
+        <!-- CollectionView.EmptyView text, as UIContentUnavailableConfiguration: title 3 semibold, secondary label -->
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="native:NativeText.Weight" Value="Semibold" />
+        <Setter Property="TextColor" Value="{native:SystemColor TextSecondary}" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="Margin" Value="32" />
+    </Style>
     <Style TargetType="IndicatorView">
         <Setter Property="IndicatorColor" Value="{native:SystemColor TextTertiary}" />
         <Setter Property="SelectedIndicatorColor" Value="{native:SystemColor TextPrimary}" />
@@ -315,6 +325,75 @@
          setting TabBarBackgroundColor on iOS 26 paints an opaque slab behind the floating tab bar (dotnet/maui#37423). -->
     <Style TargetType="Shell" ApplyToDerivedTypes="True">
         <Setter Property="Shell.NavBarHasShadow" Value="False" />
+        <!-- Flyout = sidebar: grouped background, 52pt rows inset 12pt, continuous 26pt selection in systemFill,
+             accent-tinted icon, body label -->
+        <Setter Property="FlyoutBackgroundColor" Value="{native:SystemColor GroupedBackground}" />
+        <Setter Property="FlyoutBackground" Value="{native:SystemColor GroupedBackground}" />
+        <Setter Property="Shell.ItemTemplate">
+            <DataTemplate>
+                <Grid HeightRequest="52" Padding="12,0" BackgroundColor="Transparent">
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroupList>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal">
+                                    <VisualState.Setters>
+                                        <Setter TargetName="Indicator" Property="Border.Background" Value="Transparent" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Selected">
+                                    <VisualState.Setters>
+                                        <Setter TargetName="Indicator" Property="Border.Background" Value="{native:SystemColor Fill}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateGroupList>
+                    </VisualStateManager.VisualStateGroups>
+                    <Border x:Name="Indicator" StrokeShape="RoundRectangle 26" StrokeThickness="0" Background="Transparent" Padding="12,0,16,0" Shadow="{x:Null}" Margin="0">
+                        <Grid ColumnDefinitions="24,*" ColumnSpacing="12">
+                            <Image Source="{Binding Icon}" WidthRequest="24" HeightRequest="24" VerticalOptions="Center" native:NativeImage.TintColor="{native:SystemColor Accent}" />
+                            <Label Grid.Column="1" Text="{Binding Title}" VerticalOptions="Center" LineBreakMode="TailTruncation" FontSize="17" CharacterSpacing="-0.43" TextColor="{native:SystemColor TextPrimary}" />
+                        </Grid>
+                    </Border>
+                </Grid>
+            </DataTemplate>
+        </Setter>
+        <Setter Property="Shell.MenuItemTemplate">
+            <DataTemplate>
+                <Grid HeightRequest="52" Padding="12,0" BackgroundColor="Transparent">
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroupList>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal">
+                                    <VisualState.Setters>
+                                        <Setter TargetName="Indicator" Property="Border.Background" Value="Transparent" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Selected">
+                                    <VisualState.Setters>
+                                        <Setter TargetName="Indicator" Property="Border.Background" Value="{native:SystemColor Fill}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateGroupList>
+                    </VisualStateManager.VisualStateGroups>
+                    <Border x:Name="Indicator" StrokeShape="RoundRectangle 26" StrokeThickness="0" Background="Transparent" Padding="12,0,16,0" Shadow="{x:Null}" Margin="0">
+                        <Grid ColumnDefinitions="24,*" ColumnSpacing="12">
+                            <Image Source="{Binding Icon}" WidthRequest="24" HeightRequest="24" VerticalOptions="Center" native:NativeImage.TintColor="{native:SystemColor Accent}" />
+                            <Label Grid.Column="1" Text="{Binding Text}" VerticalOptions="Center" LineBreakMode="TailTruncation" FontSize="17" CharacterSpacing="-0.43" TextColor="{native:SystemColor TextPrimary}" />
+                        </Grid>
+                    </Border>
+                </Grid>
+            </DataTemplate>
+        </Setter>
+    </Style>
+    <Style TargetType="Label" Class="FlyoutHeader">
+        <!-- Sidebar title: large title -->
+        <Setter Property="FontSize" Value="34" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CharacterSpacing" Value="0.4" />
+        <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
+        <Setter Property="Padding" Value="24,8,24,12" />
+        <Setter Property="BackgroundColor" Value="{native:SystemColor GroupedBackground}" />
     </Style>
     <Style TargetType="NavigationPage">
         <Setter Property="ios:NavigationPage.PrefersLargeTitles" Value="True" />

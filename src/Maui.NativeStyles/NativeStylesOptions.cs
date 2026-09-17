@@ -13,4 +13,13 @@ public class NativeStylesOptions
 	/// (a branded app keeps its colors instead of following the wallpaper).
 	/// </summary>
 	public BrandPalette? Brand { get; set; }
+
+	/// <summary>
+	/// Android: recreate the activity when the app theme changes at runtime (system dark mode or
+	/// <c>Application.UserAppTheme</c>). MAUI handles the uiMode configuration change itself, so the activity is kept and
+	/// every native view (Switch, CheckBox, RadioButton, text fields, navigation bar, status bar icons, dialogs) keeps the
+	/// colors it resolved when it was created. Recreating is what Android does by default and is the only way to re-theme
+	/// them; the MAUI page tree, navigation state and view models are preserved. On by default.
+	/// </summary>
+	public bool AndroidRecreateOnThemeChange { get; set; } = true;
 }

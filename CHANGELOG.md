@@ -3,6 +3,14 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.1] - 2026-09-17
+
+### Changed
+- iOS: the dynamic colors of the `Shell.SearchHandler` field are also applied in the later post-navigation pass, because the search controller of a page shown for the first time is attached after the earlier ones.
+
+### Documentation
+- README: the iOS brand-palette screenshot was re-captured (the previous one caught a switch mid-animation); every gallery image was reviewed.
+
 ## [1.10.0] - 2026-09-17
 
 ### Added

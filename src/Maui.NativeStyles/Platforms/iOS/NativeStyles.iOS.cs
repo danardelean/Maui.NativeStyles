@@ -28,6 +28,17 @@ public static partial class NativeStylesExtensions
 			var tint = UIColor.FromDynamicProvider(traits => traits.UserInterfaceStyle == UIUserInterfaceStyle.Dark ? dark : light);
 			s_brandTint = tint;
 			WindowHandler.Mapper.AppendToMapping(MappingKey, (handler, _) => handler.PlatformView.TintColor = tint);
+
+			// UISwitch ignores the tint color (it is green by design); branding it is an explicit choice
+			if (options.Brand.TintsSwitches)
+			{
+				foreach (var key in new[] { MappingKey, nameof(ISwitch.TrackColor), nameof(ISwitch.IsOn) })
+					SwitchHandler.Mapper.AppendToMapping(key, (handler, view) =>
+					{
+						if (view.TrackColor is null)
+							handler.PlatformView.OnTintColor = tint;
+					});
+			}
 		}
 
 		// UIButtonConfiguration (iOS 15+) / Liquid Glass (iOS 26+), driven by the NativeButton attached properties.

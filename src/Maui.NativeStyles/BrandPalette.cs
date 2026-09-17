@@ -44,6 +44,15 @@ public sealed class BrandPalette
 	/// </summary>
 	public bool MaterialColorMatch { get; set; }
 
+	/// <summary>
+	/// iOS: draw switches in the brand color when they are on. Off by default: UISwitch does not follow the tint color
+	/// and the Human Interface Guidelines say to "change the default color of a switch only if necessary. The default
+	/// green color tends to work well in most cases, but you might want to use your app's accent color instead" (make
+	/// sure it contrasts with the off state). A Switch that sets its own <c>OnColor</c> keeps it. Android switches always
+	/// follow the generated Material scheme.
+	/// </summary>
+	public bool TintsSwitches { get; set; }
+
 	/// <summary>iOS-only overrides of the brand color.</summary>
 	public PlatformBrand IOS { get; } = new();
 

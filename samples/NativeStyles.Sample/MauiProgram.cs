@@ -18,6 +18,8 @@ public static class MauiProgram
 				{
 					// Android: use the exact brand color as the light-theme primary instead of Material's darker tone
 					MaterialColorMatch = true,
+					// iOS: switches are green by design; the HIG allows the accent color when it suits the brand
+					TintsSwitches = true,
 				};
 			});
 

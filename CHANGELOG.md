@@ -3,6 +3,11 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.6.1] - 2026-09-17
+
+### Fixed
+- iOS: the hairline MAUI draws under the Shell top-tabs strip is hidden (iOS 26 has no separator under the segmented control).
+
 ## [1.6.0] - 2026-09-17
 
 ### Added

@@ -164,6 +164,10 @@ public static partial class NativeStylesExtensions
 
 			overlay.BackgroundColor = (shell.CurrentPage?.BackgroundColor)?.ToPlatform() ?? UIColor.SystemBackground;
 			strip.BringSubviewToFront(overlay);
+			// MAUI draws a 30% black hairline below the strip (a 1pt subview kept just under its bounds); iOS 26 has none
+			foreach (var subview in strip.Subviews)
+				if (subview != overlay && subview.Frame.Height <= 1)
+					subview.Hidden = true;
 			if (control.NumberOfSegments != items.Count || Enumerable.Range(0, items.Count).Any(i => control.TitleAt(i) != items[i].Title))
 			{
 				control.RemoveAllSegments();

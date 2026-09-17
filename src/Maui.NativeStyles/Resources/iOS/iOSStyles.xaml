@@ -203,6 +203,9 @@
         <Setter Property="Padding" Value="0" />
         <Setter Property="Margin" Value="16,0" />
     </Style>
+    <Style TargetType="Border" Class="Expressive">
+        <!-- Android-only variant (M3 Expressive group); iOS keeps the inset grouped section -->
+    </Style>
     <Style TargetType="Border" Class="Outlined">
         <Setter Property="StrokeThickness" Value="1" />
         <Setter Property="Stroke" Value="{native:SystemColor Separator}" />
@@ -229,6 +232,13 @@
         </Setter>
     </Style>
     <Style TargetType="BoxView" Class="Separator">
+        <Setter Property="HeightRequest" Value="0.5" />
+        <Setter Property="Color" Value="{native:SystemColor Separator}" />
+        <Setter Property="Margin" Value="16,0,0,0" />
+        <Setter Property="HorizontalOptions" Value="Fill" />
+    </Style>
+    <Style TargetType="BoxView" Class="Gap">
+        <!-- Same as Separator on iOS: rows in a grouped section are divided by a hairline -->
         <Setter Property="HeightRequest" Value="0.5" />
         <Setter Property="Color" Value="{native:SystemColor Separator}" />
         <Setter Property="Margin" Value="16,0,0,0" />

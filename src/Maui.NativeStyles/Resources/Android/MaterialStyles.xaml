@@ -213,6 +213,16 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Shadow" Value="{x:Null}" />
     </Style>
+    <Style TargetType="Border" Class="Expressive">
+        <!-- Material 3 Expressive list group (Android 16 Settings): surfaceContainer, 28 dp corners, 16 dp margins.
+             Combine with GroupedCell (StyleClass="GroupedCell, Expressive") and use Gap instead of Separator between rows. -->
+        <Setter Property="StrokeShape" Value="RoundRectangle 28" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="Background" Value="{native:SystemColor GroupContainer}" />
+        <Setter Property="Margin" Value="16,0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Shadow" Value="{x:Null}" />
+    </Style>
     <Style TargetType="Border" Class="Outlined">
         <Setter Property="StrokeThickness" Value="1" />
         <Setter Property="Stroke" Value="{native:SystemColor Separator}" />
@@ -248,6 +258,13 @@
         <Setter Property="HeightRequest" Value="1" />
         <Setter Property="Color" Value="{native:SystemColor Separator}" />
         <Setter Property="Margin" Value="16,0,0,0" />
+        <Setter Property="HorizontalOptions" Value="Fill" />
+    </Style>
+    <Style TargetType="BoxView" Class="Gap">
+        <!-- Expressive groups separate rows with a 2 dp gap of page background instead of a divider -->
+        <Setter Property="HeightRequest" Value="2" />
+        <Setter Property="Color" Value="{native:SystemColor PageBackground}" />
+        <Setter Property="Margin" Value="0" />
         <Setter Property="HorizontalOptions" Value="Fill" />
     </Style>
     <Style TargetType="Label" Class="Chevron">

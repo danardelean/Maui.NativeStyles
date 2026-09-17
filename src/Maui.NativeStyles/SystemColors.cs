@@ -29,6 +29,8 @@ public enum SystemColorRole
 	GroupedBackground,
 	/// <summary>iOS secondarySystemGroupedBackground / Android colorSurfaceContainerLow.</summary>
 	CardBackground,
+	/// <summary>List group container: iOS secondarySystemGroupedBackground / Android colorSurfaceContainer (M3 Expressive groups).</summary>
+	GroupContainer,
 	/// <summary>iOS systemFill / Android colorSurfaceContainerHighest.</summary>
 	Fill,
 	/// <summary>iOS tertiarySystemFill / Android colorSurfaceContainerHigh.</summary>
@@ -120,6 +122,7 @@ public static partial class SystemColors
 		SystemColorRole.PageBackground => Pair("#FFFFFF", "#000000"),
 		SystemColorRole.GroupedBackground => Pair("#F2F2F7", "#000000"),
 		SystemColorRole.CardBackground => Pair("#FFFFFF", "#1C1C1E"),
+		SystemColorRole.GroupContainer => Pair("#FFFFFF", "#1C1C1E"),
 		SystemColorRole.Fill => Pair("#33787880", "#5C787880"),
 		SystemColorRole.SecondaryFill => Pair("#1F767680", "#3D767680"),
 		SystemColorRole.TonalContainer => Pair("#260088FF", "#260091FF"),
@@ -142,6 +145,7 @@ public static partial class SystemColors
 		SystemColorRole.PageBackground => Pair("#FEF7FF", "#141218"),
 		SystemColorRole.GroupedBackground => Pair("#FEF7FF", "#141218"),
 		SystemColorRole.CardBackground => Pair("#F7F2FA", "#1D1B20"),
+		SystemColorRole.GroupContainer => Pair("#F3EDF7", "#211F26"),
 		SystemColorRole.Fill => Pair("#E6E0E9", "#36343B"),
 		SystemColorRole.SecondaryFill => Pair("#ECE6F0", "#2B2930"),
 		SystemColorRole.TonalContainer => Pair("#E8DEF8", "#4A4458"),

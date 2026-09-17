@@ -4,14 +4,19 @@
              x:Class="NativeStyles.Sample.Pages.InputsPage"
              Title="Inputs"
              StyleClass="Grouped">
+    <Shell.SearchHandler>
+        <!-- Navigation-bar search: the 44pt system field on iOS 26, the Material search view on Android -->
+        <SearchHandler Placeholder="Search settings" ShowsResults="False" />
+    </Shell.SearchHandler>
     <ScrollView>
-        <VerticalStackLayout Spacing="12" Padding="0,8,0,24">
+        <VerticalStackLayout Spacing="0" Padding="0,0,0,24">
 
             <Label Text="Search" Style="{StaticResource SectionHeader}" />
-            <SearchBar Placeholder="Search" Margin="8,0" />
+            <SearchBar Placeholder="Search" Margin="{OnPlatform iOS='12,0', Default='8,0'}" />
+            <Label Text="Standalone SearchBar (60pt glass capsule on iOS 26). The navigation bar above uses Shell.SearchHandler, the system search field." Style="{StaticResource SectionFooter}" />
 
             <Label Text="Text fields" Style="{StaticResource SectionHeader}" />
-            <VerticalStackLayout Spacing="12" Padding="16,0">
+            <VerticalStackLayout Spacing="12" Padding="{StaticResource ContentMargin}">
                 <Entry Placeholder="Name" />
                 <Entry Placeholder="Email" Keyboard="Email" />
                 <Entry Placeholder="Password" IsPassword="True" />
@@ -37,10 +42,10 @@
                     </Grid>
                 </VerticalStackLayout>
             </Border>
-            <Label Text="Entries inside a grouped cell use the Plain class (no border on iOS)." Style="{StaticResource SectionFooter}" />
+            <Label Text="Entries inside a grouped cell use the Plain class: the row provides the shape, the field has none." Style="{StaticResource SectionFooter}" />
 
             <Label Text="Multiline" Style="{StaticResource SectionHeader}" />
-            <VerticalStackLayout Padding="16,0">
+            <VerticalStackLayout Padding="{StaticResource ContentMargin}">
                 <Editor Placeholder="Notes" />
             </VerticalStackLayout>
 

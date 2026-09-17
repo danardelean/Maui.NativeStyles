@@ -88,21 +88,25 @@ react to runtime changes:
 | `GlassProminent` | `prominentGlass` → `filled` on iOS 15–18 | Filled |
 | `Destructive` | `systemRed` tint | `error` / `onError` (error label with `Text`/`Outlined`) |
 | `Small` / `Large` | `UIButtonConfigurationSize.Small` / `Large` | 32 dp / 56 dp (M3 Expressive sizes) |
-| Entry `Plain` | `UITextBorderStyle.None` (grouped cells) | no Material box |
+| Entry / Editor (default) | borderless field on a filled shape: 52 pt row, 26 pt continuous corners (a capsule for one line), 20 pt text inset, clear button while editing — as in Settings › Name | Material 3 outlined text field |
+| Entry `Plain` | no shape and no inset: the value part of a grouped row | no Material box |
 | Picker / DatePicker / TimePicker | pull-down value with chevrons / compact `tertiarySystemFill` capsule (no text-field border) | secondary text with trailing menu arrow / calendar / clock icon, no underline; Material dialogs on tap |
 | Label `Secondary` / `Tertiary` / `Accent` | `secondaryLabel` / `tertiaryLabel` / `systemBlue` | `onSurfaceVariant` / `outline` / `primary` |
 | Label `Semibold` | SF Pro Semibold | Roboto Medium |
 | Border `Card` / `Outlined` | inset grouped card, 26 pt radius (iOS 26), `secondarySystemGroupedBackground` | M3 card, 12 dp radius, `surfaceContainerLow` |
-| Border `GroupedCell` | inset grouped section (26 pt radius, 16 pt margins) | flat edge-to-edge list section (M3 lists are not cards) |
+| Border `GroupedCell` | inset grouped section (26 pt radius, 20 pt margins) | flat edge-to-edge list section (M3 lists are not cards) |
 | Border `GroupedCell, Expressive` | same inset grouped section | M3 Expressive group (Android 16 Settings): `surfaceContainer`, 28 dp corners, 16 dp margins |
 | BoxView `Gap` | hairline separator | 2 dp page-background gap between rows of an Expressive group |
-| Grid `ListRow` | 44 pt row, `systemGray5` selection | 56 dp row, 12% state layer |
+| Grid `ListRow` | 52 pt row, `systemGray5` selection | 56 dp row, 12% state layer |
 | BoxView `Separator` | 0.5 pt `separator`, 16 pt inset both sides | 1 dp `outlineVariant`, 16 dp inset |
 | Label `Chevron` | `›` in `tertiaryLabel` | hidden (Material lists have no chevrons) |
 | ContentPage `Grouped` | `systemGroupedBackground` | `surface` |
 
 Shared typography keys: `TitleXL`, `TitleL`, `TitleM`, `TitleS`, `Headline`, `BodyEmphasized`, `Body`, `BodySecondary`, `Caption`,
-`SectionHeader`, `SectionFooter`. Native keys: `LargeTitle … Caption2` (iOS), `DisplayLarge … LabelSmall` (Android).
+`SectionHeader`, `SectionFooter` (iOS 26: 17 pt semibold sentence-case header aligned with the row text; Android: `titleSmall` in `primary`).
+Native keys: `LargeTitle … Caption2` (iOS), `DisplayLarge … LabelSmall` (Android).
+
+Shared metric: `ContentMargin` (`Thickness`, 20 pt on iOS / 16 dp on Android) — the horizontal page margin for content placed outside a grouped section.
 
 Shared color keys: `AccentColor`, `DestructiveColor`, `TextPrimary`, `TextSecondary`, `PageBackground`, `GroupedPageBackground`,
 `CardBackground`, `DividerColor` (plus a `Dark` suffix). Native keys: `SystemBlue … SystemGray6`, `LabelColor`, `SeparatorColor`,
@@ -124,6 +128,22 @@ Roles: `Accent`, `OnAccent`, `Destructive`, `Success`, `Warning`, `TextPrimary`,
 `Separator`, `PageBackground`, `GroupedBackground`, `CardBackground`, `GroupContainer`, `Fill`, `SecondaryFill`, `TonalContainer`, `OnTonalContainer`.
 The same values are available in code through `SystemColors.Get(role)` and `SystemColors.Resolve(role)`.
 The library's own styles use these roles, so an app that only uses the shared `StyleClass` names picks up dynamic colors automatically.
+
+## Search on iOS 26
+
+A standalone `SearchBar` is a `UISearchBar`, which iOS 26 draws as a 60 pt Liquid Glass capsule; UIKit lays it out
+internally and the size cannot be reduced. The 44 pt search field seen in Settings or Mail is the navigation-bar
+search, which in MAUI is `Shell.SearchHandler`:
+
+```xml
+<ContentPage ...>
+    <Shell.SearchHandler>
+        <SearchHandler Placeholder="Search" />
+    </Shell.SearchHandler>
+</ContentPage>
+```
+
+On iOS it renders the system search field under the large title; on Android it becomes the Material search view in the app bar.
 
 ## iOS 26 tab bar
 

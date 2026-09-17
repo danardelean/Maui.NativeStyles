@@ -11,10 +11,13 @@
         <local:iOSTypography />
     </ResourceDictionary.MergedDictionaries>
 
+    <!-- Horizontal page margin for content that sits outside a grouped section (same inset as GroupedCell) -->
+    <Thickness x:Key="ContentMargin">20,0</Thickness>
+
     <!--
         iOS 26 implicit styles.
         Colors come from {native:SystemColor}: UIColor system colors resolved at runtime (Increased Contrast aware).
-        Rule: never set FontFamily, never paint BackgroundColor on input controls, never override
+        Rule: never set FontFamily, never override
         Switch/Slider/Stepper/ProgressBar/ActivityIndicator colors. The native handler defaults
         (compiled against the iOS 26 SDK) already render Liquid Glass and the system tint.
         Button appearance comes from the UIButtonConfiguration mapper in Platforms/iOS/NativeStyles.iOS.cs,
@@ -103,26 +106,35 @@
         </Setter>
     </Style>
 
-    <!-- Text input: UITextField keeps its native RoundedRect border (MAUI default) -->
+    <!-- Text input: iOS 26 draws a text field as a borderless 52pt row on a filled shape with 26pt corners
+         (Settings > General > About > Name), so a single-line field reads as a capsule. The legacy
+         UITextBorderStyle.RoundedRect is removed by the Entry handler; on a plain (non-grouped) page set
+         BackgroundColor to {native:SystemColor Fill}. -->
     <Style TargetType="Entry">
         <Setter Property="FontSize" Value="17" />
         <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
         <Setter Property="PlaceholderColor" Value="{native:SystemColor Placeholder}" />
-        <Setter Property="MinimumHeightRequest" Value="36" />
+        <Setter Property="BackgroundColor" Value="{native:SystemColor CardBackground}" />
+        <Setter Property="ClearButtonVisibility" Value="WhileEditing" />
+        <Setter Property="MinimumHeightRequest" Value="52" />
     </Style>
     <Style TargetType="Entry" Class="Plain">
-        <!-- Border removed by the Entry handler mapper; used inside grouped cells -->
+        <!-- No shape and no content margin: the field is the value part of a grouped row -->
         <Setter Property="native:NativeEntry.IsPlain" Value="True" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="MinimumHeightRequest" Value="44" />
     </Style>
     <Style TargetType="Editor">
         <Setter Property="FontSize" Value="17" />
         <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
         <Setter Property="PlaceholderColor" Value="{native:SystemColor Placeholder}" />
+        <Setter Property="BackgroundColor" Value="{native:SystemColor CardBackground}" />
         <Setter Property="AutoSize" Value="TextChanges" />
-        <Setter Property="MinimumHeightRequest" Value="88" />
+        <Setter Property="MinimumHeightRequest" Value="104" />
     </Style>
     <Style TargetType="SearchBar">
+        <!-- A standalone UISearchBar is drawn by iOS 26 as a 60pt glass capsule and cannot be made smaller.
+             For the 44pt system search field of Settings/Mail use Shell.SearchHandler (navigation-bar search). -->
         <Setter Property="ios:SearchBar.SearchBarStyle" Value="Minimal" />
         <Setter Property="FontSize" Value="17" />
         <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
@@ -164,11 +176,11 @@
         <!-- iOS pattern: a list row with a checkmark on the trailing edge when selected -->
         <Setter Property="FontSize" Value="17" />
         <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
-        <Setter Property="MinimumHeightRequest" Value="44" />
+        <Setter Property="MinimumHeightRequest" Value="52" />
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="ControlTemplate">
             <ControlTemplate>
-                <Grid ColumnDefinitions="*,Auto" Padding="16,0" MinimumHeightRequest="44" ColumnSpacing="12">
+                <Grid ColumnDefinitions="*,Auto" Padding="16,0" MinimumHeightRequest="52" ColumnSpacing="12">
                     <Label Grid.Column="0"
                            Text="{TemplateBinding Content}"
                            FontSize="{TemplateBinding FontSize}"
@@ -205,8 +217,9 @@
         <Setter Property="Padding" Value="16" />
     </Style>
     <Style TargetType="Border" Class="GroupedCell">
+        <!-- Inset grouped section: 20pt from the screen edges (iOS 26 Settings) -->
         <Setter Property="Padding" Value="0" />
-        <Setter Property="Margin" Value="16,0" />
+        <Setter Property="Margin" Value="20,0" />
     </Style>
     <Style TargetType="Border" Class="Expressive">
         <!-- Android-only variant (M3 Expressive group); iOS keeps the inset grouped section -->
@@ -220,7 +233,7 @@
     <!-- Grouped list row (use as the root of a CollectionView ItemTemplate or inside GroupedCell) -->
     <Style TargetType="Grid" Class="ListRow">
         <Setter Property="Padding" Value="16,0" />
-        <Setter Property="MinimumHeightRequest" Value="44" />
+        <Setter Property="MinimumHeightRequest" Value="52" />
         <Setter Property="ColumnSpacing" Value="12" />
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="VisualStateManager.VisualStateGroups">

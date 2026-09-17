@@ -8,13 +8,13 @@
              StyleClass="Grouped">
     <RefreshView x:Name="Refresh" Refreshing="OnRefreshing">
         <ScrollView>
-            <VerticalStackLayout Spacing="12" Padding="0,8,0,24">
+            <VerticalStackLayout Spacing="0" Padding="0,0,0,24">
 
                 <Label Text="Pull to refresh" Style="{StaticResource SectionHeader}" />
-                <Label x:Name="RefreshLabel" Text="Pull down to refresh this page." Style="{StaticResource SectionFooter}" Margin="16,0" />
+                <Label x:Name="RefreshLabel" Text="Pull down to refresh this page." Style="{StaticResource SectionFooter}" Margin="{StaticResource ContentMargin}" />
 
                 <Label Text="Image buttons" Style="{StaticResource SectionHeader}" />
-                <HorizontalStackLayout Spacing="8" Padding="16,0">
+                <HorizontalStackLayout Spacing="8" Padding="{StaticResource ContentMargin}">
                     <ImageButton Source="tab_feedback.svg" />
                     <ImageButton Source="tab_lists.svg" />
                     <ImageButton Source="tab_inputs.svg" IsEnabled="False" />

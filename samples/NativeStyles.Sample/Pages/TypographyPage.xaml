@@ -7,10 +7,10 @@
              Title="Typography"
              StyleClass="Grouped">
     <ScrollView>
-        <VerticalStackLayout Spacing="12" Padding="0,8,0,24">
+        <VerticalStackLayout Spacing="0" Padding="0,0,0,24">
 
             <Label Text="Shared aliases" Style="{StaticResource SectionHeader}" />
-            <Border StyleClass="Card" Margin="16,0">
+            <Border StyleClass="Card" Margin="{StaticResource ContentMargin}">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="TitleXL" Style="{StaticResource TitleXL}" />
                     <Label Text="TitleL" Style="{StaticResource TitleL}" />
@@ -24,12 +24,12 @@
             </Border>
 
             <Label Text="Platform scale" Style="{StaticResource SectionHeader}" />
-            <Border StyleClass="Card" Margin="16,0">
+            <Border StyleClass="Card" Margin="{StaticResource ContentMargin}">
                 <VerticalStackLayout x:Name="ScaleHost" Spacing="8" />
             </Border>
 
             <Label Text="Colors (light / dark)" Style="{StaticResource SectionHeader}" />
-            <Border StyleClass="Card" Margin="16,0">
+            <Border StyleClass="Card" Margin="{StaticResource ContentMargin}">
                 <VerticalStackLayout x:Name="ColorHost" Spacing="6" />
             </Border>
 

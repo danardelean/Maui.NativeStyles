@@ -7,7 +7,7 @@
              Title="Lists"
              StyleClass="Grouped">
     <ScrollView>
-        <VerticalStackLayout Spacing="12" Padding="0,8,0,24">
+        <VerticalStackLayout Spacing="0" Padding="0,0,0,24">
 
             <Label Text="Inset grouped" Style="{StaticResource SectionHeader}" />
             <Border StyleClass="GroupedCell">

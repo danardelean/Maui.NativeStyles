@@ -123,6 +123,8 @@
         <Setter Property="MinimumHeightRequest" Value="88" />
     </Style>
     <Style TargetType="SearchBar">
+        <!-- A standalone UISearchBar is drawn by iOS 26 as a 60pt glass capsule and cannot be made smaller.
+             For the 44pt system search field of Settings/Mail use Shell.SearchHandler (navigation-bar search). -->
         <Setter Property="ios:SearchBar.SearchBarStyle" Value="Minimal" />
         <Setter Property="FontSize" Value="17" />
         <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />

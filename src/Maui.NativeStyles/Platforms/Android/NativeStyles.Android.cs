@@ -102,6 +102,15 @@ public static partial class NativeStylesExtensions
 			else
 				handler.PlatformView.ClearColorFilter();
 		});
+		ImageButtonHandler.Mapper.AppendToMapping(MappingKey, (handler, button) =>
+		{
+			if (button is not BindableObject bindable)
+				return;
+			if (NativeImage.GetTintColor(bindable) is { } tint)
+				handler.PlatformView.SetColorFilter(tint.ToPlatform(), PorterDuff.Mode.SrcIn!);
+			else
+				handler.PlatformView.ClearColorFilter();
+		});
 
 		// Expressive segmented lists: NativeList.ItemCornerRadius draws the item container as a rounded shape.
 		ViewHandler.ViewMapper.AppendToMapping(MappingKey, MapListItemShape);

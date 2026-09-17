@@ -105,6 +105,10 @@
             </VisualStateGroupList>
         </Setter>
     </Style>
+    <Style TargetType="ImageButton" Class="Icon">
+        <!-- Symbol-style button: the image is a template drawn in the tint color -->
+        <Setter Property="native:NativeImage.TintColor" Value="{native:SystemColor Accent}" />
+    </Style>
 
     <!-- Text input: iOS 26 draws a text field as a borderless 52pt row on a filled shape with 26pt corners
          (Settings > General > About > Name), so a single-line field reads as a capsule. The legacy

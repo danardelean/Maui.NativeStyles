@@ -30,6 +30,7 @@
     </FlyoutItem>
 
     <MenuItem Text="Classic navigation (TabbedPage)" IconImageSource="tab_views.svg" Clicked="OnClassicNavigationClicked" />
+    <MenuItem Text="Toggle light / dark" IconImageSource="tab_feedback.svg" Clicked="OnToggleThemeClicked" />
     <MenuItem Text="Classic navigation (top tabs)" IconImageSource="tab_selection.svg" Clicked="OnClassicTopTabsClicked" />
 
 </Shell>

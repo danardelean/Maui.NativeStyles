@@ -252,9 +252,26 @@ color so differently that it resolves into two platform palettes:
 markup: the implicit styles and the platform hooks restyle them. The legacy `ListView`, `TableView` and `Frame` are
 intentionally not styled: use `CollectionView` / `GroupedCell` and `Border` (`Card`).
 
+## Theme changes at runtime (Android)
+
+MAUI handles the `uiMode` configuration change itself, so the activity survives a light/dark switch and every native
+view keeps the colors it resolved when it was created: Switch, CheckBox, RadioButton, text fields, the navigation bar,
+the status bar icons, dialogs. `{native:SystemColor}` values update, the rest does not.
+
+With `AndroidRecreateOnThemeChange` (on by default) the library does what Android does by default: when the effective
+app theme changes (system dark mode or `Application.UserAppTheme`) it recreates the activity, so everything is
+re-themed. State is preserved:
+
+- MAUI asks the app for a window again, and the standard template (`new Window(new AppShell())`) would answer with a new
+  page tree. The library moves the page that was showing to the new window, so the selected tab, the navigation stack,
+  control values and view models survive. Scroll positions and open native dialogs do not.
+- Root pages that the app replaced earlier (login shell → main shell, Shell → TabbedPage) get their handlers
+  disconnected before the recreate. MAUI 10 otherwise leaves a disposed Shell renderer registered on such a Shell,
+  which throws on the following theme change; the library also clears that (private) observer list.
+- Set `options.AndroidRecreateOnThemeChange = false` to keep MAUI's behavior.
+
 ## Known limitations
 
-- **Runtime theme switch on Android**: the status bar and the bottom navigation indicator do not update until the app restarts (MAUI Shell limitation).
 - **iOS `Switch`** may show glass artifacts on the active side ([dotnet/maui#34560](https://github.com/dotnet/maui/issues/34560)).
 - **Do not set `Shell.TabBarBackgroundColor` on iOS**: it paints an opaque slab behind the glass tab bar ([#37423](https://github.com/dotnet/maui/issues/37423)).
 - iOS `CheckBox` is drawn by MAUI (iOS has no checkbox); it is tinted with the accent color. iOS `RadioButton` uses a "row with checkmark" `ControlTemplate`.

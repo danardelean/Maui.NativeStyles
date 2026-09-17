@@ -3,6 +3,11 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.0] - 2026-09-17
+
+### Added
+- `BrandPalette.TintsSwitches` (iOS): draws switches in the brand color when they are on. `UISwitch` does not follow the tint color, and the Human Interface Guidelines recommend changing its color "only if necessary", so the option is off by default; a `Switch` that sets `OnColor` keeps it. The sample enables it.
+
 ## [1.9.2] - 2026-09-17
 
 ### Documentation

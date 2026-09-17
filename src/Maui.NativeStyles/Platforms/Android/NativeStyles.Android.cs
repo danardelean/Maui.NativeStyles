@@ -1,6 +1,7 @@
 using Android.Graphics;
 using Android.Views;
 using AButton = Android.Widget.Button;
+using AView = Android.Views.View;
 using Google.Android.Material.Color;
 using Color = Microsoft.Maui.Graphics.Color;
 using Android.Graphics.Drawables;
@@ -63,7 +64,13 @@ public static partial class NativeStylesExtensions
 				layout.BoxStrokeWidth = 0;
 				layout.BoxStrokeWidthFocused = 0;
 				if (layout.EditText is { } editText)
+				{
+					// Value part of a list row: the row owns the 56 dp height and the padding
 					editText.Background = null;
+					editText.SetMinimumHeight(0);
+					editText.SetMinHeight(0);
+					editText.SetPadding(0, (int)layout.Context.ToPixels(6), 0, (int)layout.Context.ToPixels(6));
+				}
 			}
 			else if (NativeEntry.GetIsContained(b))
 			{
@@ -80,6 +87,18 @@ public static partial class NativeStylesExtensions
 		// Editor is a bare TextInputEditText under Material 3 (an M2-looking underline): give it the Material 3
 		// outlined container, or the filled rounded one with NativeEntry.IsContained.
 		HookMaterial3Mapper<IEditor>("EditorHandler2", StyleEditorContainer, nameof(IView.Background));
+
+		// SearchBar: Material 3 search bar (56 dp, fully rounded, surfaceContainerHigh) instead of an underlined field.
+		HookMaterial3Mapper<ISearchBar>("SearchBarHandler2", StyleSearchBar, nameof(IView.Background));
+
+		// Expressive segmented lists: NativeList.ItemCornerRadius draws the item container as a rounded shape.
+		ViewHandler.ViewMapper.AppendToMapping(MappingKey, MapListItemShape);
+		ViewHandler.ViewMapper.AppendToMapping(nameof(IView.Background), MapListItemShape);
+
+		// Shell: flexible navigation bar metrics/colors, app bar behind the status bar and the Material 3 search bar
+		// shape for Shell.SearchHandler. Shell creates these views after navigation and its Android renderer does not
+		// run mapper keys on connect, so they are (re)styled from a layout listener on each activity's decor view.
+		(Android.App.Application.Context as Android.App.Application)?.RegisterActivityLifecycleCallbacks(new ShellChromeStyler());
 
 		// Pickers are bare TextInputEditTexts under Material 3 (an M2-looking underline). Material shows a selectable
 		// value as plain text with a trailing affordance: menu arrow (Picker), calendar (DatePicker), clock (TimePicker).
@@ -108,6 +127,120 @@ public static partial class NativeStylesExtensions
 		mapper.Add(MappingKey, action);
 		foreach (var key in extraKeys)
 			mapper.Add(key + ".NativeStyle", action); // extra keys run at connect; MAUI's own mapping for `key` stays in place
+	}
+
+	static void StyleSearchBar(IElementHandler handler, ISearchBar searchBar)
+	{
+		if (handler.PlatformView is not TextInputLayout layout || layout.Context is not { } context)
+			return;
+		var radius = context.ToPixels(28);
+		layout.BoxBackgroundMode = TextInputLayout.BoxBackgroundFilled;
+		layout.SetBoxCornerRadii(radius, radius, radius, radius);
+		layout.BoxStrokeWidth = 0;
+		layout.BoxStrokeWidthFocused = 0;
+		layout.BoxBackgroundColor = MaterialColors.GetColor(layout, Resource.Attribute.colorSurfaceContainerHigh);
+		layout.SetMinimumHeight((int)context.ToPixels(56));
+	}
+
+	static void MapListItemShape(IViewHandler handler, IView view)
+	{
+		if (view is not BindableObject bindable || handler.PlatformView is not AView platformView || platformView.Context is not { } context)
+			return;
+		var radius = NativeList.GetItemCornerRadius(bindable);
+		if (radius < 0)
+			return;
+		var shape = new GradientDrawable();
+		shape.SetShape(ShapeType.Rectangle);
+		shape.SetCornerRadius(context.ToPixels(radius));
+		shape.SetColor(((view.Background as SolidPaint)?.Color ?? Colors.Transparent).ToPlatform());
+		platformView.Background = shape;
+		platformView.ClipToOutline = true;
+
+		// A native radio button used as a list item: move the control to the 16 dp keyline, 12 dp before the label.
+		if (OperatingSystem.IsAndroidVersionAtLeast(23)
+			&& platformView is Android.Widget.CompoundButton { ButtonDrawable: { } button and not InsetDrawable } compound)
+		{
+			compound.SetButtonDrawable(new InsetDrawable(button, (int)context.ToPixels(10), 0, 0, 0));
+			compound.SetPadding((int)context.ToPixels(10), compound.PaddingTop, (int)context.ToPixels(16), compound.PaddingBottom);
+		}
+	}
+
+	/// <summary>Finds Shell's BottomNavigationView and toolbar search card; MAUI content is not traversed.</summary>
+	internal static void StyleShellChrome(AView view, int depth)
+	{
+		switch (view)
+		{
+			case Google.Android.Material.BottomNavigation.BottomNavigationView navigation:
+				StyleNavigationBar(navigation);
+				return;
+			case Google.Android.Material.AppBar.AppBarLayout appBar:
+				StyleAppBar(appBar);
+				break; // the toolbar inside may host the search card
+			case AndroidX.CardView.Widget.CardView card when card.Parent is Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView:
+				StyleShellSearch(card);
+				return;
+		}
+		if (depth > 16 || view is not ViewGroup group || view is Microsoft.Maui.Platform.ContentViewGroup or Microsoft.Maui.Platform.LayoutViewGroup or AndroidX.RecyclerView.Widget.RecyclerView)
+			return;
+		for (var i = 0; i < group.ChildCount; i++)
+			if (group.GetChildAt(i) is { } child)
+				StyleShellChrome(child, depth + 1);
+	}
+
+	/// <summary>M3 Expressive flexible navigation bar: 64 dp, 56x32 dp indicator, secondary active label.</summary>
+	static void StyleNavigationBar(Google.Android.Material.BottomNavigation.BottomNavigationView bar)
+	{
+		if (bar.Context is not { } context)
+			return;
+		var indicatorWidth = (int)context.ToPixels(56);
+		if (bar.ItemActiveIndicatorWidth == indicatorWidth && bar.ItemTextColor == s_navigationLabelColors)
+			return;
+
+		int Role(int attribute) => MaterialColors.GetColor(bar, attribute);
+		Android.Content.Res.ColorStateList Checked(int checkedColor, int color) => new(
+			[[Android.Resource.Attribute.StateChecked], []], [checkedColor, color]);
+
+		var onSurfaceVariant = Role(Resource.Attribute.colorOnSurfaceVariant);
+		s_navigationLabelColors = Checked(Role(Resource.Attribute.colorSecondary), onSurfaceVariant);
+		bar.ItemTextColor = s_navigationLabelColors;
+		bar.ItemIconTintList = Checked(Role(Resource.Attribute.colorOnSecondaryContainer), onSurfaceVariant);
+		bar.ItemActiveIndicatorColor = Android.Content.Res.ColorStateList.ValueOf(new AColor(Role(Resource.Attribute.colorSecondaryContainer)));
+		bar.ItemActiveIndicatorWidth = indicatorWidth;
+		bar.ItemActiveIndicatorHeight = (int)context.ToPixels(32);
+		bar.ItemPaddingTop = (int)context.ToPixels(6);
+		bar.ItemPaddingBottom = (int)context.ToPixels(6);
+		bar.ActiveIndicatorLabelPadding = (int)context.ToPixels(4);
+		bar.SetMinimumHeight((int)context.ToPixels(64));
+		bar.SetBackgroundColor(new AColor(Role(Resource.Attribute.colorSurfaceContainer)));
+	}
+
+	static Android.Content.Res.ColorStateList? s_navigationLabelColors;
+
+	/// <summary>
+	/// MAUI tints the Toolbar only; under edge-to-edge the AppBarLayout also covers the status bar, so it must take the
+	/// page's Shell.BackgroundColor as well (or return to colorSurface when the page sets none).
+	/// </summary>
+	static void StyleAppBar(Google.Android.Material.AppBar.AppBarLayout appBar)
+	{
+		if (Shell.Current is not { } shell)
+			return;
+		var requested = (shell.CurrentPage is { } page ? Shell.GetBackgroundColor(page) : null) ?? Shell.GetBackgroundColor(shell);
+		var color = requested?.ToPlatform().ToArgb() ?? MaterialColors.GetColor(appBar, Resource.Attribute.colorSurface);
+		if (appBar.GetTag(Resource.Id.action_bar_container) is Java.Lang.Integer applied && applied.IntValue() == color)
+			return;
+		appBar.SetTag(Resource.Id.action_bar_container, Java.Lang.Integer.ValueOf(color));
+		appBar.SetBackgroundColor(new AColor(color));
+		appBar.SetStatusBarForegroundColor(color);
+	}
+
+	/// <summary>Shell.SearchHandler: Material 3 search bar container instead of the elevated white card.</summary>
+	static void StyleShellSearch(AndroidX.CardView.Widget.CardView card)
+	{
+		if (card.Context is not { } context || card.CardElevation == 0)
+			return;
+		card.CardElevation = 0;
+		card.Radius = context.ToPixels(28);
+		card.SetCardBackgroundColor(MaterialColors.GetColor(card, Resource.Attribute.colorSurfaceContainerHigh));
 	}
 
 	/// <summary>Corner radius of a contained (Material 3 Expressive) text container, in dp.</summary>
@@ -298,7 +431,8 @@ public class GlassViewHandler : ContentViewHandler
 	{
 		var context = handler.Context;
 		// surfaceContainerLow from the running theme (dark mode / dynamic colors aware), baseline fallback.
-		var color = (view.TintColor ?? SystemColors.Get(SystemColorRole.CardBackground)).ToPlatform();
+		// M3 Expressive floating toolbar (standard): surfaceContainer, elevation level 3
+		var color = (view.TintColor ?? SystemColors.Get(SystemColorRole.GroupedBackground)).ToPlatform();
 
 		var drawable = new GradientDrawable();
 		drawable.SetColor(color);
@@ -310,4 +444,23 @@ public class GlassViewHandler : ContentViewHandler
 		platformView.ClipToOutline = true;
 		platformView.Elevation = context.ToPixels(3); // M3 elevation level 2
 	}
+}
+
+/// <summary>Attaches a layout listener to every activity so Shell's native chrome can be styled once it exists.</summary>
+sealed class ShellChromeStyler : Java.Lang.Object, Android.App.Application.IActivityLifecycleCallbacks
+{
+	public void OnActivityResumed(Android.App.Activity activity)
+	{
+		if (activity.Window?.DecorView is not { } decor || decor.GetTag(Resource.Id.action_bar_root) is not null)
+			return;
+		decor.SetTag(Resource.Id.action_bar_root, "NativeStyles");
+		decor.ViewTreeObserver!.GlobalLayout += (_, _) => NativeStylesExtensions.StyleShellChrome(decor, 0);
+	}
+
+	public void OnActivityCreated(Android.App.Activity activity, Android.OS.Bundle? savedInstanceState) { }
+	public void OnActivityDestroyed(Android.App.Activity activity) { }
+	public void OnActivityPaused(Android.App.Activity activity) { }
+	public void OnActivitySaveInstanceState(Android.App.Activity activity, Android.OS.Bundle outState) { }
+	public void OnActivityStarted(Android.App.Activity activity) { }
+	public void OnActivityStopped(Android.App.Activity activity) { }
 }

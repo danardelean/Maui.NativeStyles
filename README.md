@@ -82,12 +82,12 @@ react to runtime changes:
 | *(none)* | `UIButtonConfiguration.plain` (tinted text) | Filled (primary) |
 | `Filled` | `filled` (tinted capsule, white label) | Filled |
 | `Tonal` | `tinted` (15% tint) | Filled tonal (secondaryContainer) |
-| `Outlined` | `gray` | Outlined (1 dp outline) |
+| `Outlined` | `gray` | Outlined: 1 dp `outlineVariant`, `onSurfaceVariant` label (M3 Expressive) |
 | `Text` | `plain` | Text |
 | `Glass` | `glass` (iOS 26) → `gray` on iOS 15–18 | Elevated |
 | `GlassProminent` | `prominentGlass` → `filled` on iOS 15–18 | Filled |
 | `Destructive` | `systemRed` tint | `error` / `onError` (error label with `Text`/`Outlined`) |
-| `Small` / `Large` | `UIButtonConfigurationSize.Small` / `Large` | 32 dp / 56 dp (M3 Expressive sizes) |
+| (default) / `Small` / `Large` | 44 pt / `UIButtonConfigurationSize.Small` / `Large` | M3 Expressive S 40 dp (16 dp padding) / XS 32 dp (12 dp) / M 56 dp (24 dp, title medium) — all fully round |
 | Entry / Editor (default) | borderless field on a filled shape: 52 pt row, 26 pt continuous corners (a capsule for one line), 20 pt text inset, clear button while editing — as in Settings › Name | Material 3 outlined text field (the `Editor`, a bare `EditText` in MAUI, gets the same outlined container: 4 dp corners, 1 dp `outline`, 2 dp `primary` when focused) |
 | Entry / Editor `Expressive` | same as default (already a borderless field on a filled shape) | M3 Expressive containment: borderless field in a filled `surfaceContainerHighest` container with 28 dp corners |
 | Entry / Editor `Plain` | no shape and no inset: the value part of a grouped row | no Material box |
@@ -95,13 +95,14 @@ react to runtime changes:
 | Label `Secondary` / `Tertiary` / `Accent` | `secondaryLabel` / `tertiaryLabel` / `systemBlue` | `onSurfaceVariant` / `outline` / `primary` |
 | Label `Semibold` | SF Pro Semibold | Roboto Medium |
 | Border `Card` / `Outlined` | inset grouped card, 26 pt radius (iOS 26), `secondarySystemGroupedBackground` | M3 card, 12 dp radius, `surfaceContainerLow` |
-| Border `GroupedCell` | inset grouped section (26 pt radius, 20 pt margins) | flat edge-to-edge list section (M3 lists are not cards) |
-| Border `GroupedCell, Expressive` | same inset grouped section | M3 Expressive group (Android 16 Settings): `surfaceContainer`, 28 dp corners, 16 dp margins |
-| BoxView `Gap` | hairline separator | 2 dp page-background gap between rows of an Expressive group |
-| Grid `ListRow` | 52 pt row, `systemGray5` selection | 56 dp row, 12% state layer |
-| BoxView `Separator` | 0.5 pt `separator`, 16 pt inset both sides | 1 dp `outlineVariant`, 16 dp inset |
+| Border `GroupedCell` | inset grouped section (26 pt radius, 20 pt margins) | M3 Expressive **segmented list**: transparent group clipped to 16 dp outer corners, 16 dp margins (baseline flat lists are no longer recommended by M3) |
+| Grid `ListRow` | 52 pt row, `systemGray5` selection | expressive list item: `surfaceBright` container with 4 dp corners, 56 dp, 16×10 dp padding, 12 dp slot spacing; selected → `secondaryContainer` with 16 dp corners (`NativeList.ItemCornerRadius`) |
+| BoxView `Separator` (alias `Gap`) | 0.5 pt `separator`, 16 pt inset both sides | 2 dp transparent gap between segmented items |
+| BoxView `Divider` | full-width hairline | M3 divider: 1 dp `outlineVariant` |
+| CheckBox `Leading` | — | leading control of a list row on the 16 dp keyline (native `RadioButton` rows are aligned automatically) |
+| SearchBar / `Shell.SearchHandler` | 60 pt glass capsule / system navigation-bar search | M3 search bar: 56 dp pill, `surfaceContainerHigh` |
 | Label `Chevron` | `›` in `tertiaryLabel` | hidden (Material lists have no chevrons) |
-| ContentPage `Grouped` | `systemGroupedBackground` | `surface` |
+| ContentPage `Grouped` | `systemGroupedBackground` | `surfaceContainer` page and app bar (tinted surface behind segmented lists, as in Android 16 Settings) |
 
 Shared typography keys: `TitleXL`, `TitleL`, `TitleM`, `TitleS`, `Headline`, `BodyEmphasized`, `Body`, `BodySecondary`, `Caption`,
 `SectionHeader`, `SectionFooter` (iOS 26: 17 pt semibold sentence-case header aligned with the row text; Android: `titleSmall` in `primary`).
@@ -170,12 +171,23 @@ iOS 26: `UIVisualEffectView` + `UIGlassEffect` (`Regular`/`Clear`, `IsInteractiv
 (capsule when `CornerRadius = -1`). iOS 15–18: `SystemMaterial` blur. Android: `surfaceContainerLow` surface with 3 dp elevation.
 Per the HIG, use it only for floating controls above content, never in the content layer.
 
+## Material 3 Expressive on Android
+
+The Android styles follow the current recommendations on [m3.material.io](https://m3.material.io/components):
+expressive segmented lists instead of baseline lists, the flexible navigation bar (64 dp, 56×32 dp active indicator,
+`secondary` active label, `surfaceContainer` container) instead of the 80 dp baseline bar, the contained search bar,
+16 dp button padding and the new outlined-button colors. Shell's bottom navigation, app bar and search view are native
+views created by MAUI after navigation, so the library restyles them from an activity layout listener
+(`ShellChromeStyler`). Text fields, cards (12 dp), switches, sliders and progress indicators already match through
+`UseMaterial3` and are left untouched.
+
 ## Known limitations
 
 - **Runtime theme switch on Android**: the status bar and the bottom navigation indicator do not update until the app restarts (MAUI Shell limitation).
 - **iOS `Switch`** may show glass artifacts on the active side ([dotnet/maui#34560](https://github.com/dotnet/maui/issues/34560)).
 - **Do not set `Shell.TabBarBackgroundColor` on iOS**: it paints an opaque slab behind the glass tab bar ([#37423](https://github.com/dotnet/maui/issues/37423)).
 - iOS `CheckBox` is drawn by MAUI (iOS has no checkbox); it is tinted with the accent color. iOS `RadioButton` uses a "row with checkmark" `ControlTemplate`.
+- M3 Expressive widgets that need Material Components 1.13+ (loading indicator, wavy progress, button shape morph on press, button groups, split buttons) are not available: MAUI 10.0.101 ships Material Components 1.12 and the newer binding pulls conflicting AndroidX versions.
 - Android `Stepper` is a MAUI-drawn control (Android has no stepper); the library restyles its two buttons as Material 3 outlined icon buttons.
 - The iOS 15–18 fallback paths are guarded by `OperatingSystem.IsIOSVersionAtLeast(26)` but were not exercised on an iOS 18 simulator during development.
 - With `UseMaterial3`, Entry and the other input controls use internal `*Handler2` handlers; their mappers are reached through reflection (see `NativeStyles.Android.cs`), and a debug message is logged if the type is not found. These types become public in MAUI 11.

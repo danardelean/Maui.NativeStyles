@@ -176,6 +176,7 @@
         <Setter Property="MinimumHeightRequest" Value="44" />
         <Setter Property="MinimumWidthRequest" Value="44" />
     </Style>
+    <Style TargetType="CheckBox" Class="Leading" />
     <Style TargetType="RadioButton">
         <!-- iOS pattern: a list row with a checkmark on the trailing edge when selected -->
         <Setter Property="FontSize" Value="17" />
@@ -258,6 +259,12 @@
         <Setter Property="HeightRequest" Value="0.5" />
         <Setter Property="Color" Value="{native:SystemColor Separator}" />
         <Setter Property="Margin" Value="16,0" />
+        <Setter Property="HorizontalOptions" Value="Fill" />
+    </Style>
+    <Style TargetType="BoxView" Class="Divider">
+        <!-- Full-width hairline outside grouped sections -->
+        <Setter Property="HeightRequest" Value="0.5" />
+        <Setter Property="Color" Value="{native:SystemColor Separator}" />
         <Setter Property="HorizontalOptions" Value="Fill" />
     </Style>
     <Style TargetType="BoxView" Class="Gap">

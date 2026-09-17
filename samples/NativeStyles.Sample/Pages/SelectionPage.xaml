@@ -31,12 +31,12 @@
             <Border StyleClass="GroupedCell">
                 <VerticalStackLayout>
                     <Grid StyleClass="ListRow" ColumnDefinitions="Auto,*">
-                        <CheckBox IsChecked="True" VerticalOptions="Center" />
+                        <CheckBox IsChecked="True" VerticalOptions="Center" StyleClass="Leading" />
                         <Label Grid.Column="1" Text="Accept terms" VerticalOptions="Center" />
                     </Grid>
                     <BoxView StyleClass="Separator" />
                     <Grid StyleClass="ListRow" ColumnDefinitions="Auto,*">
-                        <CheckBox VerticalOptions="Center" />
+                        <CheckBox VerticalOptions="Center" StyleClass="Leading" />
                         <Label Grid.Column="1" Text="Subscribe to newsletter" VerticalOptions="Center" />
                     </Grid>
                 </VerticalStackLayout>

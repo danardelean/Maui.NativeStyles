@@ -28,8 +28,8 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Label Text="Expressive group (Android 16 style)" Style="{StaticResource SectionHeader}" />
-            <Border StyleClass="GroupedCell, Expressive">
+            <Label Text="Data-bound group" Style="{StaticResource SectionHeader}" />
+            <Border StyleClass="GroupedCell">
                 <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="pages:ListItem">
@@ -40,17 +40,21 @@
                                     <Label Grid.Column="2" Text="{Binding Detail}" StyleClass="Secondary" VerticalOptions="Center" />
                                     <Label Grid.Column="3" StyleClass="Chevron" />
                                 </Grid>
-                                <BoxView StyleClass="Gap" IsVisible="{Binding HasSeparator}" />
+                                <BoxView StyleClass="Separator" IsVisible="{Binding HasSeparator}" />
                             </VerticalStackLayout>
                         </DataTemplate>
                     </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
             </Border>
-            <Label Text="On Android: surfaceContainer group with 28 dp corners and 2 dp gaps; on iOS the same inset grouped section." Style="{StaticResource SectionFooter}" />
+            <Label Text="Same markup on both platforms: an inset grouped section with hairlines on iOS, a Material 3 Expressive segmented list on Android (16 dp outer / 4 dp inner corners, 2 dp gaps)." Style="{StaticResource SectionFooter}" />
 
             <Label Text="Two-line items (selectable)" Style="{StaticResource SectionHeader}" />
             <Border StyleClass="GroupedCell">
-                <CollectionView ItemsSource="{Binding Contacts}" SelectionMode="Single" HeightRequest="360">
+                <CollectionView ItemsSource="{Binding Contacts}" SelectionMode="Single" HeightRequest="{OnPlatform Android=368, Default=360}">
+                    <CollectionView.ItemsLayout>
+                        <!-- Segmented list gap on Android -->
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="{OnPlatform Android=2, Default=0}" />
+                    </CollectionView.ItemsLayout>
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="pages:ListItem">
                             <Grid StyleClass="ListRow" ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">

@@ -45,12 +45,13 @@
         <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
     </Style>
 
-    <!-- Button: M3 common button, 40dp, pill (corner radius left to the M3 default), Label Large -->
+    <!-- Button: M3 Expressive "small" (default) button: 40dp, fully round, 16dp padding (24dp is no longer
+         recommended), Label Large -->
     <Style TargetType="Button">
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontFamily" Value="sans-serif-medium" />
         <Setter Property="CharacterSpacing" Value="0.1" />
-        <Setter Property="Padding" Value="24,8" />
+        <Setter Property="Padding" Value="16,8" />
         <Setter Property="MinimumHeightRequest" Value="40" />
         <Setter Property="MinimumWidthRequest" Value="48" />
         <Setter Property="TextColor" Value="{native:SystemColor OnAccent}" />
@@ -80,9 +81,10 @@
     </Style>
     <Style TargetType="Button" Class="Outlined">
         <Setter Property="native:NativeButton.Kind" Value="Outlined" />
-        <Setter Property="TextColor" Value="{native:SystemColor Accent}" />
+        <!-- M3 Expressive outlined: outlineVariant container outline, onSurfaceVariant label -->
+        <Setter Property="TextColor" Value="{native:SystemColor TextSecondary}" />
         <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="BorderColor" Value="{native:SystemColor TextTertiary}" />
+        <Setter Property="BorderColor" Value="{native:SystemColor Separator}" />
         <Setter Property="BorderWidth" Value="1" />
     </Style>
     <Style TargetType="Button" Class="Text">
@@ -110,7 +112,7 @@
         <!-- M3 Expressive extra-small -->
         <Setter Property="native:NativeButton.Size" Value="Small" />
         <Setter Property="MinimumHeightRequest" Value="32" />
-        <Setter Property="Padding" Value="16,4" />
+        <Setter Property="Padding" Value="12,4" />
     </Style>
     <Style TargetType="Button" Class="Large">
         <!-- M3 Expressive medium -->
@@ -118,6 +120,8 @@
         <Setter Property="MinimumHeightRequest" Value="56" />
         <Setter Property="Padding" Value="24,12" />
         <Setter Property="FontSize" Value="16" />
+        <Setter Property="CharacterSpacing" Value="0.15" />
+        <Setter Property="CornerRadius" Value="28" />
     </Style>
     <Style TargetType="ImageButton">
         <!-- M3 standard icon button: 40dp, 24dp icon -->
@@ -190,11 +194,19 @@
     </Style>
 
     <!-- Selection: Switch / Slider / CheckBox / Stepper intentionally have NO style (M3 widgets) -->
+    <Style TargetType="CheckBox" Class="Leading">
+        <!-- Leading control of a list row: the 48 dp touch target overlaps the row padding so the 24 dp icon box
+             sits on the 16 dp keyline and the label follows after 12 dp -->
+        <Setter Property="Margin" Value="-12,0" />
+    </Style>
     <Style TargetType="RadioButton">
         <!-- No ControlTemplate: keeps the native MaterialRadioButton -->
         <Setter Property="FontSize" Value="16" />
         <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
-        <Setter Property="MinimumHeightRequest" Value="48" />
+        <Setter Property="MinimumHeightRequest" Value="56" />
+        <!-- A radio button is a list item with a leading control -->
+        <Setter Property="BackgroundColor" Value="{native:SystemColor GroupContainer}" />
+        <Setter Property="native:NativeList.ItemCornerRadius" Value="4" />
     </Style>
 
     <Style TargetType="IndicatorView">
@@ -219,24 +231,18 @@
         <Setter Property="Padding" Value="16" />
     </Style>
     <Style TargetType="Border" Class="GroupedCell">
-        <!-- Material 3 lists are flat and edge-to-edge on the surface: no card, no corners, no elevation.
-             (The inset grouped card is an iOS pattern; on Android the same markup renders as a plain list section.) -->
+        <!-- M3 Expressive segmented list (baseline flat lists are no longer recommended): the group clips its outer
+             corners to 16 dp and is transparent, so the 2 dp Separator gaps show the page; every ListRow draws its own
+             surfaceBright container with 4 dp corners. Use it on a Grouped page (surfaceContainer). -->
         <Setter Property="Padding" Value="0" />
-        <Setter Property="Margin" Value="0" />
-        <Setter Property="StrokeShape" Value="Rectangle" />
+        <Setter Property="Margin" Value="16,0" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 16" />
         <Setter Property="StrokeThickness" Value="0" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Shadow" Value="{x:Null}" />
     </Style>
     <Style TargetType="Border" Class="Expressive">
-        <!-- Material 3 Expressive list group (Android 16 Settings): surfaceContainer, 28 dp corners, 16 dp margins.
-             Combine with GroupedCell (StyleClass="GroupedCell, Expressive") and use Gap instead of Separator between rows. -->
-        <Setter Property="StrokeShape" Value="RoundRectangle 28" />
-        <Setter Property="StrokeThickness" Value="0" />
-        <Setter Property="Background" Value="{native:SystemColor GroupContainer}" />
-        <Setter Property="Margin" Value="16,0" />
-        <Setter Property="Padding" Value="0" />
-        <Setter Property="Shadow" Value="{x:Null}" />
+        <!-- Kept for compatibility: GroupedCell is the expressive segmented list by default since 1.4 -->
     </Style>
     <Style TargetType="Border" Class="Outlined">
         <Setter Property="StrokeThickness" Value="1" />
@@ -249,19 +255,22 @@
         <Setter Property="Shadow" Value="{x:Null}" />
     </Style>
 
-    <!-- List item: 56dp one-line / 72dp two-line, 16dp padding, state layer on selection -->
+    <!-- Expressive list item: 56dp one-line / 72dp two-line, 16dp x 10dp padding, 12dp between slots,
+         4dp container corners; selected: secondaryContainer with 16dp corners (shape morph) -->
     <Style TargetType="Grid" Class="ListRow">
-        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="Padding" Value="16,10" />
         <Setter Property="MinimumHeightRequest" Value="56" />
-        <Setter Property="ColumnSpacing" Value="16" />
-        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="ColumnSpacing" Value="12" />
+        <Setter Property="BackgroundColor" Value="{native:SystemColor GroupContainer}" />
+        <Setter Property="native:NativeList.ItemCornerRadius" Value="4" />
         <Setter Property="VisualStateManager.VisualStateGroups">
             <VisualStateGroupList>
                 <VisualStateGroup x:Name="CommonStates">
                     <VisualState x:Name="Normal" />
                     <VisualState x:Name="Selected">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PressedStateLayer}, Dark={StaticResource PressedStateLayerDark}}" />
+                            <Setter Property="BackgroundColor" Value="{native:SystemColor TonalContainer}" />
+                            <Setter Property="native:NativeList.ItemCornerRadius" Value="16" />
                         </VisualState.Setters>
                     </VisualState>
                 </VisualStateGroup>
@@ -269,17 +278,23 @@
         </Setter>
     </Style>
     <Style TargetType="BoxView" Class="Separator">
-        <!-- M3 inset divider: 1 dp outlineVariant, 16 dp from the leading edge -->
-        <Setter Property="HeightRequest" Value="1" />
-        <Setter Property="Color" Value="{native:SystemColor Separator}" />
-        <Setter Property="Margin" Value="16,0,0,0" />
+        <!-- Between the rows of a GroupedCell: segmented lists have a 2 dp gap, not a divider -->
+        <Setter Property="HeightRequest" Value="2" />
+        <Setter Property="Color" Value="Transparent" />
+        <Setter Property="Margin" Value="0" />
         <Setter Property="HorizontalOptions" Value="Fill" />
     </Style>
     <Style TargetType="BoxView" Class="Gap">
-        <!-- Expressive groups separate rows with a 2 dp gap of page background instead of a divider -->
+        <!-- Same as Separator (kept for compatibility) -->
         <Setter Property="HeightRequest" Value="2" />
-        <Setter Property="Color" Value="{native:SystemColor PageBackground}" />
+        <Setter Property="Color" Value="Transparent" />
         <Setter Property="Margin" Value="0" />
+        <Setter Property="HorizontalOptions" Value="Fill" />
+    </Style>
+    <Style TargetType="BoxView" Class="Divider">
+        <!-- M3 divider: 1 dp outlineVariant, full width -->
+        <Setter Property="HeightRequest" Value="1" />
+        <Setter Property="Color" Value="{native:SystemColor Separator}" />
         <Setter Property="HorizontalOptions" Value="Fill" />
     </Style>
     <Style TargetType="Label" Class="Chevron">
@@ -291,7 +306,13 @@
         <Setter Property="Padding" Value="0" />
         <Setter Property="BackgroundColor" Value="{native:SystemColor PageBackground}" />
     </Style>
-    <Style TargetType="ContentPage" Class="Grouped" ApplyToDerivedTypes="True" />
+    <Style TargetType="ContentPage" Class="Grouped" ApplyToDerivedTypes="True">
+        <!-- Expressive lists sit on a tinted surface (as in Android 16 Settings); the app bar takes the same color -->
+        <Setter Property="BackgroundColor" Value="{native:SystemColor GroupedBackground}" />
+        <Setter Property="Shell.BackgroundColor" Value="{native:SystemColor GroupedBackground}" />
+        <Setter Property="Shell.ForegroundColor" Value="{native:SystemColor TextPrimary}" />
+        <Setter Property="Shell.TitleColor" Value="{native:SystemColor TextPrimary}" />
+    </Style>
     <Style TargetType="ScrollView">
         <Setter Property="Padding" Value="0,0,0,16" />
     </Style>

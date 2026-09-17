@@ -3,6 +3,14 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.0] - 2026-09-17
+
+### Added
+- `Icon` class for `Button` (`NativeButton.TintsImage`): the button image is drawn as a template in the label color on both platforms, so monochrome icons follow the button role, the brand and dark mode. `NativeImage.TintColor` also works on `Button` for an explicit color. Off by default, as MAUI button images may be full-color artwork.
+
+### Fixed
+- iOS: a Shell flyout item displayed for the first time showed an inline title although `LargeTitleDisplay` was `Always`. MAUI applies large titles through the tab controller's selected navigation controller, which is not set yet at that point, and UIKit leaves the bar collapsed when large titles are enabled after layout. The library re-applies the mode after navigation and expands the bar the first time the page is shown (a scrolled position is never touched). Top-tab sections stay inline.
+
 ## [1.8.2] - 2026-09-17
 
 ### Fixed

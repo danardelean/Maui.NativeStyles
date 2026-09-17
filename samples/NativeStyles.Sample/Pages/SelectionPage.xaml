@@ -5,7 +5,7 @@
              Title="Selection"
              StyleClass="Grouped">
     <ScrollView>
-        <VerticalStackLayout Spacing="12" Padding="0,8,0,24">
+        <VerticalStackLayout Spacing="0" Padding="0,0,0,24">
 
             <Label Text="Toggles" Style="{StaticResource SectionHeader}" />
             <Border StyleClass="GroupedCell">
@@ -54,7 +54,7 @@
             </Border>
 
             <Label Text="Slider" Style="{StaticResource SectionHeader}" />
-            <VerticalStackLayout Padding="16,0" Spacing="12">
+            <VerticalStackLayout Padding="{StaticResource ContentMargin}" Spacing="12">
                 <Slider Minimum="0" Maximum="100" Value="40" />
                 <Slider Minimum="0" Maximum="100" Value="70" IsEnabled="False" />
             </VerticalStackLayout>

@@ -6,10 +6,10 @@
              Title="Buttons"
              StyleClass="Grouped">
     <ScrollView>
-        <VerticalStackLayout Spacing="12" Padding="0,8,0,24">
+        <VerticalStackLayout Spacing="0" Padding="0,0,0,24">
 
             <Label Text="Roles" Style="{StaticResource SectionHeader}" />
-            <VerticalStackLayout Spacing="12" Padding="16,0">
+            <VerticalStackLayout Spacing="12" Padding="{StaticResource ContentMargin}">
                 <Button Text="Default (plain / filled)" />
                 <Button Text="Filled" StyleClass="Filled" />
                 <Button Text="Tonal / Tinted" StyleClass="Tonal" />
@@ -20,27 +20,27 @@
             </VerticalStackLayout>
 
             <Label Text="Destructive" Style="{StaticResource SectionHeader}" />
-            <VerticalStackLayout Spacing="12" Padding="16,0">
+            <VerticalStackLayout Spacing="12" Padding="{StaticResource ContentMargin}">
                 <Button Text="Delete account" StyleClass="Filled, Destructive" />
                 <Button Text="Remove" StyleClass="Text, Destructive" />
             </VerticalStackLayout>
 
             <Label Text="Sizes" Style="{StaticResource SectionHeader}" />
-            <HorizontalStackLayout Spacing="12" Padding="16,0">
+            <HorizontalStackLayout Spacing="12" Padding="{StaticResource ContentMargin}">
                 <Button Text="Small" StyleClass="Filled, Small" VerticalOptions="Center" />
                 <Button Text="Default" StyleClass="Filled" VerticalOptions="Center" />
                 <Button Text="Large" StyleClass="Filled, Large" VerticalOptions="Center" />
             </HorizontalStackLayout>
 
             <Label Text="States" Style="{StaticResource SectionHeader}" />
-            <VerticalStackLayout Spacing="12" Padding="16,0">
+            <VerticalStackLayout Spacing="12" Padding="{StaticResource ContentMargin}">
                 <Button Text="Disabled filled" StyleClass="Filled" IsEnabled="False" />
                 <Button Text="Disabled plain" IsEnabled="False" />
                 <Button Text="With icon" StyleClass="Tonal" ImageSource="tab_feedback.svg" />
             </VerticalStackLayout>
 
             <Label Text="Floating over content (Liquid Glass)" Style="{StaticResource SectionHeader}" />
-            <Grid Margin="16,0" HeightRequest="240">
+            <Grid Margin="{StaticResource ContentMargin}" HeightRequest="240">
                 <Border Padding="0">
                     <Image Source="dotnet_bot.png" Aspect="AspectFill" />
                 </Border>

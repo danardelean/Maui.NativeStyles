@@ -3,6 +3,14 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.5.0] - 2026-09-17
+
+### Added
+- `CarouselView` implicit styles and the `CarouselItem` class for `Border`. iOS: leading-aligned paging (card on the 20 pt content margin, 12 pt gap, next card peeking from the trailing edge). Android: Material 3 *uncontained* carousel (16 dp leading padding, 8 dp gaps, 28 dp item corners, items bleed off the trailing edge). Carousels no longer loop. MAUI centers the current item and averages the peek insets, so the alignment uses a symmetric peek plus a negative leading margin.
+
+### Changed
+- `IndicatorView`: on iOS the native `UIPageControl` is no longer scaled (`IndicatorSize` 6) and uses `label` / `tertiaryLabel`; both platforms center it and leave 8 units above it.
+
 ## [1.4.0] - 2026-09-17
 
 Android audit against the current Material 3 Expressive component specs on m3.material.io.

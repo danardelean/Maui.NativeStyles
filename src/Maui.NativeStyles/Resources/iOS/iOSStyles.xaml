@@ -203,10 +203,27 @@
         </Setter>
     </Style>
 
+    <!-- Paging carousel, as the horizontally paged sections of the App Store / Music: the current card is aligned with
+         the 20pt content margin and the next one peeks in from the trailing edge; native carousels do not loop.
+         MAUI centers the current item and averages the peek insets, so the leading alignment is obtained with a
+         symmetric 44pt peek and a carousel that starts 24pt (44 - 20) before the leading edge. -->
+    <Style TargetType="CarouselView">
+        <Setter Property="Loop" Value="False" />
+        <Setter Property="PeekAreaInsets" Value="44,0" />
+        <Setter Property="Margin" Value="-24,0,0,0" />
+        <Setter Property="HorizontalScrollBarVisibility" Value="Never" />
+    </Style>
+    <Style TargetType="Border" Class="CarouselItem">
+        <!-- 12pt between cards (the trailing margin is part of the page width, so snapping stays aligned) -->
+        <Setter Property="Margin" Value="0,0,12,0" />
+    </Style>
+    <!-- UIPageControl: IndicatorSize 6 keeps MAUI from scaling the native dots; system colors for a light/dark page -->
     <Style TargetType="IndicatorView">
-        <Setter Property="IndicatorColor" Value="{native:SystemColor Separator}" />
+        <Setter Property="IndicatorColor" Value="{native:SystemColor TextTertiary}" />
         <Setter Property="SelectedIndicatorColor" Value="{native:SystemColor TextPrimary}" />
-        <Setter Property="IndicatorSize" Value="8" />
+        <Setter Property="IndicatorSize" Value="6" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="Margin" Value="0,8,0,0" />
     </Style>
 
     <!-- Feedback: ProgressBar / ActivityIndicator intentionally have NO style (system tint) -->

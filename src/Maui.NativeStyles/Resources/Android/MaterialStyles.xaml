@@ -209,10 +209,31 @@
         <Setter Property="native:NativeList.ItemCornerRadius" Value="4" />
     </Style>
 
+    <!-- M3 carousel, "uncontained" layout: 16 dp leading padding, 8 dp between items, items bleed off the trailing
+         edge, 28 dp item corners, 8 dp top/bottom padding. Material carousels do not loop.
+         MAUI centers the current item and averages the peek insets, so the leading alignment is obtained with a
+         symmetric 56 dp peek and a carousel that starts 40 dp (56 - 16) before the leading edge. -->
+    <Style TargetType="CarouselView">
+        <Setter Property="Loop" Value="False" />
+        <Setter Property="PeekAreaInsets" Value="56,0" />
+        <Setter Property="HorizontalScrollBarVisibility" Value="Never" />
+        <Setter Property="Margin" Value="-40,8,0,8" />
+    </Style>
+    <Style TargetType="Border" Class="CarouselItem">
+        <Setter Property="StrokeShape" Value="RoundRectangle 28" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="Background" Value="{native:SystemColor GroupContainer}" />
+        <Setter Property="Shadow" Value="{x:Null}" />
+        <Setter Property="Padding" Value="20,16" />
+        <Setter Property="Margin" Value="0,0,8,0" />
+    </Style>
+    <!-- Material has no page-indicator component; dots follow the common Google pattern: 8 dp, primary / outlineVariant -->
     <Style TargetType="IndicatorView">
         <Setter Property="IndicatorColor" Value="{native:SystemColor Separator}" />
         <Setter Property="SelectedIndicatorColor" Value="{native:SystemColor Accent}" />
         <Setter Property="IndicatorSize" Value="8" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="Margin" Value="0,8,0,0" />
     </Style>
 
     <!-- Feedback: ProgressBar / ActivityIndicator intentionally have NO style -->

@@ -39,6 +39,7 @@ public static partial class SystemColors
 			SystemColorRole.SecondaryFill => Resource.Attribute.colorSurfaceContainerHigh,
 			SystemColorRole.TonalContainer => Resource.Attribute.colorSecondaryContainer,
 			SystemColorRole.OnTonalContainer => Resource.Attribute.colorOnSecondaryContainer,
+			SystemColorRole.Gray => Resource.Attribute.colorOutline,
 			_ => 0,
 		};
 		if (attribute == 0)

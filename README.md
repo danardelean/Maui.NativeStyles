@@ -101,6 +101,14 @@ react to runtime changes:
 | BoxView `Divider` | full-width hairline | M3 divider: 1 dp `outlineVariant` |
 | CheckBox `Leading` | — | leading control of a list row on the 16 dp keyline (native `RadioButton` rows are aligned automatically) |
 | SearchBar / `Shell.SearchHandler` | 60 pt glass capsule / system navigation-bar search | M3 search bar: 56 dp pill, `surfaceContainerHigh` |
+| `native:NativeSwipeItem` (in `SwipeItems`) | separated, continuously rounded action (26 pt, a capsule on a 52 pt row): `systemGray` / accent / `systemRed`, white content | M3 swipe-to-reveal button: fully round 56 dp, tonal (`secondaryContainer`) / `primary` / `error`, 4 dp apart |
+| `native:SegmentedControl` | `UISegmentedControl` | M3 Expressive connected button group (tonal toggles, 8 dp inner corners, selected button fully round) |
+| Shell top tabs | `UISegmentedControl` laid over MAUI's tab strip | M3 primary tabs: `primary` label and indicator, fixed tabs sharing the width (scrollable above four) |
+| Shell flyout (`ItemTemplate` / `MenuItemTemplate`, Label `FlyoutHeader`) | sidebar: grouped background, 52 pt rows, continuous `systemFill` selection, accent icons, large-title header | M3 navigation drawer: `surfaceContainerLow`, 56 dp items inset 12 dp with a full-round `secondaryContainer` indicator, title-small headline |
+| TabbedPage / NavigationPage | glass tab bar (supports `NativeShell.TabBarMinimizeBehavior`), transparent navigation bar in the page color with large titles | navigation bar at the bottom (flexible, 64 dp), flat app bar in the page color |
+| RefreshView | system `UIRefreshControl` | `primary` arrow on a `surfaceContainerHigh` disc |
+| Label `EmptyState` | title 3 semibold, `secondaryLabel`, centered | body large, `onSurfaceVariant`, centered |
+| `native:NativeImage.TintColor` | template rendering with `tintColor` | `SrcIn` color filter |
 | CarouselView + Border `CarouselItem` | leading-aligned paging: card on the 20 pt content margin, 12 pt gap, next card peeking from the trailing edge, no loop | M3 **uncontained carousel**: 16 dp leading padding, 8 dp gaps, 28 dp item corners, items bleed off the trailing edge, no loop |
 | IndicatorView | native `UIPageControl` at its natural size (`label` / `tertiaryLabel`) | 8 dp dots, `primary` / `outlineVariant` (Material has no page-indicator component) |
 | Label `Chevron` | `›` in `tertiaryLabel` | hidden (Material lists have no chevrons) |
@@ -183,6 +191,30 @@ views created by MAUI after navigation, so the library restyles them from an act
 (`ShellChromeStyler`). Text fields, cards (12 dp), switches, sliders and progress indicators already match through
 `UseMaterial3` and are left untouched.
 
+## Swipe actions, segmented choice and navigation chrome
+
+```xml
+<SwipeView.RightItems>
+    <!-- MAUI lays RightItems out from the trailing edge: declare the primary action first -->
+    <SwipeItems Mode="Reveal">
+        <native:NativeSwipeItem Text="Archive" Icon="archive.png" Role="Primary" Invoked="OnArchive" />
+        <native:NativeSwipeItem Text="Delete" Role="Destructive" />
+        <native:NativeSwipeItem Text="Flag" Icon="flag.png" />
+    </SwipeItems>
+</SwipeView.RightItems>
+
+<native:SegmentedControl SelectedIndex="{Binding Range}">
+    <x:String>Day</x:String>
+    <x:String>Week</x:String>
+    <x:String>Month</x:String>
+</native:SegmentedControl>
+```
+
+`NativeSwipeItem` shows its icon when it has one (tinted with the label color, also for bitmaps through
+`NativeImage.TintColor`) and its text otherwise. The Shell flyout, top tabs, `TabbedPage` and `NavigationPage` need no
+markup: the implicit styles and the platform hooks restyle them. The legacy `ListView`, `TableView` and `Frame` are
+intentionally not styled: use `CollectionView` / `GroupedCell` and `Border` (`Card`).
+
 ## Known limitations
 
 - **Runtime theme switch on Android**: the status bar and the bottom navigation indicator do not update until the app restarts (MAUI Shell limitation).
@@ -190,6 +222,7 @@ views created by MAUI after navigation, so the library restyles them from an act
 - **Do not set `Shell.TabBarBackgroundColor` on iOS**: it paints an opaque slab behind the glass tab bar ([#37423](https://github.com/dotnet/maui/issues/37423)).
 - iOS `CheckBox` is drawn by MAUI (iOS has no checkbox); it is tinted with the accent color. iOS `RadioButton` uses a "row with checkmark" `ControlTemplate`.
 - M3 Expressive widgets that need Material Components 1.13+ (loading indicator, wavy progress, button shape morph on press, button groups, split buttons) are not available: MAUI 10.0.101 ships Material Components 1.12 and the newer binding pulls conflicting AndroidX versions.
+- List rows have no pressed feedback (ripple / highlight): MAUI item containers own the touch handling, and making the row view clickable would break `CollectionView` selection.
 - Android `Stepper` is a MAUI-drawn control (Android has no stepper); the library restyles its two buttons as Material 3 outlined icon buttons.
 - The iOS 15–18 fallback paths are guarded by `OperatingSystem.IsIOSVersionAtLeast(26)` but were not exercised on an iOS 18 simulator during development.
 - With `UseMaterial3`, Entry and the other input controls use internal `*Handler2` handlers; their mappers are reached through reflection (see `NativeStyles.Android.cs`), and a debug message is logged if the type is not found. These types become public in MAUI 11.

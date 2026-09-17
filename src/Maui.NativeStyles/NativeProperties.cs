@@ -104,3 +104,15 @@ public static class NativeList
 	public static double GetItemCornerRadius(BindableObject view) => (double)view.GetValue(ItemCornerRadiusProperty);
 	public static void SetItemCornerRadius(BindableObject view, double value) => view.SetValue(ItemCornerRadiusProperty, value);
 }
+
+/// <summary>Template-style tinting for <see cref="Image"/> (UIImageView.tintColor / ImageView color filter).</summary>
+public static class NativeImage
+{
+	/// <summary>Draws the image as a single-color template. Null (default) keeps the original colors.</summary>
+	public static readonly BindableProperty TintColorProperty = BindableProperty.CreateAttached(
+		"TintColor", typeof(Color), typeof(NativeImage), null,
+		propertyChanged: (b, _, _) => NativeStylesExtensions.Refresh(b));
+
+	public static Color? GetTintColor(BindableObject view) => (Color?)view.GetValue(TintColorProperty);
+	public static void SetTintColor(BindableObject view, Color? value) => view.SetValue(TintColorProperty, value);
+}

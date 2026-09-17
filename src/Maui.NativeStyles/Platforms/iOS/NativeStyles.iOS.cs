@@ -12,6 +12,7 @@ public static partial class NativeStylesExtensions
 	static partial void RegisterPlatformHandlers(IMauiHandlersCollection handlers)
 	{
 		handlers.AddHandler<GlassView, GlassViewHandler>();
+		handlers.AddHandler<SegmentedControl, SegmentedControlHandler>();
 		// Entry: same EntryHandler and mapper, but a UITextField that supports text insets and continuous corners.
 		handlers.AddHandler<Entry, NativeEntryHandler>();
 	}
@@ -47,9 +48,21 @@ public static partial class NativeStylesExtensions
 		TimePickerHandler.Mapper.AppendToMapping(MappingKey, (h, v) => MapCompactPickerChrome(h.PlatformView, v));
 		TimePickerHandler.Mapper.AppendToMapping(nameof(IView.Background), (h, v) => MapCompactPickerChrome(h.PlatformView, v));
 
+		// NativeImage.TintColor: template rendering, re-applied when MAUI finishes loading the image source.
+		ImageHandler.Mapper.AppendToMapping(MappingKey, MapImageTint);
+
 		// Label: MAUI FontAttributes has no Semibold; NativeText.Weight supplies the SF Pro weight.
 		LabelHandler.Mapper.AppendToMapping(MappingKey, MapLabelWeight);
 		LabelHandler.Mapper.AppendToMapping(nameof(ILabel.Font), MapLabelWeight);
+
+		// NavigationPage: MAUI installs an opaque bar with a hairline; iOS 26 bars are transparent over the content
+		// (the system scroll-edge effect takes care of legibility) unless the app sets a bar color.
+		foreach (var key in new[] { MappingKey, NavigationPage.BarBackgroundColorProperty.PropertyName, NavigationPage.BarBackgroundProperty.PropertyName, NavigationPage.CurrentPageProperty.PropertyName })
+			Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.Mapper.AppendToMapping(key, MapNavigationBar);
+
+		// TabbedPage: NativeShell.TabBarMinimizeBehavior works on it as well.
+		Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.Mapper.AppendToMapping(MappingKey, MapTabbedPageMinimize);
+		Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.Mapper.AppendToMapping(nameof(TabbedPage.CurrentPage), MapTabbedPageMinimize);
 
 		// Shell: iOS 26 tab bar minimize behavior. The UITabBarController is created per ShellItem after navigation,
 		// so the value is applied on every Navigated event.
@@ -69,14 +82,118 @@ public static partial class NativeStylesExtensions
 			return;
 		ApplyTabBarMinimizeBehavior(shell);
 		// The page's platform view is created after Navigated fires: register its scroll view on the next loop.
-		MainThread.BeginInvokeOnMainThread(() => ApplyTabBarMinimizeBehavior(shell));
+		MainThread.BeginInvokeOnMainThread(() =>
+		{
+			ApplyTabBarMinimizeBehavior(shell);
+			ApplySegmentedTopTabs(shell);
+		});
+		// A section shown for the first time builds its header while its view loads, after this callback
+		shell.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(60), () => ApplySegmentedTopTabs(shell));
+	}
+
+	static void MapTabbedPageMinimize(Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer renderer, TabbedPage page)
+	{
+		var behavior = NativeShell.GetTabBarMinimizeBehavior(page);
+		ApplyTabBarMinimizeBehavior(renderer, behavior);
+		// The selected page's scroll view exists only after it has been shown
+		page.Dispatcher.Dispatch(() => ApplyTabBarMinimizeBehavior(renderer, behavior));
+	}
+
+	static void MapNavigationBar(Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer renderer, NavigationPage page)
+	{
+		if (page.BarBackgroundColor is not null || !Brush.IsNullOrEmpty(page.BarBackground))
+			return;
+		var appearance = new UINavigationBarAppearance();
+		if (OperatingSystem.IsIOSVersionAtLeast(26))
+			appearance.ConfigureWithTransparentBackground();
+		else
+			appearance.ConfigureWithDefaultBackground();
+		var bar = renderer.NavigationBar;
+		bar.StandardAppearance = appearance;
+		bar.ScrollEdgeAppearance = appearance;
+		bar.CompactAppearance = appearance;
+		// MAUI lays the page out below the bar, so the transparent bar shows the navigation controller's own view
+		if (page.CurrentPage?.BackgroundColor is { } background && renderer.View is { } view)
+			view.BackgroundColor = background.ToPlatform();
+	}
+
+	const int TopTabsOverlayTag = 0x4E5354;
+
+	/// <summary>
+	/// Shell top tabs: MAUI draws an Android-like strip of underlined labels. iOS switches between sibling views with a
+	/// UISegmentedControl, so one is laid over MAUI's header and drives ShellSection.CurrentItem.
+	/// </summary>
+	static void ApplySegmentedTopTabs(Shell shell)
+	{
+		if ((shell.Handler as IPlatformViewHandler)?.ViewController is not { } root)
+			return;
+		foreach (var header in EnumerateControllers<Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader>(root))
+		{
+			if (header.ShellSection is not { } section || header.CollectionView is not { } strip)
+				continue;
+			var items = ((IShellSectionController)section).GetItems();
+			// The overlay lives inside MAUI's strip so it follows it when the large title collapses or the device rotates
+			var overlay = strip.ViewWithTag(TopTabsOverlayTag);
+			UISegmentedControl control;
+			if (overlay is null)
+			{
+				overlay = new UIView(strip.Bounds) { Tag = TopTabsOverlayTag, AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight };
+				overlay.Layer.ZPosition = 10000; // MAUI's selection bar uses 9001
+				control = new UISegmentedControl { TranslatesAutoresizingMaskIntoConstraints = false };
+				control.ValueChanged += (_, _) =>
+				{
+					var current = ((IShellSectionController)section).GetItems();
+					if (control.SelectedSegment >= 0 && control.SelectedSegment < current.Count)
+						section.CurrentItem = current[(int)control.SelectedSegment];
+				};
+				overlay.AddSubview(control);
+				strip.AddSubview(overlay);
+				strip.ScrollEnabled = false;
+				strip.ShowsHorizontalScrollIndicator = false;
+				NSLayoutConstraint.ActivateConstraints(
+				[
+					control.LeadingAnchor.ConstraintEqualTo(overlay.LeadingAnchor, 20),
+					control.TrailingAnchor.ConstraintEqualTo(overlay.TrailingAnchor, -20),
+					control.CenterYAnchor.ConstraintEqualTo(overlay.CenterYAnchor),
+				]);
+			}
+			else
+			{
+				control = (UISegmentedControl)overlay.Subviews[0];
+			}
+
+			overlay.BackgroundColor = (shell.CurrentPage?.BackgroundColor)?.ToPlatform() ?? UIColor.SystemBackground;
+			strip.BringSubviewToFront(overlay);
+			if (control.NumberOfSegments != items.Count || Enumerable.Range(0, items.Count).Any(i => control.TitleAt(i) != items[i].Title))
+			{
+				control.RemoveAllSegments();
+				for (var i = 0; i < items.Count; i++)
+					control.InsertSegment(items[i].Title ?? string.Empty, i, false);
+			}
+			control.SelectedSegment = items.IndexOf(section.CurrentItem);
+		}
+	}
+
+	static IEnumerable<T> EnumerateControllers<T>(UIViewController controller) where T : UIViewController
+	{
+		if (controller is T match)
+			yield return match;
+		foreach (var child in controller.ChildViewControllers)
+			foreach (var found in EnumerateControllers<T>(child))
+				yield return found;
 	}
 
 	static void ApplyTabBarMinimizeBehavior(Shell shell)
 	{
-		if (!OperatingSystem.IsIOSVersionAtLeast(26) || (shell.Handler as IPlatformViewHandler)?.ViewController is not { } root)
+		if ((shell.Handler as IPlatformViewHandler)?.ViewController is { } root)
+			ApplyTabBarMinimizeBehavior(root, NativeShell.GetTabBarMinimizeBehavior(shell));
+	}
+
+	static void ApplyTabBarMinimizeBehavior(UIViewController root, TabBarMinimizeBehavior requested)
+	{
+		if (!OperatingSystem.IsIOSVersionAtLeast(26))
 			return;
-		var behavior = NativeShell.GetTabBarMinimizeBehavior(shell) switch
+		var behavior = requested switch
 		{
 			TabBarMinimizeBehavior.Never => UITabBarMinimizeBehavior.Never,
 			TabBarMinimizeBehavior.OnScrollDown => UITabBarMinimizeBehavior.OnScrollDown,
@@ -114,6 +231,40 @@ public static partial class NativeStylesExtensions
 		if (controller.PresentedViewController is { } presented)
 			foreach (var found in EnumerateTabBarControllers(presented))
 				yield return found;
+	}
+
+	static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Image, object> s_tintedImages = new();
+
+	static void MapImageTint(IImageHandler handler, Microsoft.Maui.IImage image)
+	{
+		if (image is not BindableObject bindable)
+			return;
+		var view = handler.PlatformView;
+		var tint = NativeImage.GetTintColor(bindable);
+		view.TintColor = tint?.ToPlatform();
+		if (tint is null)
+			return;
+		ApplyTemplate(view);
+
+		// MAUI assigns UIImageView.Image when the source finishes loading (IsLoading goes back to false)
+		if (image is Image element && !s_tintedImages.TryGetValue(element, out _))
+		{
+			s_tintedImages.Add(element, element);
+			element.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == Image.IsLoadingProperty.PropertyName && sender is Image { IsLoading: false, Handler: IImageHandler current }
+					&& NativeImage.GetTintColor((Image)sender) is not null)
+				{
+					ApplyTemplate(current.PlatformView);
+				}
+			};
+		}
+
+		static void ApplyTemplate(UIImageView target)
+		{
+			if (target.Image is { RenderingMode: not UIImageRenderingMode.AlwaysTemplate } original)
+				target.Image = original.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+		}
 	}
 
 	/// <summary>Corner radius of iOS 26 grouped shapes; a 52pt single-row field therefore reads as a capsule.</summary>

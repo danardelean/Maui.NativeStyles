@@ -34,6 +34,7 @@ public static partial class SystemColors
 			SystemColorRole.SecondaryFill => UIColor.TertiarySystemFill,
 			SystemColorRole.TonalContainer => UIColor.SystemBlue.ColorWithAlpha(0.15f),
 			SystemColorRole.OnTonalContainer => UIColor.SystemBlue,
+			SystemColorRole.Gray => UIColor.SystemGray,
 			_ => null,
 		};
 		if (color is null)

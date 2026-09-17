@@ -228,6 +228,19 @@
         <Setter Property="Margin" Value="0,0,8,0" />
     </Style>
     <!-- Material has no page-indicator component; dots follow the common Google pattern: 8 dp, primary / outlineVariant -->
+    <!-- Pull to refresh: M3 indicator, primary arrow on a surfaceContainerHigh disc -->
+    <Style TargetType="RefreshView">
+        <Setter Property="RefreshColor" Value="{native:SystemColor Accent}" />
+        <Setter Property="BackgroundColor" Value="{native:SystemColor SecondaryFill}" />
+    </Style>
+    <Style TargetType="Label" Class="EmptyState">
+        <!-- CollectionView.EmptyView text: body large, onSurfaceVariant, centered -->
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="TextColor" Value="{native:SystemColor TextSecondary}" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="Margin" Value="32" />
+    </Style>
     <Style TargetType="IndicatorView">
         <Setter Property="IndicatorColor" Value="{native:SystemColor Separator}" />
         <Setter Property="SelectedIndicatorColor" Value="{native:SystemColor Accent}" />
@@ -342,11 +355,89 @@
          dark mode). Only the shadow is removed, as M3 app bars are flat. -->
     <Style TargetType="Shell" ApplyToDerivedTypes="True">
         <Setter Property="Shell.NavBarHasShadow" Value="False" />
+        <!-- Flyout = M3 navigation drawer: surfaceContainerLow sheet, 56 dp items inset 12 dp with a full-round
+             secondaryContainer active indicator, 24 dp icon, label large -->
+        <Setter Property="FlyoutBackgroundColor" Value="{native:SystemColor CardBackground}" />
+        <Setter Property="Shell.ItemTemplate">
+            <DataTemplate>
+                <Grid HeightRequest="56" Padding="12,0" BackgroundColor="Transparent">
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroupList>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal">
+                                    <VisualState.Setters>
+                                        <Setter TargetName="Indicator" Property="Border.Background" Value="Transparent" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Selected">
+                                    <VisualState.Setters>
+                                        <Setter TargetName="Indicator" Property="Border.Background" Value="{native:SystemColor TonalContainer}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateGroupList>
+                    </VisualStateManager.VisualStateGroups>
+                    <Border x:Name="Indicator" StrokeShape="RoundRectangle 28" StrokeThickness="0" Background="Transparent" Padding="16,0,24,0" Shadow="{x:Null}" Margin="0">
+                        <Grid ColumnDefinitions="24,*" ColumnSpacing="12">
+                            <Image Source="{Binding Icon}" WidthRequest="24" HeightRequest="24" VerticalOptions="Center" native:NativeImage.TintColor="{native:SystemColor TextSecondary}" />
+                            <Label Grid.Column="1" Text="{Binding Title}" VerticalOptions="Center" LineBreakMode="TailTruncation" FontSize="14" FontFamily="sans-serif-medium" CharacterSpacing="0.1" TextColor="{native:SystemColor TextSecondary}" />
+                        </Grid>
+                    </Border>
+                </Grid>
+            </DataTemplate>
+        </Setter>
+        <Setter Property="Shell.MenuItemTemplate">
+            <DataTemplate>
+                <Grid HeightRequest="56" Padding="12,0" BackgroundColor="Transparent">
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroupList>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal">
+                                    <VisualState.Setters>
+                                        <Setter TargetName="Indicator" Property="Border.Background" Value="Transparent" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Selected">
+                                    <VisualState.Setters>
+                                        <Setter TargetName="Indicator" Property="Border.Background" Value="{native:SystemColor TonalContainer}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateGroupList>
+                    </VisualStateManager.VisualStateGroups>
+                    <Border x:Name="Indicator" StrokeShape="RoundRectangle 28" StrokeThickness="0" Background="Transparent" Padding="16,0,24,0" Shadow="{x:Null}" Margin="0">
+                        <Grid ColumnDefinitions="24,*" ColumnSpacing="12">
+                            <Image Source="{Binding Icon}" WidthRequest="24" HeightRequest="24" VerticalOptions="Center" native:NativeImage.TintColor="{native:SystemColor TextSecondary}" />
+                            <Label Grid.Column="1" Text="{Binding Text}" VerticalOptions="Center" LineBreakMode="TailTruncation" FontSize="14" FontFamily="sans-serif-medium" CharacterSpacing="0.1" TextColor="{native:SystemColor TextSecondary}" />
+                        </Grid>
+                    </Border>
+                </Grid>
+            </DataTemplate>
+        </Setter>
     </Style>
-    <Style TargetType="NavigationPage">
-        <Setter Property="BarBackgroundColor" Value="{native:SystemColor PageBackground}" />
+    <Style TargetType="Label" Class="FlyoutHeader">
+        <!-- Navigation drawer headline: title small, onSurfaceVariant, 28 dp from the edge, 56 dp tall -->
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontFamily" Value="sans-serif-medium" />
+        <Setter Property="CharacterSpacing" Value="0.1" />
+        <Setter Property="TextColor" Value="{native:SystemColor TextSecondary}" />
+        <Setter Property="Padding" Value="28,18" />
+        <Setter Property="MinimumHeightRequest" Value="56" />
+        <Setter Property="VerticalTextAlignment" Value="Center" />
+        <Setter Property="BackgroundColor" Value="{native:SystemColor CardBackground}" />
+    </Style>
+    <!-- Non-Shell navigation. The app bar takes the color of the page below it (flat M3 app bar); the library colors
+         the toolbar and the strip behind the status bar at runtime unless BarBackgroundColor is set explicitly. -->
+    <Style TargetType="NavigationPage" ApplyToDerivedTypes="True">
         <Setter Property="BarTextColor" Value="{native:SystemColor TextPrimary}" />
         <Setter Property="IconColor" Value="{native:SystemColor TextPrimary}" />
+    </Style>
+    <!-- TabbedPage: M3 navigation bar at the bottom (MAUI defaults to top tabs on a primary-colored strip) -->
+    <Style TargetType="TabbedPage" ApplyToDerivedTypes="True">
+        <Setter Property="android:TabbedPage.ToolbarPlacement" Value="Bottom" />
+        <Setter Property="BarBackgroundColor" Value="{native:SystemColor GroupedBackground}" />
+        <Setter Property="SelectedTabColor" Value="{native:SystemColor OnTonalContainer}" />
+        <Setter Property="UnselectedTabColor" Value="{native:SystemColor TextSecondary}" />
     </Style>
 
     <!-- GlassView on Android = M3 elevated card (rounded background + elevation from the handler) -->

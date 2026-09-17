@@ -5,16 +5,30 @@
        xmlns:pages="clr-namespace:NativeStyles.Sample.Pages"
        xmlns:native="clr-namespace:NativeStyles;assembly=Maui.NativeStyles"
        native:NativeShell.TabBarMinimizeBehavior="OnScrollDown"
+       FlyoutBehavior="Flyout"
        Title="NativeStyles">
 
-    <TabBar>
+    <Shell.FlyoutHeader>
+        <Label Text="NativeStyles" StyleClass="FlyoutHeader" />
+    </Shell.FlyoutHeader>
+
+    <!-- Bottom tabs; the last tab hosts three pages as top tabs -->
+    <FlyoutItem Title="Controls" Icon="tab_buttons.svg" FlyoutDisplayOptions="AsSingleItem" Route="controls">
         <ShellContent Title="Buttons" Icon="tab_buttons.svg" ContentTemplate="{DataTemplate pages:ButtonsPage}" Route="buttons" />
         <ShellContent Title="Inputs" Icon="tab_inputs.svg" ContentTemplate="{DataTemplate pages:InputsPage}" Route="inputs" />
         <ShellContent Title="Selection" Icon="tab_selection.svg" ContentTemplate="{DataTemplate pages:SelectionPage}" Route="selection" />
         <ShellContent Title="Feedback" Icon="tab_feedback.svg" ContentTemplate="{DataTemplate pages:FeedbackPage}" Route="feedback" />
-        <ShellContent Title="Lists" Icon="tab_lists.svg" ContentTemplate="{DataTemplate pages:ListsPage}" Route="lists" />
-        <ShellContent Title="Views" Icon="tab_views.svg" ContentTemplate="{DataTemplate pages:ViewsPage}" Route="views" />
-        <ShellContent Title="Type" Icon="tab_typography.svg" ContentTemplate="{DataTemplate pages:TypographyPage}" Route="typography" />
-    </TabBar>
+        <Tab Title="Content" Icon="tab_lists.svg" Route="content">
+            <ShellContent Title="Lists" ContentTemplate="{DataTemplate pages:ListsPage}" Route="lists" />
+            <ShellContent Title="Views" ContentTemplate="{DataTemplate pages:ViewsPage}" Route="views" />
+            <ShellContent Title="Type" ContentTemplate="{DataTemplate pages:TypographyPage}" Route="typography" />
+        </Tab>
+    </FlyoutItem>
+
+    <FlyoutItem Title="Typography" Icon="tab_typography.svg" Route="type-only">
+        <ShellContent ContentTemplate="{DataTemplate pages:TypographyPage}" />
+    </FlyoutItem>
+
+    <MenuItem Text="Classic navigation (TabbedPage)" IconImageSource="tab_views.svg" Clicked="OnClassicNavigationClicked" />
 
 </Shell>

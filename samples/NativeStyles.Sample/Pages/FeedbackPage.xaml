@@ -4,6 +4,11 @@
              x:Class="NativeStyles.Sample.Pages.FeedbackPage"
              Title="Feedback"
              StyleClass="Grouped">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Info" IconImageSource="tab_feedback.svg" />
+        <ToolbarItem Text="Refresh" Order="Secondary" />
+        <ToolbarItem Text="Settings" Order="Secondary" />
+    </ContentPage.ToolbarItems>
     <ScrollView>
         <VerticalStackLayout Spacing="0" Padding="0,0,0,24">
 

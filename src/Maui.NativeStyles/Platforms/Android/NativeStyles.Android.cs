@@ -22,6 +22,7 @@ public static partial class NativeStylesExtensions
 	static partial void RegisterPlatformHandlers(IMauiHandlersCollection handlers)
 	{
 		handlers.AddHandler<GlassView, GlassViewHandler>();
+		handlers.AddHandler<SegmentedControl, SegmentedControlHandler>();
 	}
 
 	static partial void RegisterPlatformMappers(NativeStylesOptions options)
@@ -90,6 +91,17 @@ public static partial class NativeStylesExtensions
 
 		// SearchBar: Material 3 search bar (56 dp, fully rounded, surfaceContainerHigh) instead of an underlined field.
 		HookMaterial3Mapper<ISearchBar>("SearchBarHandler2", StyleSearchBar, nameof(IView.Background));
+
+		// NativeImage.TintColor: single-color template rendering.
+		ImageHandler.Mapper.AppendToMapping(MappingKey, (handler, image) =>
+		{
+			if (image is not BindableObject bindable)
+				return;
+			if (NativeImage.GetTintColor(bindable) is { } tint)
+				handler.PlatformView.SetColorFilter(tint.ToPlatform(), PorterDuff.Mode.SrcIn!);
+			else
+				handler.PlatformView.ClearColorFilter();
+		});
 
 		// Expressive segmented lists: NativeList.ItemCornerRadius draws the item container as a rounded shape.
 		ViewHandler.ViewMapper.AppendToMapping(MappingKey, MapListItemShape);
@@ -173,6 +185,9 @@ public static partial class NativeStylesExtensions
 			case Google.Android.Material.BottomNavigation.BottomNavigationView navigation:
 				StyleNavigationBar(navigation);
 				return;
+			case Google.Android.Material.Tabs.TabLayout tabs:
+				StyleTabs(tabs);
+				return;
 			case Google.Android.Material.AppBar.AppBarLayout appBar:
 				StyleAppBar(appBar);
 				break; // the toolbar inside may host the search card
@@ -192,6 +207,15 @@ public static partial class NativeStylesExtensions
 	{
 		if (bar.Context is not { } context)
 			return;
+		// TabbedPage reserves the baseline 80 dp below its content (MAUI reads m3_bottom_nav_min_height); follow the bar.
+		var barHeight = (int)context.ToPixels(64);
+		if (bar.RootView?.FindViewById(Microsoft.Maui.Resource.Id.navigationlayout_content) is { LayoutParameters: ViewGroup.MarginLayoutParams content } contentView
+			&& content.BottomMargin == context.Resources!.GetDimensionPixelSize(Resource.Dimension.m3_bottom_nav_min_height))
+		{
+			content.BottomMargin = barHeight;
+			contentView.RequestLayout();
+		}
+
 		var indicatorWidth = (int)context.ToPixels(56);
 		if (bar.ItemActiveIndicatorWidth == indicatorWidth && bar.ItemTextColor == s_navigationLabelColors)
 			return;
@@ -210,11 +234,44 @@ public static partial class NativeStylesExtensions
 		bar.ItemPaddingTop = (int)context.ToPixels(6);
 		bar.ItemPaddingBottom = (int)context.ToPixels(6);
 		bar.ActiveIndicatorLabelPadding = (int)context.ToPixels(4);
-		bar.SetMinimumHeight((int)context.ToPixels(64));
+		bar.SetMinimumHeight(barHeight);
 		bar.SetBackgroundColor(new AColor(Role(Resource.Attribute.colorSurfaceContainer)));
 	}
 
+	static (NavigationPage? Navigation, Page? Leaf) CurrentNavigation(Page? page)
+	{
+		NavigationPage? navigation = null;
+		for (var depth = 0; page is not null && depth < 8; depth++)
+		{
+			switch (page)
+			{
+				case NavigationPage n: navigation = n; page = n.CurrentPage; break;
+				case TabbedPage t: page = t.CurrentPage; break;
+				case FlyoutPage f: page = f.Detail; break;
+				default: return (navigation, page);
+			}
+		}
+		return (navigation, page);
+	}
+
 	static Android.Content.Res.ColorStateList? s_navigationLabelColors;
+
+	/// <summary>
+	/// M3 primary tabs (Shell top tabs, TabbedPage top tabs): primary label and label-width indicator for the active
+	/// tab, onSurfaceVariant otherwise, fixed tabs sharing the width (scrollable above four), transparent over the app bar.
+	/// </summary>
+	static void StyleTabs(Google.Android.Material.Tabs.TabLayout tabs)
+	{
+		var primary = MaterialColors.GetColor(tabs, Resource.Attribute.colorPrimary);
+		var mode = tabs.TabCount > 4 ? Google.Android.Material.Tabs.TabLayout.ModeScrollable : Google.Android.Material.Tabs.TabLayout.ModeFixed;
+		if (tabs.TabTextColors?.GetColorForState([Android.Resource.Attribute.StateSelected], AColor.Transparent) == primary && tabs.TabMode == mode)
+			return;
+		tabs.SetTabTextColors(MaterialColors.GetColor(tabs, Resource.Attribute.colorOnSurfaceVariant), primary);
+		tabs.SetSelectedTabIndicatorColor(primary);
+		tabs.TabMode = mode;
+		tabs.TabGravity = Google.Android.Material.Tabs.TabLayout.GravityFill;
+		tabs.SetBackgroundColor(AColor.Transparent);
+	}
 
 	/// <summary>
 	/// MAUI tints the Toolbar only; under edge-to-edge the AppBarLayout also covers the status bar, so it must take the
@@ -222,12 +279,28 @@ public static partial class NativeStylesExtensions
 	/// </summary>
 	static void StyleAppBar(Google.Android.Material.AppBar.AppBarLayout appBar)
 	{
-		if (Shell.Current is not { } shell)
-			return;
-		var requested = (shell.CurrentPage is { } page ? Shell.GetBackgroundColor(page) : null) ?? Shell.GetBackgroundColor(shell);
-		var color = requested?.ToPlatform().ToArgb() ?? MaterialColors.GetColor(appBar, Resource.Attribute.colorSurface);
+		int color;
+		var colorToolbar = false;
+		var surface = MaterialColors.GetColor(appBar, Resource.Attribute.colorSurface);
+		if (Shell.Current is { } shell)
+		{
+			var requested = (shell.CurrentPage is { } page ? Shell.GetBackgroundColor(page) : null) ?? Shell.GetBackgroundColor(shell);
+			color = requested?.ToPlatform().ToArgb() ?? surface;
+		}
+		else
+		{
+			// NavigationPage: flat app bar in the color of the page below it, unless the app chose a bar color
+			var (navigation, leaf) = CurrentNavigation(Application.Current?.Windows.FirstOrDefault()?.Page);
+			if (navigation is null)
+				return;
+			color = (navigation.BarBackgroundColor ?? leaf?.BackgroundColor)?.ToPlatform().ToArgb() ?? surface;
+			colorToolbar = navigation.BarBackgroundColor is null;
+		}
 		if (appBar.GetTag(Resource.Id.action_bar_container) is Java.Lang.Integer applied && applied.IntValue() == color)
 			return;
+		for (var i = 0; colorToolbar && i < appBar.ChildCount; i++)
+			if (appBar.GetChildAt(i) is AndroidX.AppCompat.Widget.Toolbar toolbar)
+				toolbar.SetBackgroundColor(new AColor(color));
 		appBar.SetTag(Resource.Id.action_bar_container, Java.Lang.Integer.ValueOf(color));
 		appBar.SetBackgroundColor(new AColor(color));
 		appBar.SetStatusBarForegroundColor(color);

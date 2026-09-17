@@ -159,19 +159,20 @@
         <Setter Property="PlaceholderColor" Value="{native:SystemColor TextSecondary}" />
     </Style>
 
-    <!-- Pickers: Material dialogs from the M3 theme -->
+    <!-- Pickers: Material dialogs from the M3 theme. At rest the handler shows the value as secondary text with a
+         trailing icon (menu arrow / calendar / clock) and no underline, like a Settings preference row. -->
     <Style TargetType="Picker">
         <Setter Property="FontSize" Value="16" />
-        <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
+        <Setter Property="TextColor" Value="{native:SystemColor TextSecondary}" />
         <Setter Property="TitleColor" Value="{native:SystemColor TextSecondary}" />
     </Style>
     <Style TargetType="DatePicker">
         <Setter Property="FontSize" Value="16" />
-        <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
+        <Setter Property="TextColor" Value="{native:SystemColor TextSecondary}" />
     </Style>
     <Style TargetType="TimePicker">
         <Setter Property="FontSize" Value="16" />
-        <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
+        <Setter Property="TextColor" Value="{native:SystemColor TextSecondary}" />
     </Style>
 
     <!-- Selection: Switch / Slider / CheckBox / Stepper intentionally have NO style (M3 widgets) -->

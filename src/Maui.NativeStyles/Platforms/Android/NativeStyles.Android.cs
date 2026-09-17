@@ -55,9 +55,9 @@ public static partial class NativeStylesExtensions
 		// their Mapper is a public static field on an internal type, reached through reflection (public in MAUI 11).
 		HookMaterial3Mapper<IEntry>("EntryHandler2", (handler, entry) =>
 		{
-			if (entry is not BindableObject b || !NativeEntry.GetIsPlain(b))
+			if (entry is not BindableObject b || handler.PlatformView is not TextInputLayout layout)
 				return;
-			if (handler.PlatformView is TextInputLayout layout)
+			if (NativeEntry.GetIsPlain(b))
 			{
 				layout.BoxBackgroundMode = TextInputLayout.BoxBackgroundNone;
 				layout.BoxStrokeWidth = 0;
@@ -65,7 +65,21 @@ public static partial class NativeStylesExtensions
 				if (layout.EditText is { } editText)
 					editText.Background = null;
 			}
+			else if (NativeEntry.GetIsContained(b))
+			{
+				// Material filled text field without the active indicator, fully rounded (56 dp tall -> 28 dp corners).
+				var radius = layout.Context.ToPixels(ContainedCornerRadius);
+				layout.BoxBackgroundMode = TextInputLayout.BoxBackgroundFilled;
+				layout.SetBoxCornerRadii(radius, radius, radius, radius);
+				layout.BoxStrokeWidth = 0;
+				layout.BoxStrokeWidthFocused = 0;
+				layout.BoxBackgroundColor = MaterialColors.GetColor(layout, Resource.Attribute.colorSurfaceContainerHighest);
+			}
 		});
+
+		// Editor is a bare TextInputEditText under Material 3 (an M2-looking underline): give it the Material 3
+		// outlined container, or the filled rounded one with NativeEntry.IsContained.
+		HookMaterial3Mapper<IEditor>("EditorHandler2", StyleEditorContainer, nameof(IView.Background));
 
 		// Pickers are bare TextInputEditTexts under Material 3 (an M2-looking underline). Material shows a selectable
 		// value as plain text with a trailing affordance: menu arrow (Picker), calendar (DatePicker), clock (TimePicker).
@@ -94,6 +108,49 @@ public static partial class NativeStylesExtensions
 		mapper.Add(MappingKey, action);
 		foreach (var key in extraKeys)
 			mapper.Add(key + ".NativeStyle", action); // extra keys run at connect; MAUI's own mapping for `key` stays in place
+	}
+
+	/// <summary>Corner radius of a contained (Material 3 Expressive) text container, in dp.</summary>
+	const float ContainedCornerRadius = 28;
+
+	static void StyleEditorContainer(IElementHandler handler, IEditor editor)
+	{
+		if (handler.PlatformView is not Android.Widget.EditText field || editor is not BindableObject bindable || field.Context is not { } context)
+			return;
+		if (NativeEntry.GetIsPlain(bindable))
+		{
+			field.Background = null;
+			field.SetPadding(0, field.PaddingTop, 0, field.PaddingBottom);
+			return;
+		}
+
+		GradientDrawable Shape(float radiusDp, int fill, float strokeDp, int stroke)
+		{
+			var shape = new GradientDrawable();
+			shape.SetShape(ShapeType.Rectangle);
+			shape.SetCornerRadius(context.ToPixels(radiusDp));
+			shape.SetColor(fill);
+			if (strokeDp > 0)
+				shape.SetStroke((int)context.ToPixels(strokeDp), new AColor(stroke));
+			return shape;
+		}
+
+		var onSurface = MaterialColors.GetColor(field, Resource.Attribute.colorOnSurface);
+		if (NativeEntry.GetIsContained(bindable))
+		{
+			field.Background = Shape(ContainedCornerRadius, MaterialColors.GetColor(field, Resource.Attribute.colorSurfaceContainerHighest), 0, 0);
+		}
+		else
+		{
+			// Outlined text field tokens: 4 dp corners, 1 dp outline, 2 dp primary when focused, onSurface 12% when disabled.
+			var states = new StateListDrawable();
+			states.AddState([-Android.Resource.Attribute.StateEnabled], Shape(4, AColor.Transparent, 1, MaterialColors.CompositeARGBWithAlpha(onSurface, 31)));
+			states.AddState([Android.Resource.Attribute.StateFocused], Shape(4, AColor.Transparent, 2, MaterialColors.GetColor(field, Resource.Attribute.colorPrimary)));
+			states.AddState([], Shape(4, AColor.Transparent, 1, MaterialColors.GetColor(field, Resource.Attribute.colorOutline)));
+			field.Background = states;
+		}
+		var padding = (int)context.ToPixels(16);
+		field.SetPadding(padding, padding, padding, padding);
 	}
 
 	/// <summary>No underline, secondary text color, trailing tinted icon (Material list value / exposed dropdown affordance).</summary>

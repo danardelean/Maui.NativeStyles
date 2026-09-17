@@ -88,8 +88,9 @@ react to runtime changes:
 | `GlassProminent` | `prominentGlass` → `filled` on iOS 15–18 | Filled |
 | `Destructive` | `systemRed` tint | `error` / `onError` (error label with `Text`/`Outlined`) |
 | `Small` / `Large` | `UIButtonConfigurationSize.Small` / `Large` | 32 dp / 56 dp (M3 Expressive sizes) |
-| Entry / Editor (default) | borderless field on a filled shape: 52 pt row, 26 pt continuous corners (a capsule for one line), 20 pt text inset, clear button while editing — as in Settings › Name | Material 3 outlined text field |
-| Entry `Plain` | no shape and no inset: the value part of a grouped row | no Material box |
+| Entry / Editor (default) | borderless field on a filled shape: 52 pt row, 26 pt continuous corners (a capsule for one line), 20 pt text inset, clear button while editing — as in Settings › Name | Material 3 outlined text field (the `Editor`, a bare `EditText` in MAUI, gets the same outlined container: 4 dp corners, 1 dp `outline`, 2 dp `primary` when focused) |
+| Entry / Editor `Expressive` | same as default (already a borderless field on a filled shape) | M3 Expressive containment: borderless field in a filled `surfaceContainerHighest` container with 28 dp corners |
+| Entry / Editor `Plain` | no shape and no inset: the value part of a grouped row | no Material box |
 | Picker / DatePicker / TimePicker | pull-down value with chevrons / compact `tertiarySystemFill` capsule (no text-field border) | secondary text with trailing menu arrow / calendar / clock icon, no underline; Material dialogs on tap |
 | Label `Secondary` / `Tertiary` / `Accent` | `secondaryLabel` / `tertiaryLabel` / `systemBlue` | `onSurfaceVariant` / `outline` / `primary` |
 | Label `Semibold` | SF Pro Semibold | Roboto Medium |

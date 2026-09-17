@@ -124,6 +124,10 @@
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="MinimumHeightRequest" Value="44" />
     </Style>
+    <Style TargetType="Entry" Class="Expressive">
+        <!-- Android-only variant; the iOS 26 field is already a borderless field on a filled rounded shape -->
+    </Style>
+    <Style TargetType="Editor" Class="Expressive" />
     <Style TargetType="Editor">
         <Setter Property="FontSize" Value="17" />
         <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />

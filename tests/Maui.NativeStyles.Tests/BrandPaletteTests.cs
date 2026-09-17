@@ -60,6 +60,15 @@ public class BrandPaletteTests : IDisposable
 	}
 
 	[Fact]
+	public void Platform_conventions_are_kept_unless_asked()
+	{
+		var brand = new BrandPalette(Brand);
+
+		Assert.False(brand.TintsSwitches);
+		Assert.False(brand.MaterialColorMatch);
+	}
+
+	[Fact]
 	public void UseNativeStyles_installs_the_brand()
 	{
 		MauiApp.CreateBuilder().UseNativeStyles(options => options.Brand = new BrandPalette(Brand, BrandDark));

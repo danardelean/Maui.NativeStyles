@@ -49,6 +49,13 @@
                 <Editor Placeholder="Notes" />
             </VerticalStackLayout>
 
+            <Label Text="Expressive (contained)" Style="{StaticResource SectionHeader}" />
+            <VerticalStackLayout Spacing="12" Padding="{StaticResource ContentMargin}">
+                <Entry Placeholder="Subject" StyleClass="Expressive" />
+                <Editor Placeholder="Message" StyleClass="Expressive" />
+            </VerticalStackLayout>
+            <Label Text="On Android: Material 3 Expressive containment, a borderless field in a filled 28 dp container. On iOS the default field already looks like this." Style="{StaticResource SectionFooter}" />
+
             <Label Text="Pickers" Style="{StaticResource SectionHeader}" />
             <Border StyleClass="GroupedCell">
                 <VerticalStackLayout>

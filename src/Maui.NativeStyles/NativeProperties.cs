@@ -76,4 +76,15 @@ public static class NativeEntry
 
 	public static bool GetIsPlain(BindableObject view) => (bool)view.GetValue(IsPlainProperty);
 	public static void SetIsPlain(BindableObject view, bool value) => view.SetValue(IsPlainProperty, value);
+
+	/// <summary>
+	/// Borderless field inside a filled, rounded container (Material 3 Expressive containment: no outline, 28 dp corners).
+	/// Applies to Entry and Editor on Android; iOS 26 fields already look like this, so it is a no-op there.
+	/// </summary>
+	public static readonly BindableProperty IsContainedProperty = BindableProperty.CreateAttached(
+		"IsContained", typeof(bool), typeof(NativeEntry), false,
+		propertyChanged: (b, _, _) => NativeStylesExtensions.Refresh(b));
+
+	public static bool GetIsContained(BindableObject view) => (bool)view.GetValue(IsContainedProperty);
+	public static void SetIsContained(BindableObject view, bool value) => view.SetValue(IsContainedProperty, value);
 }

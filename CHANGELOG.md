@@ -3,6 +3,18 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-09-17
+
+### Changed
+- iOS: `Entry` no longer uses the legacy `UITextBorderStyle.RoundedRect`. It renders like an iOS 26 Settings text row: borderless, 52 pt tall, filled with `secondarySystemGroupedBackground`, 26 pt continuous corners (a capsule for a single line), 20 pt text inset and a clear button while editing. `Editor` gets the same shape and insets. `Plain` keeps the bare field for grouped rows. On a non-grouped page set `BackgroundColor="{native:SystemColor Fill}"`.
+- iOS: `Entry` is created by `NativeEntryHandler` (a plain `EntryHandler` subclass; `EntryHandler.Mapper` customizations keep working) so the text field can inset its text and clear button.
+- iOS: `SectionHeader` follows iOS 26 (17 pt semibold, sentence case, aligned with the row text) instead of the uppercase footnote of earlier releases; `GroupedCell` margins are 20 pt and `ListRow` / `RadioButton` rows are 52 pt, as measured in Settings.
+- `SectionHeader` / `SectionFooter` margins now carry the whole spacing between sections; use them in a stack with `Spacing="0"`.
+
+### Added
+- `ContentMargin` resource (`Thickness`): 20 pt on iOS, 16 dp on Android.
+- Documentation and sample: navigation-bar search (`Shell.SearchHandler`) as the native search field on iOS 26.
+
 ## [1.1.3] - 2026-09-17
 
 ### Fixed

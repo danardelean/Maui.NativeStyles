@@ -3,6 +3,12 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.8.1] - 2026-09-17
+
+### Fixed
+- iOS: after a runtime light/dark switch the Shell top-tabs segmented control kept the previous page background, and the background behind a transparent `NavigationPage` bar could go stale; both are refreshed when the app theme changes (system appearance or `Application.UserAppTheme`).
+- iOS: with a brand palette, `NavigationPage` toolbar items stayed system blue (on iOS 26 MAUI copies the bar tint to each bar button item when it creates them); the bar and its items now use the brand tint unless the page sets `IconColor`.
+
 ## [1.8.0] - 2026-09-17
 
 ### Added

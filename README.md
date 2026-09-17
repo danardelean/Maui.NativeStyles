@@ -89,7 +89,7 @@ react to runtime changes:
 | `Destructive` | `systemRed` tint | `error` / `onError` (error label with `Text`/`Outlined`) |
 | `Small` / `Large` | `UIButtonConfigurationSize.Small` / `Large` | 32 dp / 56 dp (M3 Expressive sizes) |
 | Entry `Plain` | `UITextBorderStyle.None` (grouped cells) | no Material box |
-| Picker / DatePicker / TimePicker | pull-down value with chevrons / compact `tertiarySystemFill` pill (no text-field border) | Material dropdown / dialog fields |
+| Picker / DatePicker / TimePicker | pull-down value with chevrons / compact `tertiarySystemFill` pill (no text-field border) | secondary text with trailing menu arrow / calendar / clock icon, no underline; Material dialogs on tap |
 | Label `Secondary` / `Tertiary` / `Accent` | `secondaryLabel` / `tertiaryLabel` / `systemBlue` | `onSurfaceVariant` / `outline` / `primary` |
 | Label `Semibold` | SF Pro Semibold | Roboto Medium |
 | Border `Card` / `Outlined` | inset grouped card, 10 pt radius, `secondarySystemGroupedBackground` | M3 card, 12 dp radius, `surfaceContainerLow` |

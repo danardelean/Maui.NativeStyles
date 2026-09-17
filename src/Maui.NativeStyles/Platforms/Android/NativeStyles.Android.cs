@@ -51,15 +51,9 @@ public static partial class NativeStylesExtensions
 				handler.PlatformView.Background = null;
 		});
 
-		// With UseMaterial3 the Entry is served by the internal EntryHandler2 (TextInputLayout); its Mapper is a
-		// public static field on an internal type, reached through reflection (public in MAUI 11).
-		var material3EntryMapper = typeof(EntryHandler).Assembly
-			.GetType("Microsoft.Maui.Handlers.EntryHandler2")?
-			.GetField("Mapper", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)?
-			.GetValue(null) as IPropertyMapper<IEntry, IElementHandler>; // covariant cast
-		if (material3EntryMapper is null)
-			System.Diagnostics.Debug.WriteLine("[NativeStyles] EntryHandler2.Mapper not found: NativeEntry.IsPlain has no effect under Material 3.");
-		material3EntryMapper?.Add(MappingKey, (handler, entry) =>
+		// With UseMaterial3 the input controls are served by internal *Handler2 classes (TextInputLayout / TextInputEditText);
+		// their Mapper is a public static field on an internal type, reached through reflection (public in MAUI 11).
+		HookMaterial3Mapper<IEntry>("EntryHandler2", (handler, entry) =>
 		{
 			if (entry is not BindableObject b || !NativeEntry.GetIsPlain(b))
 				return;
@@ -72,6 +66,53 @@ public static partial class NativeStylesExtensions
 					editText.Background = null;
 			}
 		});
+
+		// Pickers are bare TextInputEditTexts under Material 3 (an M2-looking underline). Material shows a selectable
+		// value as plain text with a trailing affordance: menu arrow (Picker), calendar (DatePicker), clock (TimePicker).
+		HookMaterial3Mapper<IPicker>("PickerHandler2", (handler, _) => StylePickerField(handler, Resource.Drawable.mtrl_ic_arrow_drop_down), nameof(IView.Background));
+		HookMaterial3Mapper<IDatePicker>("DatePickerHandler2", (handler, _) => StylePickerField(handler, Resource.Drawable.material_ic_calendar_black_24dp), nameof(IView.Background));
+		HookMaterial3Mapper<ITimePicker>("TimePickerHandler2", (handler, _) => StylePickerField(handler, Resource.Drawable.ic_clock_black_24dp), nameof(IView.Background));
+		// Same look on the classic (non-Material 3) handlers.
+		PickerHandler.Mapper.AppendToMapping(MappingKey, (handler, _) => StylePickerField(handler, Resource.Drawable.mtrl_ic_arrow_drop_down));
+		DatePickerHandler.Mapper.AppendToMapping(MappingKey, (handler, _) => StylePickerField(handler, Resource.Drawable.material_ic_calendar_black_24dp));
+		TimePickerHandler.Mapper.AppendToMapping(MappingKey, (handler, _) => StylePickerField(handler, Resource.Drawable.ic_clock_black_24dp));
+	}
+
+	/// <summary>Adds a native-style mapping to an internal Material 3 handler's public static Mapper (no-op if the type is missing).</summary>
+	static void HookMaterial3Mapper<TView>(string handlerTypeName, Action<IElementHandler, TView> action, params string[] extraKeys)
+		where TView : IElement
+	{
+		var mapper = typeof(EntryHandler).Assembly
+			.GetType("Microsoft.Maui.Handlers." + handlerTypeName)?
+			.GetField("Mapper", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)?
+			.GetValue(null) as IPropertyMapper<TView, IElementHandler>; // covariant cast
+		if (mapper is null)
+		{
+			System.Diagnostics.Debug.WriteLine($"[NativeStyles] {handlerTypeName}.Mapper not found: its native styling is skipped.");
+			return;
+		}
+		mapper.Add(MappingKey, action);
+		foreach (var key in extraKeys)
+			mapper.Add(key + ".NativeStyle", action); // extra keys run at connect; MAUI's own mapping for `key` stays in place
+	}
+
+	/// <summary>No underline, secondary text color, trailing tinted icon (Material list value / exposed dropdown affordance).</summary>
+	static void StylePickerField(IElementHandler handler, int iconResource)
+	{
+		if (handler.PlatformView is not Android.Widget.TextView field || handler.MauiContext?.Context is not { } context)
+			return;
+		field.Background = null;
+		var tint = SystemColors.Get(SystemColorRole.TextSecondary).ToPlatform();
+		var icon = AndroidX.Core.Content.ContextCompat.GetDrawable(context, iconResource)?.Mutate();
+		if (icon is not null)
+		{
+			icon.SetTint(tint);
+			var size = (int)context.ToPixels(20);
+			icon.SetBounds(0, 0, size, size);
+			field.SetCompoundDrawablesRelative(null, null, icon, null);
+			field.CompoundDrawablePadding = (int)context.ToPixels(4);
+		}
+		field.SetPadding(0, field.PaddingTop, 0, field.PaddingBottom);
 	}
 
 	static void MapLabelWeight(ILabelHandler handler, ILabel label)

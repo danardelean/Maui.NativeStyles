@@ -115,7 +115,12 @@ public static partial class NativeStylesExtensions
 		});
 		// A section shown for the first time builds its header while its view loads, after this callback
 		// A flyout item shown for the first time swaps its controllers in a little later still
-		shell.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(250), () => ApplyLargeTitles(shell, expandCollapsedBar: true));
+		shell.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(250), () =>
+		{
+			ApplyLargeTitles(shell, expandCollapsedBar: true);
+			// The search controller of a page shown for the first time is attached after the earlier passes
+			ApplySearchFieldColors(shell);
+		});
 		shell.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(60), () =>
 		{
 			ApplyLargeTitles(shell);

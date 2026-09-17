@@ -362,6 +362,7 @@
         <!-- Flyout = M3 navigation drawer: surfaceContainerLow sheet, 56 dp items inset 12 dp with a full-round
              secondaryContainer active indicator, 24 dp icon, label large -->
         <Setter Property="FlyoutBackgroundColor" Value="{native:SystemColor CardBackground}" />
+        <Setter Property="FlyoutBackground" Value="{native:SystemColor CardBackground}" />
         <Setter Property="Shell.ItemTemplate">
             <DataTemplate>
                 <Grid HeightRequest="56" Padding="12,0" BackgroundColor="Transparent">

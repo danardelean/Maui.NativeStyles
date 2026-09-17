@@ -197,6 +197,9 @@ public static partial class NativeStylesExtensions
 			case Google.Android.Material.Tabs.TabLayout tabs:
 				StyleTabs(tabs);
 				return;
+			case AndroidX.DrawerLayout.Widget.DrawerLayout drawer:
+				StyleDrawerSheet(drawer);
+				break;
 			case Google.Android.Material.AppBar.AppBarLayout appBar:
 				StyleAppBar(appBar);
 				break; // the toolbar inside may host the search card
@@ -279,7 +282,18 @@ public static partial class NativeStylesExtensions
 		tabs.SetSelectedTabIndicatorColor(primary);
 		tabs.TabMode = mode;
 		tabs.TabGravity = Google.Android.Material.Tabs.TabLayout.GravityFill;
-		tabs.SetBackgroundColor(AColor.Transparent);
+		// Transparent over the app bar, with the 1 dp outlineVariant divider inside the container (bottom edge)
+		if (OperatingSystem.IsAndroidVersionAtLeast(23) && tabs.Context is { } context)
+		{
+			var divider = new LayerDrawable([new ColorDrawable(new AColor(MaterialColors.GetColor(tabs, Resource.Attribute.colorOutlineVariant)))]);
+			divider.SetLayerGravity(0, GravityFlags.Bottom);
+			divider.SetLayerHeight(0, Math.Max(1, (int)context.ToPixels(1)));
+			tabs.Background = divider;
+		}
+		else
+		{
+			tabs.SetBackgroundColor(AColor.Transparent);
+		}
 	}
 
 	/// <summary>
@@ -305,6 +319,12 @@ public static partial class NativeStylesExtensions
 			color = (navigation.BarBackgroundColor ?? leaf?.BackgroundColor)?.ToPlatform().ToArgb() ?? surface;
 			colorToolbar = navigation.BarBackgroundColor is null;
 		}
+		// Trailing icons are onSurfaceVariant on a themed (surface) app bar; MAUI tints them like the navigation icon.
+		if (color == surface || color == MaterialColors.GetColor(appBar, Resource.Attribute.colorSurfaceContainer))
+			for (var i = 0; i < appBar.ChildCount; i++)
+				if (appBar.GetChildAt(i) is AndroidX.AppCompat.Widget.Toolbar bar)
+					TintTrailingIcons(bar, MaterialColors.GetColor(appBar, Resource.Attribute.colorOnSurfaceVariant));
+
 		if (appBar.GetTag(Resource.Id.action_bar_container) is Java.Lang.Integer applied && applied.IntValue() == color)
 			return;
 		for (var i = 0; colorToolbar && i < appBar.ChildCount; i++)
@@ -313,6 +333,62 @@ public static partial class NativeStylesExtensions
 		appBar.SetTag(Resource.Id.action_bar_container, Java.Lang.Integer.ValueOf(color));
 		appBar.SetBackgroundColor(new AColor(color));
 		appBar.SetStatusBarForegroundColor(color);
+	}
+
+	static void TintTrailingIcons(AndroidX.AppCompat.Widget.Toolbar toolbar, int color)
+	{
+		if (!OperatingSystem.IsAndroidVersionAtLeast(26) || toolbar.Menu is not { } menu)
+			return;
+		for (var i = 0; i < menu.Size(); i++)
+			if (menu.GetItem(i) is { Icon: not null } item && item.IconTintList?.DefaultColor != color)
+				item.SetIconTintList(Android.Content.Res.ColorStateList.ValueOf(new AColor(color)));
+		if (toolbar.OverflowIcon is { } overflow && (toolbar.GetTag(Resource.Id.action_menu_presenter) as Java.Lang.Integer)?.IntValue() != color)
+		{
+			// MAUI colors the overflow glyph with a color filter, which takes precedence over a tint
+			overflow.SetColorFilter(new PorterDuffColorFilter(new AColor(color), PorterDuff.Mode.SrcIn!));
+			toolbar.SetTag(Resource.Id.action_menu_presenter, Java.Lang.Integer.ValueOf(color));
+		}
+	}
+
+	/// <summary>
+	/// Shell flyout / FlyoutPage sheet as an M3 modal navigation drawer: at most 360 dp wide, leaving 56 dp of scrim,
+	/// with 16 dp corners on the trailing side.
+	/// </summary>
+	static void StyleDrawerSheet(AndroidX.DrawerLayout.Widget.DrawerLayout drawer)
+	{
+		if (drawer.Context is not { } context || drawer.Width <= 0)
+			return;
+		for (var i = 0; i < drawer.ChildCount; i++)
+		{
+			if (drawer.GetChildAt(i) is not { LayoutParameters: AndroidX.DrawerLayout.Widget.DrawerLayout.LayoutParams { Gravity: not (int)GravityFlags.NoGravity } layout } sheet)
+				continue;
+			var width = Math.Min((int)context.ToPixels(360), drawer.Width - (int)context.ToPixels(56));
+			if (layout.Width != width)
+			{
+				layout.Width = width;
+				sheet.LayoutParameters = layout;
+			}
+			if (sheet.OutlineProvider is not TrailingCornersOutline)
+			{
+				sheet.OutlineProvider = new TrailingCornersOutline(context.ToPixels(16));
+				sheet.ClipToOutline = true;
+			}
+		}
+	}
+
+	/// <summary>Round-rect outline that extends past the leading edge, so only the trailing corners are rounded.</summary>
+	sealed class TrailingCornersOutline(float radius) : ViewOutlineProvider
+	{
+		public override void GetOutline(AView? view, Outline? outline)
+		{
+			if (view is null || outline is null)
+				return;
+			var r = (int)radius;
+			if (view.LayoutDirection == Android.Views.LayoutDirection.Rtl)
+				outline.SetRoundRect(0, 0, view.Width + r, view.Height, radius);
+			else
+				outline.SetRoundRect(-r, 0, view.Width, view.Height, radius);
+		}
 	}
 
 	/// <summary>Shell.SearchHandler: Material 3 search bar container instead of the elevated white card.</summary>

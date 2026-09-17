@@ -73,15 +73,15 @@
     </Style>
 
     <!-- Grouped table section header: Footnote, uppercase, secondary label -->
-    <Style x:Key="SectionHeader" TargetType="Label" BasedOn="{StaticResource Footnote}">
+    <!-- iOS 26 grouped section header: Headline (17 semibold), sentence case, secondary label, aligned with the
+         row text (20pt section margin + 16pt row inset). Measured in Settings: 30pt above, 6pt below. -->
+    <Style x:Key="SectionHeader" TargetType="Label" BasedOn="{StaticResource Headline}">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource SecondaryLabelColor}, Dark={StaticResource SecondaryLabelColorDark}}" />
-        <Setter Property="TextTransform" Value="Uppercase" />
-        <Setter Property="CharacterSpacing" Value="0.5" />
-        <Setter Property="Margin" Value="16,16,16,6" />
+        <Setter Property="Margin" Value="36,30,36,6" />
     </Style>
     <Style x:Key="SectionFooter" TargetType="Label" BasedOn="{StaticResource Footnote}">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource SecondaryLabelColor}, Dark={StaticResource SecondaryLabelColorDark}}" />
-        <Setter Property="Margin" Value="16,6,16,16" />
+        <Setter Property="Margin" Value="36,6,36,0" />
     </Style>
 
     <!-- Cross-platform aliases (same keys exist in MaterialTypography.xaml) -->

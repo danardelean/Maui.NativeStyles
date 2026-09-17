@@ -5,10 +5,10 @@
              Title="Feedback"
              StyleClass="Grouped">
     <ScrollView>
-        <VerticalStackLayout Spacing="12" Padding="0,8,0,24">
+        <VerticalStackLayout Spacing="0" Padding="0,0,0,24">
 
             <Label Text="Progress" Style="{StaticResource SectionHeader}" />
-            <VerticalStackLayout Padding="16,0" Spacing="16">
+            <VerticalStackLayout Padding="{StaticResource ContentMargin}" Spacing="16">
                 <ProgressBar x:Name="Progress" Progress="0.35" />
                 <HorizontalStackLayout Spacing="24">
                     <ActivityIndicator IsRunning="True" />
@@ -18,7 +18,7 @@
             </VerticalStackLayout>
 
             <Label Text="Alerts" Style="{StaticResource SectionHeader}" />
-            <VerticalStackLayout Padding="16,0" Spacing="12">
+            <VerticalStackLayout Padding="{StaticResource ContentMargin}" Spacing="12">
                 <Button Text="Show alert" StyleClass="Filled" Clicked="OnShowAlert" />
                 <Button Text="Show action sheet" StyleClass="Outlined" Clicked="OnShowActionSheet" />
                 <Button Text="Show prompt" StyleClass="Text" Clicked="OnShowPrompt" />

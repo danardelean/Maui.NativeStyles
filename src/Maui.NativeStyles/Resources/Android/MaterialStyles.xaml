@@ -11,6 +11,9 @@
         <local:MaterialTypography />
     </ResourceDictionary.MergedDictionaries>
 
+    <!-- Horizontal page margin for content outside a list (Material 3 compact window: 16 dp) -->
+    <Thickness x:Key="ContentMargin">16,0</Thickness>
+
     <!--
         Material 3 implicit styles. Requires <UseMaterial3>true</UseMaterial3> (Microsoft.Maui.Controls >= 10.0.60):
         Entry/Editor -> TextInputLayout, Switch -> MaterialSwitch, Slider -> Material Slider,

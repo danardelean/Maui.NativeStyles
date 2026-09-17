@@ -83,11 +83,11 @@
     <!-- List subheader: Title Small, primary color, 16dp padding -->
     <Style x:Key="SectionHeader" TargetType="Label" BasedOn="{StaticResource TitleSmall}">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
-        <Setter Property="Margin" Value="16,16,16,8" />
+        <Setter Property="Margin" Value="16,24,16,12" />
     </Style>
     <Style x:Key="SectionFooter" TargetType="Label" BasedOn="{StaticResource BodySmall}">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
-        <Setter Property="Margin" Value="16,8,16,16" />
+        <Setter Property="Margin" Value="16,12,16,0" />
     </Style>
 
     <!-- Cross-platform aliases (same keys exist in iOSTypography.xaml) -->

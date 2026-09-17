@@ -12,6 +12,8 @@ public static partial class NativeStylesExtensions
 	static partial void RegisterPlatformHandlers(IMauiHandlersCollection handlers)
 	{
 		handlers.AddHandler<GlassView, GlassViewHandler>();
+		// Entry: same EntryHandler and mapper, but a UITextField that supports text insets and continuous corners.
+		handlers.AddHandler<Entry, NativeEntryHandler>();
 	}
 
 	static partial void RegisterPlatformMappers(NativeStylesOptions options)
@@ -29,8 +31,12 @@ public static partial class NativeStylesExtensions
 		ButtonHandler.Mapper.AppendToMapping(nameof(IPadding.Padding), MapButtonConfiguration);
 		ButtonHandler.Mapper.AppendToMapping("LineBreakMode", MapButtonConfiguration);
 
-		// Entry: MAUI already uses UITextBorderStyle.RoundedRect; NativeEntry.IsPlain removes the border (grouped cells).
-		EntryHandler.Mapper.AppendToMapping(MappingKey, MapEntryBorder);
+		// Entry: iOS 26 text fields are borderless rows on a filled, continuously rounded shape (Settings > Name),
+		// not the legacy UITextBorderStyle.RoundedRect. NativeEntry.IsPlain drops the shape for use inside grouped cells.
+		EntryHandler.Mapper.AppendToMapping(MappingKey, MapEntryChrome);
+
+		// Editor: same filled shape, text inset like a grouped row.
+		EditorHandler.Mapper.AppendToMapping(MappingKey, MapEditorChrome);
 
 		// Pickers are UITextFields in MAUI; iOS 26 shows them as a pull-down value (Picker) or a compact pill
 		// (DatePicker / TimePicker), never as a bordered text field.
@@ -110,13 +116,34 @@ public static partial class NativeStylesExtensions
 				yield return found;
 	}
 
-	static void MapEntryBorder(IEntryHandler handler, IEntry entry)
+	/// <summary>Corner radius of iOS 26 grouped shapes; a 52pt single-row field therefore reads as a capsule.</summary>
+	const float FieldCornerRadius = 26;
+
+	/// <summary>Leading/trailing content margin of an iOS 26 grouped row.</summary>
+	const float FieldContentMargin = 20;
+
+	static void MapEntryChrome(IEntryHandler handler, IEntry entry)
 	{
 		if (entry is not BindableObject bindable)
 			return;
-		handler.PlatformView.BorderStyle = NativeEntry.GetIsPlain(bindable)
-			? UITextBorderStyle.None
-			: UITextBorderStyle.RoundedRect;
+		var field = handler.PlatformView;
+		field.BorderStyle = UITextBorderStyle.None;
+		if (field is NativeTextField native)
+		{
+			var plain = NativeEntry.GetIsPlain(bindable);
+			native.CornerRadius = plain ? 0 : FieldCornerRadius;
+			native.ContentMargin = plain ? 0 : FieldContentMargin;
+		}
+	}
+
+	static void MapEditorChrome(IEditorHandler handler, IEditor editor)
+	{
+		var view = handler.PlatformView;
+		view.Layer.CornerRadius = FieldCornerRadius;
+		view.Layer.CornerCurve = CoreAnimation.CACornerCurve.Continuous;
+		view.ClipsToBounds = true;
+		view.TextContainer.LineFragmentPadding = FieldContentMargin;
+		view.TextContainerInset = new UIEdgeInsets(15, 0, 15, 0);
 	}
 
 	/// <summary>Pull-down look: no border, value text followed by the chevron.up.chevron.down glyph.</summary>
@@ -248,6 +275,75 @@ public static partial class NativeStylesExtensions
 		platformButton.Configuration = config;
 		platformButton.TitleLabel.Lines = 1;
 		button.InvalidateMeasure();
+	}
+}
+
+/// <summary><see cref="EntryHandler"/> that creates a <see cref="NativeTextField"/>; mappings are unchanged.</summary>
+public class NativeEntryHandler : EntryHandler
+{
+	protected override MauiTextField CreatePlatformView()
+	{
+		// The base view carries MAUI's "Done" accessory toolbar, which resolves the field through the handler.
+		var template = base.CreatePlatformView();
+		var field = new NativeTextField
+		{
+			BorderStyle = UITextBorderStyle.None,
+			ClipsToBounds = true,
+			InputAccessoryView = template.InputAccessoryView,
+		};
+		template.InputAccessoryView = null;
+		return field;
+	}
+}
+
+/// <summary>UITextField with a horizontal content margin and continuous rounded corners.</summary>
+public class NativeTextField : MauiTextField
+{
+	// Distance of the clear button's center from the trailing edge in a Settings text row.
+	const float ClearButtonCenterInset = 35;
+
+	nfloat _cornerRadius;
+	nfloat _contentMargin;
+
+	public nfloat CornerRadius
+	{
+		get => _cornerRadius;
+		set { _cornerRadius = value; SetNeedsLayout(); }
+	}
+
+	public nfloat ContentMargin
+	{
+		get => _contentMargin;
+		set { _contentMargin = value; SetNeedsLayout(); }
+	}
+
+	public override void LayoutSubviews()
+	{
+		base.LayoutSubviews();
+		Layer.CornerCurve = CoreAnimation.CACornerCurve.Continuous;
+		Layer.CornerRadius = (nfloat)Math.Min(_cornerRadius, Bounds.Height / 2);
+	}
+
+	public override CGRect TextRect(CGRect forBounds) => Inset(base.TextRect(forBounds));
+
+	public override CGRect EditingRect(CGRect forBounds) => Inset(base.EditingRect(forBounds));
+
+	public override CGRect ClearButtonRect(CGRect forBounds)
+	{
+		var rect = base.ClearButtonRect(forBounds);
+		if (_contentMargin <= 0)
+			return rect;
+		var leftToRight = EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.LeftToRight;
+		var centerX = leftToRight ? forBounds.Right - ClearButtonCenterInset : forBounds.Left + ClearButtonCenterInset;
+		return new CGRect(centerX - rect.Width / 2, rect.Y, rect.Width, rect.Height);
+	}
+
+	CGRect Inset(CGRect rect)
+	{
+		if (_contentMargin <= 0)
+			return rect;
+		var width = (nfloat)Math.Max(0, rect.Width - 2 * _contentMargin);
+		return new CGRect(rect.X + _contentMargin, rect.Y, width, rect.Height);
 	}
 }
 

@@ -3,6 +3,15 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-09-17
+
+### Added
+- `Expressive` class for `Entry` and `Editor` (`NativeEntry.IsContained`): on Android a borderless field in a filled `surfaceContainerHighest` container with 28 dp corners, the containment pattern of the Material 3 Expressive compose concepts. No-op on iOS, where the default field already has this shape.
+- `Plain` class for `Editor`.
+
+### Fixed
+- Android: `Editor` no longer shows the Material 2 underline (MAUI renders it as a bare `TextInputEditText`); it gets the Material 3 outlined container: 4 dp corners, 1 dp `outline`, 2 dp `primary` when focused, 16 dp padding.
+
 ## [1.2.0] - 2026-09-17
 
 ### Changed

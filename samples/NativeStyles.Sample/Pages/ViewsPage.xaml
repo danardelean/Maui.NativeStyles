@@ -16,9 +16,9 @@
 
                 <Label Text="Image buttons" Style="{StaticResource SectionHeader}" />
                 <HorizontalStackLayout Spacing="8" Padding="{StaticResource ContentMargin}">
-                    <ImageButton Source="tab_feedback.svg" />
-                    <ImageButton Source="tab_lists.svg" />
-                    <ImageButton Source="tab_inputs.svg" IsEnabled="False" />
+                    <ImageButton Source="tab_feedback.svg" StyleClass="Icon" />
+                    <ImageButton Source="tab_lists.svg" StyleClass="Icon" />
+                    <ImageButton Source="tab_inputs.svg" IsEnabled="False" StyleClass="Icon" />
                 </HorizontalStackLayout>
 
                 <Label Text="Carousel + indicator" Style="{StaticResource SectionHeader}" />

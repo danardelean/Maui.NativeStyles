@@ -129,23 +129,26 @@
         <Setter Property="PlaceholderColor" Value="{native:SystemColor Placeholder}" />
     </Style>
 
-    <!-- Pickers: UITextField + UIPickerView/UIDatePicker input views (glass automatically) -->
+    <!-- Pickers: UITextField + UIPickerView/UIDatePicker input views (glass automatically).
+         The iOS handler removes the text-field border: Picker renders as a pull-down value with chevrons,
+         DatePicker/TimePicker as the compact tertiarySystemFill pill. -->
     <Style TargetType="Picker">
         <Setter Property="FontSize" Value="17" />
-        <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
+        <Setter Property="TextColor" Value="{native:SystemColor TextSecondary}" />
         <Setter Property="TitleColor" Value="{native:SystemColor Placeholder}" />
+        <Setter Property="HorizontalTextAlignment" Value="End" />
         <Setter Property="ios:Picker.UpdateMode" Value="WhenFinished" />
         <Setter Property="MinimumHeightRequest" Value="36" />
     </Style>
     <Style TargetType="DatePicker">
         <Setter Property="FontSize" Value="17" />
         <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
-        <Setter Property="MinimumHeightRequest" Value="36" />
+        <Setter Property="MinimumHeightRequest" Value="34" />
     </Style>
     <Style TargetType="TimePicker">
         <Setter Property="FontSize" Value="17" />
         <Setter Property="TextColor" Value="{native:SystemColor TextPrimary}" />
-        <Setter Property="MinimumHeightRequest" Value="36" />
+        <Setter Property="MinimumHeightRequest" Value="34" />
     </Style>
 
     <!-- Selection: Switch / Slider / Stepper intentionally have NO style (fully native) -->

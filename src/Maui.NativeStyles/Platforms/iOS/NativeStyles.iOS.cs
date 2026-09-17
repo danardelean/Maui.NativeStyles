@@ -32,6 +32,15 @@ public static partial class NativeStylesExtensions
 		// Entry: MAUI already uses UITextBorderStyle.RoundedRect; NativeEntry.IsPlain removes the border (grouped cells).
 		EntryHandler.Mapper.AppendToMapping(MappingKey, MapEntryBorder);
 
+		// Pickers are UITextFields in MAUI; iOS 26 shows them as a pull-down value (Picker) or a compact pill
+		// (DatePicker / TimePicker), never as a bordered text field.
+		PickerHandler.Mapper.AppendToMapping(MappingKey, MapPickerChrome);
+		PickerHandler.Mapper.AppendToMapping(nameof(IView.Background), MapPickerChrome);
+		DatePickerHandler.Mapper.AppendToMapping(MappingKey, (h, v) => MapCompactPickerChrome(h.PlatformView, v));
+		DatePickerHandler.Mapper.AppendToMapping(nameof(IView.Background), (h, v) => MapCompactPickerChrome(h.PlatformView, v));
+		TimePickerHandler.Mapper.AppendToMapping(MappingKey, (h, v) => MapCompactPickerChrome(h.PlatformView, v));
+		TimePickerHandler.Mapper.AppendToMapping(nameof(IView.Background), (h, v) => MapCompactPickerChrome(h.PlatformView, v));
+
 		// Label: MAUI FontAttributes has no Semibold; NativeText.Weight supplies the SF Pro weight.
 		LabelHandler.Mapper.AppendToMapping(MappingKey, MapLabelWeight);
 		LabelHandler.Mapper.AppendToMapping(nameof(ILabel.Font), MapLabelWeight);
@@ -108,6 +117,43 @@ public static partial class NativeStylesExtensions
 		handler.PlatformView.BorderStyle = NativeEntry.GetIsPlain(bindable)
 			? UITextBorderStyle.None
 			: UITextBorderStyle.RoundedRect;
+	}
+
+	/// <summary>Pull-down look: no border, value text followed by the chevron.up.chevron.down glyph.</summary>
+	static void MapPickerChrome(IPickerHandler handler, IPicker picker)
+	{
+		var field = handler.PlatformView;
+		field.BorderStyle = UITextBorderStyle.None;
+		field.BackgroundColor = UIColor.Clear;
+		if (field.RightView is not UIImageView)
+		{
+			var chevrons = new UIImageView(UIImage.GetSystemImage("chevron.up.chevron.down",
+				UIImageSymbolConfiguration.Create(UIFont.SystemFontOfSize(13, UIFontWeight.Semibold))))
+			{
+				TintColor = UIColor.SecondaryLabel,
+				ContentMode = UIViewContentMode.Center,
+				Frame = new CGRect(0, 0, 22, 20),
+			};
+			field.RightView = chevrons;
+			field.RightViewMode = UITextFieldViewMode.Always;
+		}
+	}
+
+	/// <summary>Compact UIDatePicker look: tertiarySystemFill pill with 8 pt corners and 12 pt horizontal padding.</summary>
+	static void MapCompactPickerChrome(UITextField field, IView view)
+	{
+		field.BorderStyle = UITextBorderStyle.None;
+		field.BackgroundColor = (view.Background as SolidPaint)?.Color?.ToPlatform() ?? UIColor.TertiarySystemFill;
+		field.Layer.CornerRadius = 8;
+		field.ClipsToBounds = true;
+		field.TextAlignment = UITextAlignment.Center;
+		if (field.LeftView is null)
+		{
+			field.LeftView = new UIView(new CGRect(0, 0, 12, 1));
+			field.LeftViewMode = UITextFieldViewMode.Always;
+			field.RightView = new UIView(new CGRect(0, 0, 12, 1));
+			field.RightViewMode = UITextFieldViewMode.Always;
+		}
 	}
 
 	static void MapLabelWeight(ILabelHandler handler, ILabel label)

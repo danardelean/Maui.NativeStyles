@@ -3,6 +3,14 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.6.4] - 2026-09-17
+
+### Fixed
+- Android: `TabbedPage` with top tabs kept MAUI's primary-colored strip and untinted icons. Tabs now paint their own container in the app-bar color and tint icons like the labels (`primary` when selected, `onSurfaceVariant` otherwise).
+
+### Notes
+- Documented that MAUI's `SetToolbarPlacement()` throws after the library style has set `Bottom`; use the XAML attribute or `SetValue` for top tabs. The sample gains a top-tabs `TabbedPage` demo and an `EmptyState` example.
+
 ## [1.6.3] - 2026-09-17
 
 ### Changed

@@ -3,6 +3,11 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.1.1] - 2026-09-17
+
+### Fixed
+- iOS: `Picker` renders as a pull-down value with `chevron.up.chevron.down`, `DatePicker` and `TimePicker` as the compact `tertiarySystemFill` pill, instead of bordered text fields.
+
 ## [1.1.0] - 2026-09-17
 
 ### Added

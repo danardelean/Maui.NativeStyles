@@ -28,11 +28,17 @@ public static partial class NativeStylesExtensions
 		public const string Gap = "Gap";                       // BoxView: alias of Separator (2 dp segment gap on Android, hairline on iOS)
 	}
 
+	/// <summary>
+	/// Registers the native-style handlers and mappings, and routes the library's diagnostics to the app's logging
+	/// (category <c>Maui.NativeStyles</c>).
+	/// </summary>
 	public static MauiAppBuilder UseNativeStyles(this MauiAppBuilder builder, Action<NativeStylesOptions>? configure = null)
 	{
 		var options = new NativeStylesOptions();
 		configure?.Invoke(options);
 		SystemColors.Brand = options.Brand;
+		if (!builder.Services.Any(d => !d.IsKeyedService && d.ImplementationType == typeof(NativeStylesLogInitializer)))
+			builder.Services.AddTransient<IMauiInitializeService, NativeStylesLogInitializer>();
 		builder.ConfigureMauiHandlers(handlers => RegisterPlatformHandlers(handlers));
 		RegisterPlatformMappers(options);
 		return builder;

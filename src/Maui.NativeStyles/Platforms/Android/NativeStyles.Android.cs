@@ -68,7 +68,8 @@ public static partial class NativeStylesExtensions
 
 		// With UseMaterial3 the input controls are served by internal *Handler2 classes (TextInputLayout / TextInputEditText);
 		// their Mapper is a public static field on an internal type, reached through reflection (public in MAUI 11).
-		HookMaterial3Mapper<IEntry>("EntryHandler2", (handler, entry) =>
+		var material3Hooks = new Material3Hooks();
+		material3Hooks.Hook<IEntry>("EntryHandler2", (handler, entry) =>
 		{
 			if (entry is not BindableObject b || handler.PlatformView is not TextInputLayout layout)
 				return;
@@ -100,10 +101,10 @@ public static partial class NativeStylesExtensions
 
 		// Editor is a bare TextInputEditText under Material 3 (an M2-looking underline): give it the Material 3
 		// outlined container, or the filled rounded one with NativeEntry.IsContained.
-		HookMaterial3Mapper<IEditor>("EditorHandler2", StyleEditorContainer, nameof(IView.Background));
+		material3Hooks.Hook<IEditor>("EditorHandler2", StyleEditorContainer, nameof(IView.Background));
 
 		// SearchBar: Material 3 search bar (56 dp, fully rounded, surfaceContainerHigh) instead of an underlined field.
-		HookMaterial3Mapper<ISearchBar>("SearchBarHandler2", StyleSearchBar, nameof(IView.Background));
+		material3Hooks.Hook<ISearchBar>("SearchBarHandler2", StyleSearchBar, nameof(IView.Background));
 
 		// NativeImage.TintColor: single-color template rendering.
 		ImageHandler.Mapper.AppendToMapping(MappingKey, (handler, image) =>
@@ -132,36 +133,58 @@ public static partial class NativeStylesExtensions
 		// Shell: flexible navigation bar metrics/colors, app bar behind the status bar and the Material 3 search bar
 		// shape for Shell.SearchHandler. Shell creates these views after navigation and its Android renderer does not
 		// run mapper keys on connect, so they are (re)styled from a layout listener on each activity's decor view.
-		(Android.App.Application.Context as Android.App.Application)?.RegisterActivityLifecycleCallbacks(new ShellChromeStyler(options.AndroidRecreateOnThemeChange));
+		if (Android.App.Application.Context is Android.App.Application application)
+			application.RegisterActivityLifecycleCallbacks(new ShellChromeStyler(options.AndroidRecreateOnThemeChange));
+		else
+			NativeStylesLog.Warning("ActivityCallbacks", "No Android application to register the activity callbacks with: the brand / dynamic colors and the Shell chrome styling are not applied.");
+		if (options.AndroidRecreateOnThemeChange && !ShellChromeStyler.CanClearShellObservers)
+			NativeStylesLog.Warning("Shell._appearanceObservers", $"Shell._appearanceObservers not found in Microsoft.Maui.Controls {MauiVersion(typeof(Shell))}: a Shell replaced as root page may throw inside MAUI on the next theme change.");
 
 		// Pickers are bare TextInputEditTexts under Material 3 (an M2-looking underline). Material shows a selectable
 		// value as plain text with a trailing affordance: menu arrow (Picker), calendar (DatePicker), clock (TimePicker).
-		HookMaterial3Mapper<IPicker>("PickerHandler2", (handler, _) => StylePickerField(handler, Resource.Drawable.mtrl_ic_arrow_drop_down), nameof(IView.Background));
-		HookMaterial3Mapper<IDatePicker>("DatePickerHandler2", (handler, _) => StylePickerField(handler, Resource.Drawable.material_ic_calendar_black_24dp), nameof(IView.Background));
-		HookMaterial3Mapper<ITimePicker>("TimePickerHandler2", (handler, _) => StylePickerField(handler, Resource.Drawable.ic_clock_black_24dp), nameof(IView.Background));
+		material3Hooks.Hook<IPicker>("PickerHandler2", (handler, _) => StylePickerField(handler, Resource.Drawable.mtrl_ic_arrow_drop_down), nameof(IView.Background));
+		material3Hooks.Hook<IDatePicker>("DatePickerHandler2", (handler, _) => StylePickerField(handler, Resource.Drawable.material_ic_calendar_black_24dp), nameof(IView.Background));
+		material3Hooks.Hook<ITimePicker>("TimePickerHandler2", (handler, _) => StylePickerField(handler, Resource.Drawable.ic_clock_black_24dp), nameof(IView.Background));
+		material3Hooks.Report();
 		// Same look on the classic (non-Material 3) handlers.
 		PickerHandler.Mapper.AppendToMapping(MappingKey, (handler, _) => StylePickerField(handler, Resource.Drawable.mtrl_ic_arrow_drop_down));
 		DatePickerHandler.Mapper.AppendToMapping(MappingKey, (handler, _) => StylePickerField(handler, Resource.Drawable.material_ic_calendar_black_24dp));
 		TimePickerHandler.Mapper.AppendToMapping(MappingKey, (handler, _) => StylePickerField(handler, Resource.Drawable.ic_clock_black_24dp));
 	}
 
-	/// <summary>Adds a native-style mapping to an internal Material 3 handler's public static Mapper (no-op if the type is missing).</summary>
-	static void HookMaterial3Mapper<TView>(string handlerTypeName, Action<IElementHandler, TView> action, params string[] extraKeys)
-		where TView : IElement
+	/// <summary>Adds native-style mappings to the internal Material 3 handlers' public static Mappers, noting which exist.</summary>
+	sealed class Material3Hooks
 	{
-		var mapper = typeof(EntryHandler).Assembly
-			.GetType("Microsoft.Maui.Handlers." + handlerTypeName)?
-			.GetField("Mapper", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)?
-			.GetValue(null) as IPropertyMapper<TView, IElementHandler>; // covariant cast
-		if (mapper is null)
+		readonly List<string> _installed = [];
+
+		/// <summary>Adds the mapping to the handler's Mapper; a handler this MAUI version does not have is reported and skipped.</summary>
+		public void Hook<TView>(string handlerTypeName, Action<IElementHandler, TView> action, params string[] extraKeys)
+			where TView : IElement
 		{
-			System.Diagnostics.Debug.WriteLine($"[NativeStyles] {handlerTypeName}.Mapper not found: its native styling is skipped.");
-			return;
+			var mapper = typeof(EntryHandler).Assembly
+				.GetType("Microsoft.Maui.Handlers." + handlerTypeName)?
+				.GetField("Mapper", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)?
+				.GetValue(null) as IPropertyMapper<TView, IElementHandler>; // covariant cast
+			if (mapper is null)
+			{
+				NativeStylesLog.Warning(handlerTypeName, $"Microsoft.Maui.Handlers.{handlerTypeName}.Mapper not found in Microsoft.Maui {MauiVersion(typeof(EntryHandler))}: the Material 3 styling of that control is skipped.");
+				return;
+			}
+			mapper.Add(MappingKey, action);
+			foreach (var key in extraKeys)
+				mapper.Add(key + ".NativeStyle", action); // extra keys run at connect; MAUI's own mapping for `key` stays in place
+			_installed.Add(handlerTypeName);
 		}
-		mapper.Add(MappingKey, action);
-		foreach (var key in extraKeys)
-			mapper.Add(key + ".NativeStyle", action); // extra keys run at connect; MAUI's own mapping for `key` stays in place
+
+		public void Report() =>
+			NativeStylesLog.Debug("Material3Hooks", $"Material 3 handler hooks installed: {(_installed.Count > 0 ? string.Join(", ", _installed) : "none")}.");
 	}
+
+	/// <summary>Version of the MAUI assembly that defines <paramref name="type"/> (e.g. 10.0.101), for diagnostics.</summary>
+	static string MauiVersion(Type type) =>
+		System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>(type.Assembly)?.InformationalVersion.Split('+')[0]
+			?? type.Assembly.GetName().Version?.ToString()
+			?? "?";
 
 	internal static DynamicColorsOptions? s_dynamicColors;
 }

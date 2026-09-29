@@ -113,7 +113,7 @@ sealed class ShellChromeStyler(bool recreateOnThemeChange) : Java.Lang.Object, A
 		}
 		catch (Exception e)
 		{
-			System.Diagnostics.Debug.WriteLine($"[NativeStyles] Could not disconnect {page.GetType().Name}: {e.Message}");
+			NativeStylesLog.Warning("Disconnect:" + page.GetType().FullName, $"Could not disconnect the handlers of the replaced root page {page.GetType().FullName}.", e);
 		}
 
 		// MAUI (10.0) disposes a replaced Shell's item renderer before its fragment is destroyed; the fragment then cannot
@@ -127,6 +127,9 @@ sealed class ShellChromeStyler(bool recreateOnThemeChange) : Java.Lang.Object, A
 
 	static readonly System.Reflection.FieldInfo? s_shellAppearanceObservers =
 		typeof(Shell).GetField("_appearanceObservers", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+	/// <summary>False when this MAUI version has no clearable Shell._appearanceObservers list (reported at startup).</summary>
+	internal static bool CanClearShellObservers => typeof(System.Collections.IList).IsAssignableFrom(s_shellAppearanceObservers?.FieldType);
 
 	/// <summary>
 	/// After a theme-change recreate: if the app built a new root page for the new window, replace it with the page that

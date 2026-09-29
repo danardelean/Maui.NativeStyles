@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using Android.Content;
 using Android.Content.Res;
+using Android.Runtime;
 using Android.Views;
 using Android.Views.Accessibility;
 using Android.Widget;
@@ -143,8 +144,16 @@ public class SegmentedControlHandler : ViewHandler<SegmentedControl, LinearLayou
 	/// TalkBack: a single-selection collection of one row, as MaterialButtonToggleGroup reports itself, so the position of
 	/// each button is announced.
 	/// </summary>
-	sealed class SegmentGroup(Context? context) : LinearLayout(context)
+	sealed class SegmentGroup : LinearLayout
 	{
+		public SegmentGroup(Context? context) : base(context)
+		{
+		}
+
+		SegmentGroup(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+		{
+		}
+
 		public override void OnInitializeAccessibilityNodeInfo(AccessibilityNodeInfo? info)
 		{
 			base.OnInitializeAccessibilityNodeInfo(info);
@@ -158,8 +167,16 @@ public class SegmentedControlHandler : ViewHandler<SegmentedControl, LinearLayou
 	/// TalkBack: each button is a radio button, checked when selected, at its column in the group. Set after
 	/// MaterialButton's own node info, which reports a plain, non-checkable button.
 	/// </summary>
-	sealed class SegmentButton(Context context) : MaterialButton(context)
+	sealed class SegmentButton : MaterialButton
 	{
+		public SegmentButton(Context context) : base(context)
+		{
+		}
+
+		SegmentButton(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+		{
+		}
+
 		public override void OnInitializeAccessibilityNodeInfo(AccessibilityNodeInfo? info)
 		{
 			base.OnInitializeAccessibilityNodeInfo(info);

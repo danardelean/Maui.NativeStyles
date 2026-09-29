@@ -107,6 +107,8 @@ public static partial class SystemColors
 		{
 			SystemColorRole.Accent or SystemColorRole.OnTonalContainer => accent,
 			SystemColorRole.TonalContainer => (accent.Light.WithAlpha(0.15f), accent.Dark.WithAlpha(0.15f)),
+			// White stays white on the usual accents; a light brand color (yellow, mint) gets black titles
+			SystemColorRole.OnAccent => (ColorContrast.OnColor(accent.Light), ColorContrast.OnColor(accent.Dark)),
 			_ => null,
 		};
 	}

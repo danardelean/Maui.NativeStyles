@@ -60,6 +60,39 @@ public class BrandPaletteTests : IDisposable
 	}
 
 	[Fact]
+	public void OnAccent_is_resolved_per_theme_from_the_brand_accent()
+	{
+		SystemColors.Brand = new BrandPalette(Brand, BrandDark);
+
+		// White keeps 5.2:1 on the light teal; on the bright dark variant it would be 2.2:1
+		Assert.Equal((Colors.White, Colors.Black), SystemColors.Resolve(SystemColorRole.OnAccent));
+	}
+
+	[Fact]
+	public void A_light_brand_accent_gets_black_titles()
+	{
+		SystemColors.Brand = new BrandPalette(Color.FromArgb("#FFCC00"));
+
+		Assert.Equal((Colors.Black, Colors.Black), SystemColors.Resolve(SystemColorRole.OnAccent));
+	}
+
+	[Fact]
+	public void A_pinned_OnAccent_wins_over_the_contrast_rule()
+	{
+		SystemColors.Brand = new BrandPalette(Color.FromArgb("#FFCC00")).Set(SystemColorRole.OnAccent, Colors.White);
+
+		Assert.Equal((Colors.White, Colors.White), SystemColors.Resolve(SystemColorRole.OnAccent));
+	}
+
+	[Fact]
+	public void Without_a_brand_OnAccent_keeps_the_baseline()
+	{
+		SystemColors.Brand = null;
+
+		Assert.Equal(SystemColors.Fallback(SystemColorRole.OnAccent), SystemColors.Resolve(SystemColorRole.OnAccent));
+	}
+
+	[Fact]
 	public void Platform_conventions_are_kept_unless_asked()
 	{
 		var brand = new BrandPalette(Brand);

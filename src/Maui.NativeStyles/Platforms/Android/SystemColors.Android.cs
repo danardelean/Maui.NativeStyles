@@ -54,7 +54,7 @@ public static partial class SystemColors
 		return role switch
 		{
 			SystemColorRole.Accent => accent,
-			SystemColorRole.OnAccent => accent.Light.GetLuminosity() > 0.6f ? (Colors.Black, Colors.Black) : (Colors.White, Colors.White),
+			SystemColorRole.OnAccent => (ColorContrast.OnColor(accent.Light), ColorContrast.OnColor(accent.Light)),
 			_ => null,
 		};
 	}
@@ -75,8 +75,8 @@ public static partial class SystemColors
 			return name switch
 			{
 				"primary" => _seed,
-				// Black or white, whichever contrasts more with the brand color
-				"on_primary" => new AColor(_seed).GetBrightness() > 0.62f ? unchecked((int)0xFF000000) : unchecked((int)0xFFFFFFFF),
+				// White, or black when white does not contrast enough with the brand color
+				"on_primary" => ColorContrast.OnColor(ToColor(_seed)).ToPlatform().ToArgb(),
 				_ => color.GetArgb(_light),
 			};
 		}

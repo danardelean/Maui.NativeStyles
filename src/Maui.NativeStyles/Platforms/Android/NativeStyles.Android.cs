@@ -30,14 +30,14 @@ public static partial class NativeStylesExtensions
 		DynamicColorsOptions? dynamicColors = null;
 		if (options.Brand?.ResolveAccent() is { } accent)
 		{
-			// Brand seed: the Material 3 scheme generated from it replaces the baseline color resources of every activity
-			// (Android 11+), so native widgets are branded too; {native:SystemColor} resolves from the same scheme on
-			// every Android version. A brand wins over the wallpaper-based option.
+			// Brand seed: the Material 3 scheme generated from it replaces the baseline color resources of every MAUI
+			// activity (Android 11+), so native widgets are branded too; {native:SystemColor} resolves from the same
+			// scheme on every Android version. A brand wins over the wallpaper-based option.
 			SystemColors.BrandSeed = accent.Light.ToPlatform().ToArgb();
 		}
 		else if (options.AndroidDynamicColors && OperatingSystem.IsAndroidVersionAtLeast(31))
 		{
-			// Material You: wallpaper-derived palette on every activity, and for {native:SystemColor}.
+			// Material You: wallpaper-derived palette on every MAUI activity, and for {native:SystemColor}.
 			SystemColors.DynamicColorsEnabled = true;
 			dynamicColors = new DynamicColorsOptions.Builder().Build();
 		}

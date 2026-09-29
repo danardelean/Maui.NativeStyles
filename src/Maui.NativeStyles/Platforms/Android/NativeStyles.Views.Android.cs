@@ -43,7 +43,15 @@ public static partial class NativeStylesExtensions
 		if (label is not BindableObject bindable)
 			return;
 		var current = handler.PlatformView.Typeface;
-		switch (NativeText.GetWeight(bindable))
+		var weight = NativeText.GetWeight(bindable);
+		if (weight != TextWeight.Regular && OperatingSystem.IsAndroidVersionAtLeast(28))
+		{
+			// The label's own family and italic style at the requested weight (Semibold = 600)
+			var value = weight switch { TextWeight.Medium => 500, TextWeight.Semibold => 600, _ => 700 };
+			handler.PlatformView.Typeface = Typeface.Create(current, value, current?.IsItalic == true);
+			return;
+		}
+		switch (weight)
 		{
 			case TextWeight.Medium:
 			case TextWeight.Semibold:

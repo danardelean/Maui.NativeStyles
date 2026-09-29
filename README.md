@@ -354,15 +354,37 @@ the status bar icons, dialogs. `{native:SystemColor}` values update, the rest do
 
 With `AndroidRecreateOnThemeChange` (on by default) the library does what Android does by default: when the effective
 app theme changes (system dark mode or `Application.UserAppTheme`) it recreates the activity, so everything is
-re-themed. State is preserved:
+re-themed.
 
-- MAUI asks the app for a window again, and the standard template (`new Window(new AppShell())`) would answer with a new
-  page tree. The library moves the page that was showing to the new window, so the selected tab, the navigation stack,
-  control values and view models survive. Scroll positions and open native dialogs do not.
-- Root pages that the app replaced earlier (login shell → main shell, Shell → TabbedPage) get their handlers
-  disconnected before the recreate. MAUI 10 otherwise leaves a disposed Shell renderer registered on such a Shell,
-  which throws on the following theme change; the library also clears that (private) observer list.
-- Set `options.AndroidRecreateOnThemeChange = false` to keep MAUI's behavior.
+MAUI asks the app for a window again, and the standard template (`new Window(new AppShell())`) would answer with a new
+page tree. The library moves the page that was showing to the new window instead, so the same page and view model
+instances stay on screen; MAUI then builds new native views for them in the new activity. The rule of thumb: state held
+by a MAUI property survives, state that only lives in the native view does not. Verified on an Android 16 emulator
+with the sample's "Toggle light / dark" menu item (and `UserAppTheme` set in code, the same path):
+
+| After a theme change | |
+|---|---|
+| Selected Shell tab, selected top tab | kept |
+| Shell navigation stack (pushed pages, back button), `NavigationPage` stack inside a `TabbedPage` | kept |
+| Values held by MAUI properties (text typed in an `Entry`, `IsToggled`, `SelectedIndex`...) and view models | kept |
+| Scroll position of `ScrollView` and `CollectionView` | lost: back at the top |
+| Focus and the soft keyboard | lost: nothing is focused, the keyboard closes |
+| `WebView` page state (DOM, script variables, links followed inside the page) | lost: `Source` is loaded again |
+| Open alerts, action sheets and picker dialogs | lost |
+
+Apps that need more can save it themselves, for example the scroll offset in the view model (`ScrollView.Scrolled`,
+then `ScrollToAsync`) or a WebView's current URL (`Navigated`, then `Source`).
+
+Root pages that the app replaced earlier (login shell → main shell, Shell → TabbedPage) get their handlers disconnected
+before the recreate. MAUI 10 otherwise leaves a disposed Shell renderer registered on such a Shell, which throws on the
+following theme change; the library also clears that (private) observer list.
+
+To opt out, keep MAUI's behavior (no recreate; native views keep the colors they resolved at creation, only
+`{native:SystemColor}` values follow the new theme):
+
+```csharp
+builder.UseNativeStyles(options => options.AndroidRecreateOnThemeChange = false);
+```
 
 ## Known limitations
 

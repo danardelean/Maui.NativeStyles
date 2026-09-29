@@ -51,16 +51,6 @@ works as usual. Exit code 1 means failed tests, 2 means the app crashed (partial
 several devices are attached; the runner clears the device's logcat. Started from the IDE, the app shows the interactive
 visual runner.
 
-Known on iOS 26.5:
-
-- `Title_font_transformer_does_not_write_into_the_attributes_it_receives` fails until the button title transformer
-  (`NativeStyles.Buttons.iOS.cs`) copies the dictionary UIKit passes in instead of writing into it: UIKit may pass an
-  immutable one, which crashed the runner's own buttons at launch (`MauiProgram.cs` shims the runner's buttons).
-- After the library has configured buttons that were never on screen, the next view that reads Swift Observation state
-  (a `UIToolbar`, a view moving to a window) intermittently crashes with `EXC_BAD_ACCESS` in
-  `ObservationTracking._AccessList.addAccess`. It does not happen without `UseNativeStyles` or without the button
-  mapping; the button tests therefore run last (`Tests/Ordering.cs`).
-
 ### Visual regression check
 
 `scripts/visual-check.py` (Python 3, standard library only) builds and installs the sample, sets a 9:41 status bar

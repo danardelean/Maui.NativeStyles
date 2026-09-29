@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using UIKit;
@@ -6,71 +7,59 @@ namespace NativeStyles;
 
 public static partial class NativeStylesExtensions
 {
-	static readonly System.Runtime.CompilerServices.ConditionalWeakTable<ImageButton, object> s_tintedButtons = new();
-
 	static void MapImageButtonTint(IImageButtonHandler handler, IImageButton button)
 	{
-		if (button is not BindableObject bindable)
+		if (button is not BindableObject bindable || NativeImage.GetTintColor(bindable) is not { } tint)
 			return;
-		var view = handler.PlatformView;
-		var tint = NativeImage.GetTintColor(bindable);
-		if (tint is null)
-			return;
-		view.TintColor = tint.ToPlatform();
-		ApplyTemplate(view);
-
-		// MAUI assigns the button image when the source finishes loading (IsLoading goes back to false)
-		if (button is ImageButton element && !s_tintedButtons.TryGetValue(element, out _))
-		{
-			s_tintedButtons.Add(element, element);
-			element.PropertyChanged += (sender, e) =>
-			{
-				if (e.PropertyName == ImageButton.IsLoadingProperty.PropertyName && sender is ImageButton { IsLoading: false, Handler: IImageButtonHandler current }
-					&& NativeImage.GetTintColor((ImageButton)sender) is not null)
-				{
-					ApplyTemplate(current.PlatformView);
-				}
-			};
-		}
-
-		static void ApplyTemplate(UIButton target)
-		{
-			if (target.ImageForState(UIControlState.Normal) is { RenderingMode: not UIImageRenderingMode.AlwaysTemplate } original)
-				target.SetImage(original.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
-		}
+		handler.PlatformView.TintColor = tint.ToPlatform();
+		RenderAsTemplate(bindable, handler.PlatformView);
 	}
-
-	static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Image, object> s_tintedImages = new();
 
 	static void MapImageTint(IImageHandler handler, Microsoft.Maui.IImage image)
 	{
 		if (image is not BindableObject bindable)
 			return;
-		var view = handler.PlatformView;
 		var tint = NativeImage.GetTintColor(bindable);
-		view.TintColor = tint?.ToPlatform();
-		if (tint is null)
+		handler.PlatformView.TintColor = tint?.ToPlatform();
+		if (tint is not null)
+			RenderAsTemplate(bindable, handler.PlatformView);
+	}
+
+	static readonly System.Runtime.CompilerServices.ConditionalWeakTable<BindableObject, object> s_templateImages = new();
+
+	/// <summary>
+	/// Switches the image of an Image / ImageButton to template rendering, now and whenever a new source finishes
+	/// loading: MAUI assigns the platform image asynchronously, when IsLoading goes back to false.
+	/// </summary>
+	static void RenderAsTemplate(BindableObject element, UIView platformView)
+	{
+		ApplyTemplateImage(platformView);
+		if (s_templateImages.TryGetValue(element, out _))
 			return;
-		ApplyTemplate(view);
+		s_templateImages.Add(element, element);
+		element.PropertyChanged += OnTemplateImagePropertyChanged;
+	}
 
-		// MAUI assigns UIImageView.Image when the source finishes loading (IsLoading goes back to false)
-		if (image is Image element && !s_tintedImages.TryGetValue(element, out _))
+	static void OnTemplateImagePropertyChanged(object? sender, PropertyChangedEventArgs e)
+	{
+		// Image.IsLoading and ImageButton.IsLoading share the property name
+		if (e.PropertyName == nameof(Image.IsLoading) && sender is Image { IsLoading: false } or ImageButton { IsLoading: false }
+			&& sender is Element { Handler.PlatformView: UIView platformView } element && NativeImage.GetTintColor(element) is not null)
 		{
-			s_tintedImages.Add(element, element);
-			element.PropertyChanged += (sender, e) =>
-			{
-				if (e.PropertyName == Image.IsLoadingProperty.PropertyName && sender is Image { IsLoading: false, Handler: IImageHandler current }
-					&& NativeImage.GetTintColor((Image)sender) is not null)
-				{
-					ApplyTemplate(current.PlatformView);
-				}
-			};
+			ApplyTemplateImage(platformView);
 		}
+	}
 
-		static void ApplyTemplate(UIImageView target)
+	static void ApplyTemplateImage(UIView platformView)
+	{
+		switch (platformView)
 		{
-			if (target.Image is { RenderingMode: not UIImageRenderingMode.AlwaysTemplate } original)
-				target.Image = original.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+			case UIImageView view when view.Image is { RenderingMode: not UIImageRenderingMode.AlwaysTemplate } original:
+				view.Image = original.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+				break;
+			case UIButton button when button.ImageForState(UIControlState.Normal) is { RenderingMode: not UIImageRenderingMode.AlwaysTemplate } original:
+				button.SetImage(original.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
+				break;
 		}
 	}
 }

@@ -107,24 +107,8 @@ public static partial class NativeStylesExtensions
 		material3Hooks.Hook<ISearchBar>("SearchBarHandler2", StyleSearchBar, nameof(IView.Background));
 
 		// NativeImage.TintColor: single-color template rendering.
-		ImageHandler.Mapper.AppendToMapping(MappingKey, (handler, image) =>
-		{
-			if (image is not BindableObject bindable)
-				return;
-			if (NativeImage.GetTintColor(bindable) is { } tint)
-				handler.PlatformView.SetColorFilter(tint.ToPlatform(), PorterDuff.Mode.SrcIn!);
-			else
-				handler.PlatformView.ClearColorFilter();
-		});
-		ImageButtonHandler.Mapper.AppendToMapping(MappingKey, (handler, button) =>
-		{
-			if (button is not BindableObject bindable)
-				return;
-			if (NativeImage.GetTintColor(bindable) is { } tint)
-				handler.PlatformView.SetColorFilter(tint.ToPlatform(), PorterDuff.Mode.SrcIn!);
-			else
-				handler.PlatformView.ClearColorFilter();
-		});
+		ImageHandler.Mapper.AppendToMapping(MappingKey, MapImageTint);
+		ImageButtonHandler.Mapper.AppendToMapping(MappingKey, MapImageTint);
 
 		// Expressive segmented lists: NativeList.ItemCornerRadius draws the item container as a rounded shape.
 		ViewHandler.ViewMapper.AppendToMapping(MappingKey, MapListItemShape);
@@ -185,6 +169,17 @@ public static partial class NativeStylesExtensions
 		System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>(type.Assembly)?.InformationalVersion.Split('+')[0]
 			?? type.Assembly.GetName().Version?.ToString()
 			?? "?";
+
+	/// <summary>NativeImage.TintColor on Image and ImageButton (both ImageViews).</summary>
+	static void MapImageTint(IElementHandler handler, IElement image)
+	{
+		if (image is not BindableObject bindable || handler.PlatformView is not Android.Widget.ImageView view)
+			return;
+		if (NativeImage.GetTintColor(bindable) is { } tint)
+			view.SetColorFilter(tint.ToPlatform(), PorterDuff.Mode.SrcIn!);
+		else
+			view.ClearColorFilter();
+	}
 
 	internal static DynamicColorsOptions? s_dynamicColors;
 }

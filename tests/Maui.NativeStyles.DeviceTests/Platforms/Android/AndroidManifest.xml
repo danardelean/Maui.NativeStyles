@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+	<application android:allowBackup="false" android:supportsRtl="true"></application>
+	<!-- The DeviceRunners result channel connects back to the host (10.0.2.2 from the emulator) over TCP -->
+	<uses-permission android:name="android.permission.INTERNET" />
+</manifest>

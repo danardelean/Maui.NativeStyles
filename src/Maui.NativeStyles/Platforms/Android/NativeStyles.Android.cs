@@ -20,7 +20,12 @@ public static partial class NativeStylesExtensions
 	{
 		handlers.AddHandler<GlassView, GlassViewHandler>();
 		handlers.AddHandler<SegmentedControl, SegmentedControlHandler>();
+		// Handler registrations run when the app is built, after RegisterPlatformMappers stored the option
+		if (s_replaceShellRenderer)
+			handlers.AddHandler<Shell, NativeShellRenderer>();
 	}
+
+	static bool s_replaceShellRenderer = true;
 
 	static partial void RegisterPlatformMappers(NativeStylesOptions options)
 	{
@@ -130,9 +135,13 @@ public static partial class NativeStylesExtensions
 		ViewHandler.ViewMapper.AppendToMapping(nameof(IView.Background), MapListItemShape);
 
 		// Shell: flexible navigation bar metrics/colors, app bar behind the status bar and the Material 3 search bar
-		// shape for Shell.SearchHandler. Shell creates these views after navigation and its Android renderer does not
-		// run mapper keys on connect, so they are (re)styled from a layout listener on each activity's decor view.
+		// shape for Shell.SearchHandler, applied by NativeShellRenderer's trackers. TabbedPage, NavigationPage and
+		// FlyoutPage (and a Shell with another renderer) have no such extension point: their chrome is (re)styled from a
+		// layout listener on each activity's decor view.
+		s_replaceShellRenderer = options.ReplaceShellRenderer;
 		(Android.App.Application.Context as Android.App.Application)?.RegisterActivityLifecycleCallbacks(new ShellChromeStyler(options.AndroidRecreateOnThemeChange));
+		foreach (var key in new[] { nameof(Toolbar.ToolbarItems), nameof(Toolbar.IconColor), nameof(Toolbar.BarTextColor) })
+			ToolbarHandler.Mapper.AppendToMapping<IToolbar, IToolbarHandler>(key, MapToolbarTrailingIcons);
 
 		// Pickers are bare TextInputEditTexts under Material 3 (an M2-looking underline). Material shows a selectable
 		// value as plain text with a trailing affordance: menu arrow (Picker), calendar (DatePicker), clock (TimePicker).

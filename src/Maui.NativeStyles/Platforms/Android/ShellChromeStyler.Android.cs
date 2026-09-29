@@ -24,10 +24,12 @@ sealed class ShellChromeStyler(bool recreateOnThemeChange) : Java.Lang.Object, A
 		ObserveTheme();
 		if (recreateOnThemeChange)
 			TrackRootPages(activity);
-		if (activity.Window?.DecorView is not { } decor || decor.GetTag(Resource.Id.action_bar_root) is not null)
+		if (activity.Window?.DecorView is not { } decor || decor.GetTag(Resource.Id.nativestyles_chrome_observer) is not null)
 			return;
-		decor.SetTag(Resource.Id.action_bar_root, "NativeStyles");
-		decor.ViewTreeObserver!.GlobalLayout += (_, _) => NativeStylesExtensions.StyleShellChrome(decor, 0);
+		decor.SetTag(Resource.Id.nativestyles_chrome_observer, "NativeStyles");
+		// Chrome without a MAUI extension point (TabbedPage, NavigationPage, FlyoutPage) exists only once laid out;
+		// a Shell rendered by NativeShellRenderer returns right away (its trackers style it).
+		decor.ViewTreeObserver!.GlobalLayout += (_, _) => NativeStylesExtensions.StyleWindowChrome(activity, decor);
 	}
 
 	public void OnActivityCreated(Android.App.Activity activity, Android.OS.Bundle? savedInstanceState)

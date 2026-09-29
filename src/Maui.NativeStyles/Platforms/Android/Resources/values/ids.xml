@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- View.SetTag keys of the native chrome styling (the library's own ids rather than AppCompat's) -->
+    <!-- Decor view that already has the chrome layout listener -->
+    <item name="nativestyles_chrome_observer" type="id" />
+    <!-- AppBarLayout: color applied behind the toolbar and the status bar -->
+    <item name="nativestyles_app_bar_color" type="id" />
+    <!-- TabLayout: container color the tabs were styled with -->
+    <item name="nativestyles_tabs_container_color" type="id" />
+    <!-- Toolbar: color the overflow icon was tinted with -->
+    <item name="nativestyles_overflow_tint" type="id" />
+</resources>

@@ -22,4 +22,13 @@ public class NativeStylesOptions
 	/// them; the MAUI page tree, navigation state and view models are preserved. On by default.
 	/// </summary>
 	public bool AndroidRecreateOnThemeChange { get; set; } = true;
+
+	/// <summary>
+	/// Register <c>NativeStyles.NativeShellRenderer</c> as the Shell renderer (iOS and Android). It styles the Shell
+	/// chrome (tab/navigation bar, top tabs, app bar, search bar, flyout) through MAUI's Shell extension points, as MAUI
+	/// creates or updates it. On by default. An app that registers its own Shell renderer derives it from
+	/// <c>NativeShellRenderer</c>. When this is false, or the Shell uses another renderer, the chrome is styled as
+	/// earlier versions did: from a layout listener on Android, in passes after each navigation on iOS.
+	/// </summary>
+	public bool ReplaceShellRenderer { get; set; } = true;
 }

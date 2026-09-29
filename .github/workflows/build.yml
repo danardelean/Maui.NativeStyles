@@ -45,3 +45,73 @@ jobs:
             artifacts/*.nupkg
             artifacts/*.snupkg
           if-no-files-found: error
+
+  # A v* tag publishes the packages built above: GitHub release (notes from CHANGELOG.md) and, when the
+  # NUGET_API_KEY secret is configured, nuget.org.
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: nuget
+          path: artifacts
+
+      - name: Check the package version
+        run: |
+          version="${TAG#v}"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          if [ ! -f "artifacts/Maui.NativeStyles.$version.nupkg" ] || [ ! -f "artifacts/Maui.NativeStyles.$version.snupkg" ]; then
+            echo "::error::Tag $TAG does not match the packed version: $(ls artifacts)"
+            exit 1
+          fi
+
+      - name: Extract the release notes from CHANGELOG.md
+        run: |
+          # The section starts at "## [X.Y.Z] - date" and ends at the next "## " heading.
+          awk -v heading="## [$VERSION]" '
+            /^## / { if (found) exit; if (index($0, heading) == 1) { found = 1; next } }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+          if ! grep -q '[^[:space:]]' release-notes.md; then
+            echo "::error::CHANGELOG.md has no section for $VERSION (expected a heading \"## [$VERSION] - YYYY-MM-DD\")."
+            exit 1
+          fi
+          cat release-notes.md
+
+      - name: Create the GitHub release
+        run: |
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" artifacts/*.nupkg artifacts/*.snupkg --clobber
+          else
+            prerelease=""
+            case "$VERSION" in *-*) prerelease="--prerelease" ;; esac
+            gh release create "$TAG" artifacts/*.nupkg artifacts/*.snupkg \
+              --verify-tag --title "$TAG" --notes-file release-notes.md $prerelease
+          fi
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Push to nuget.org
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [ -z "$NUGET_API_KEY" ]; then
+            echo "::notice title=nuget.org::The NUGET_API_KEY secret is not configured: the package was not pushed to nuget.org."
+            exit 0
+          fi
+          # The .snupkg next to the .nupkg is pushed to the symbol server too.
+          dotnet nuget push "artifacts/Maui.NativeStyles.$VERSION.nupkg" --api-key "$NUGET_API_KEY" \
+            --source https://api.nuget.org/v3/index.json --skip-duplicate

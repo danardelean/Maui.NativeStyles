@@ -1,5 +1,9 @@
 # Maui.NativeStyles
 
+[![Build](https://github.com/danardelean/Maui.NativeStyles/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/danardelean/Maui.NativeStyles/actions/workflows/build.yml)
+[![NuGet](https://img.shields.io/nuget/v/Maui.NativeStyles.svg)](https://www.nuget.org/packages/Maui.NativeStyles)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/danardelean/Maui.NativeStyles/blob/main/LICENSE)
+
 .NET MAUI styles that respect each platform's design language:
 **iOS 26 (Liquid Glass, Human Interface Guidelines)** and **Android (Material 3 Expressive)**.
 
@@ -118,7 +122,7 @@ tests/Maui.NativeStyles.Tests/    xunit tests (net10.0)
 
 ## Getting started
 
-1. Reference the library (project reference, or the `Maui.NativeStyles` NuGet package once published).
+1. Add the package with `dotnet add package Maui.NativeStyles` (every [GitHub release](https://github.com/danardelean/Maui.NativeStyles/releases) also carries the `.nupkg` and `.snupkg`), or reference `src/Maui.NativeStyles/Maui.NativeStyles.csproj` from a clone.
 2. In the app `.csproj`: `<UseMaterial3>true</UseMaterial3>` and Microsoft.Maui.Controls >= 10.0.60 (this repo pins 10.0.101 in `Directory.Build.props`); remove the OpenSans `ConfigureFonts` registration so the system fonts are used.
 3. Delete the template's `Resources/Styles/Styles.xaml` and `Colors.xaml`.
 4. Merge the platform dictionary and register the handlers:

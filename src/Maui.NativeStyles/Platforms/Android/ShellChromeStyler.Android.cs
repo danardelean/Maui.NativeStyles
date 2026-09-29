@@ -32,6 +32,9 @@ sealed class ShellChromeStyler(bool recreateOnThemeChange) : Java.Lang.Object, A
 
 	public void OnActivityCreated(Android.App.Activity activity, Android.OS.Bundle? savedInstanceState)
 	{
+		// Only MAUI's activities: the ones SDKs start (payments, sign-in, pickers) keep the theme they were designed with
+		if (activity is not MauiAppCompatActivity)
+			return;
 		if (SystemColors.ApplyBrandToActivity(activity))
 			return;
 		if (NativeStylesExtensions.s_dynamicColors is { } options)

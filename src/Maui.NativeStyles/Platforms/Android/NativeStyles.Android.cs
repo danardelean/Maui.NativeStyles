@@ -16,7 +16,7 @@ namespace NativeStyles;
 public static partial class NativeStylesExtensions
 {
 
-	static partial void RegisterPlatformHandlers(IMauiHandlersCollection handlers)
+	static partial void RegisterPlatformHandlers(IMauiHandlersCollection handlers, NativeStylesOptions options)
 	{
 		handlers.AddHandler<GlassView, GlassViewHandler>();
 		handlers.AddHandler<SegmentedControl, SegmentedControlHandler>();

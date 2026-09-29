@@ -22,4 +22,30 @@ public class NativeStylesOptions
 	/// them; the MAUI page tree, navigation state and view models are preserved. On by default.
 	/// </summary>
 	public bool AndroidRecreateOnThemeChange { get; set; } = true;
+
+	/// <summary>True when both option sets configure the same styling (brands are compared by value).</summary>
+	internal bool IsEquivalentTo(NativeStylesOptions other) =>
+		AndroidDynamicColors == other.AndroidDynamicColors
+		&& AndroidRecreateOnThemeChange == other.AndroidRecreateOnThemeChange
+		&& BrandsMatch(Brand, other.Brand);
+
+	static bool BrandsMatch(BrandPalette? a, BrandPalette? b)
+	{
+		if (ReferenceEquals(a, b))
+			return true;
+		if (a is null || b is null)
+			return false;
+		if (!Equals(a.Accent, b.Accent) || !Equals(a.AccentDark, b.AccentDark)
+			|| a.MaterialColorMatch != b.MaterialColorMatch || a.TintsSwitches != b.TintsSwitches
+			|| !Equals(a.IOS.Accent, b.IOS.Accent) || !Equals(a.IOS.AccentDark, b.IOS.AccentDark)
+			|| !Equals(a.Android.Accent, b.Android.Accent) || !Equals(a.Android.AccentDark, b.Android.AccentDark))
+			return false;
+		foreach (var role in Enum.GetValues<SystemColorRole>())
+		{
+			var hasA = a.TryGetRole(role, out var colorsA);
+			if (hasA != b.TryGetRole(role, out var colorsB) || (hasA && !colorsA.Equals(colorsB)))
+				return false;
+		}
+		return true;
+	}
 }

@@ -32,19 +32,41 @@ public static partial class NativeStylesExtensions
 	/// Registers the native-style handlers and mappings, and routes the library's diagnostics to the app's logging
 	/// (category <c>Maui.NativeStyles</c>).
 	/// </summary>
+	/// <remarks>
+	/// The mappings, the brand and the Android activity callbacks are process-wide (MAUI's handler mappers are static),
+	/// so they are registered once: the first call's options stay in effect for the lifetime of the process. Calling it
+	/// again, from the app or a library, is safe; each builder still gets the handlers, configured with the first call's
+	/// options, and a call with different options is ignored with a warning in the log.
+	/// </remarks>
 	public static MauiAppBuilder UseNativeStyles(this MauiAppBuilder builder, Action<NativeStylesOptions>? configure = null)
 	{
 		var options = new NativeStylesOptions();
 		configure?.Invoke(options);
-		SystemColors.Brand = options.Brand;
+
+		var active = Interlocked.CompareExchange(ref s_options, options, null) ?? options;
+		if (ReferenceEquals(active, options))
+		{
+			SystemColors.Brand = options.Brand;
+			RegisterPlatformMappers(options);
+		}
+		else if (!active.IsEquivalentTo(options))
+		{
+			NativeStylesLog.Warning("options", "UseNativeStyles was called again with different options. Its mappings are process-wide and registered once, so the options of the first call stay in effect.");
+		}
+
+		// Handlers belong to the builder: register them on each builder, once
 		if (!builder.Services.Any(d => !d.IsKeyedService && d.ImplementationType == typeof(NativeStylesLogInitializer)))
+		{
 			builder.Services.AddTransient<IMauiInitializeService, NativeStylesLogInitializer>();
-		builder.ConfigureMauiHandlers(handlers => RegisterPlatformHandlers(handlers));
-		RegisterPlatformMappers(options);
+			builder.ConfigureMauiHandlers(handlers => RegisterPlatformHandlers(handlers, active));
+		}
 		return builder;
 	}
 
-	static partial void RegisterPlatformHandlers(IMauiHandlersCollection handlers);
+	/// <summary>The options of the first <see cref="UseNativeStyles"/> call, which are the ones in effect.</summary>
+	static NativeStylesOptions? s_options;
+
+	static partial void RegisterPlatformHandlers(IMauiHandlersCollection handlers, NativeStylesOptions options);
 	static partial void RegisterPlatformMappers(NativeStylesOptions options);
 
 	/// <summary>Re-runs the native-style mapping after an attached property changed at runtime.</summary>

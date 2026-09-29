@@ -73,3 +73,48 @@ public class NativeStylesLogTests
 		Assert.InRange(logger.Entries.Count, 1, 32);
 	}
 }
+
+public class NativeStylesOptionsTests
+{
+	static readonly Color Brand = Color.FromArgb("#0B7A75");
+
+	[Fact]
+	public void Default_options_are_equivalent()
+	{
+		Assert.True(new NativeStylesOptions().IsEquivalentTo(new NativeStylesOptions()));
+	}
+
+	[Fact]
+	public void Brands_are_compared_by_value()
+	{
+		var first = new NativeStylesOptions { Brand = new BrandPalette(Brand) { MaterialColorMatch = true }.Set(SystemColorRole.Destructive, Colors.Red) };
+		var second = new NativeStylesOptions { Brand = new BrandPalette(Brand) { MaterialColorMatch = true }.Set(SystemColorRole.Destructive, Colors.Red) };
+
+		Assert.True(first.IsEquivalentTo(second));
+	}
+
+	[Theory]
+	[InlineData(nameof(NativeStylesOptions.AndroidDynamicColors))]
+	[InlineData(nameof(NativeStylesOptions.AndroidRecreateOnThemeChange))]
+	[InlineData(nameof(NativeStylesOptions.Brand))]
+	[InlineData(nameof(BrandPalette.TintsSwitches))]
+	[InlineData(nameof(BrandPalette.IOS))]
+	[InlineData(nameof(BrandPalette.Set))]
+	public void Any_difference_makes_options_not_equivalent(string difference)
+	{
+		var first = new NativeStylesOptions { Brand = new BrandPalette(Brand) };
+		var second = new NativeStylesOptions { Brand = new BrandPalette(Brand) };
+		switch (difference)
+		{
+			case nameof(NativeStylesOptions.AndroidDynamicColors): second.AndroidDynamicColors = true; break;
+			case nameof(NativeStylesOptions.AndroidRecreateOnThemeChange): second.AndroidRecreateOnThemeChange = false; break;
+			case nameof(NativeStylesOptions.Brand): second.Brand = null; break;
+			case nameof(BrandPalette.TintsSwitches): second.Brand!.TintsSwitches = true; break;
+			case nameof(BrandPalette.IOS): second.Brand!.IOS.Accent = Colors.Orange; break;
+			case nameof(BrandPalette.Set): second.Brand!.Set(SystemColorRole.Accent, Colors.Orange); break;
+		}
+
+		Assert.False(first.IsEquivalentTo(second));
+		Assert.False(second.IsEquivalentTo(first));
+	}
+}

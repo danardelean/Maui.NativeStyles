@@ -160,7 +160,7 @@ react to runtime changes:
 | StyleClass | iOS 26 | Android (M3) |
 |---|---|---|
 | *(none)* | `UIButtonConfiguration.plain` (tinted text) | Filled (primary) |
-| `Filled` | `filled` (tinted capsule, white label) | Filled |
+| `Filled` | `filled` (tinted capsule, white label; black on a light brand accent) | Filled |
 | `Tonal` | `tinted` (15% tint) | Filled tonal (secondaryContainer) |
 | `Outlined` | `gray` | Outlined: 1 dp `outlineVariant`, `onSurfaceVariant` label (M3 Expressive) |
 | `Text` | `plain` | Text |
@@ -173,7 +173,7 @@ react to runtime changes:
 | Entry / Editor `Plain` | no shape and no inset: the value part of a grouped row | no Material box |
 | Picker / DatePicker / TimePicker | pull-down value with chevrons / compact `tertiarySystemFill` capsule (no text-field border) | secondary text with trailing menu arrow / calendar / clock icon, no underline; Material dialogs on tap |
 | Label `Secondary` / `Tertiary` / `Accent` | `secondaryLabel` / `tertiaryLabel` / `systemBlue` | `onSurfaceVariant` / `outline` / `primary` |
-| Label `Semibold` | SF Pro Semibold | Roboto Medium |
+| Label `Semibold` | SF Pro Semibold | weight 600 of the label's font (Roboto Medium below Android 9) |
 | Border `Card` / `Outlined` | inset grouped card, 26 pt radius (iOS 26), `secondarySystemGroupedBackground` | M3 card, 12 dp radius, `surfaceContainerLow` |
 | Border `GroupedCell` | inset grouped section (26 pt radius, 20 pt margins) | M3 Expressive **segmented list**: transparent group clipped to 16 dp outer corners, 16 dp margins (baseline flat lists are no longer recommended by M3) |
 | Grid `ListRow` | 52 pt row, `systemGray5` selection | expressive list item: `surfaceBright` container with 4 dp corners, 56 dp, 16×10 dp padding, 12 dp slot spacing; selected → `secondaryContainer` with 16 dp corners (`NativeList.ItemCornerRadius`) |
@@ -182,7 +182,7 @@ react to runtime changes:
 | CheckBox `Leading` | — | leading control of a list row on the 16 dp keyline (native `RadioButton` rows are aligned automatically) |
 | SearchBar / `Shell.SearchHandler` | 60 pt glass capsule / system navigation-bar search | M3 search bar: 56 dp pill, `surfaceContainerHigh` |
 | `native:NativeSwipeItem` (in `SwipeItems`) | separated, continuously rounded action (26 pt, a capsule on a 52 pt row): `systemGray` / accent / `systemRed`, white content | M3 swipe-to-reveal button: fully round 56 dp, tonal (`secondaryContainer`) / `primary` / `error`, 4 dp apart |
-| `native:SegmentedControl` | `UISegmentedControl` | M3 Expressive connected button group (tonal toggles, 8 dp inner corners, selected button fully round) |
+| `native:SegmentedControl` | `UISegmentedControl` | M3 Expressive connected button group (tonal toggles, 8 dp inner corners, selected button fully round, 48 dp touch targets; TalkBack reads each segment as a radio button with its position) |
 | Shell top tabs | `UISegmentedControl` laid over MAUI's tab strip, inline title | M3 primary tabs: `primary` label and indicator, 1 dp `outlineVariant` divider, fixed tabs sharing the width (scrollable above four) |
 | Shell flyout (`ItemTemplate` / `MenuItemTemplate`, Label `FlyoutHeader`) | sidebar: grouped background, 52 pt rows, continuous `systemFill` selection, accent icons, large-title header | M3 modal navigation drawer: `surfaceContainerLow` sheet at most 360 dp wide (56 dp of scrim left) with 16 dp trailing corners, 56 dp items inset 12 dp with a full-round `secondaryContainer` indicator, title-small headline |
 | TabbedPage / NavigationPage | glass tab bar (supports `NativeShell.TabBarMinimizeBehavior`), transparent navigation bar in the page color with large titles | navigation bar at the bottom (flexible, 64 dp), flat app bar in the page color, trailing toolbar icons in `onSurfaceVariant` |
@@ -195,6 +195,8 @@ react to runtime changes:
 | IndicatorView | native `UIPageControl` at its natural size (`label` / `tertiaryLabel`) | 8 dp dots, `primary` / `outlineVariant` (Material has no page-indicator component) |
 | Label `Chevron` | `›` in `tertiaryLabel` | hidden (Material lists have no chevrons) |
 | ContentPage `Grouped` | `systemGroupedBackground` | `surfaceContainer` page and app bar (tinted surface behind segmented lists, as in Android 16 Settings) |
+
+Button titles (iOS) and `NativeText.Weight` keep the `FontFamily`, italic style and Dynamic Type scaling of the text.
 
 Shared typography keys: `TitleXL`, `TitleL`, `TitleM`, `TitleS`, `Headline`, `BodyEmphasized`, `Body`, `BodySecondary`, `Caption`,
 `SectionHeader`, `SectionFooter` (iOS 26: 17 pt semibold sentence-case header aligned with the row text; Android: `titleSmall` in `primary`).
@@ -308,6 +310,9 @@ color so differently that it resolves into two platform palettes:
 - Every `{native:SystemColor}` role, the shared `AccentColor` / `DestructiveColor` resources, `NativeSwipeItem`,
   `SegmentedControl` and the Shell chrome follow the brand. The static per-platform keys (`Primary`, `SystemBlue`, …)
   stay the baseline palette.
+- `OnAccent` (the label on accent-filled buttons) is resolved per theme from the brand color: white while it keeps a
+  3:1 contrast (WCAG AA for large text), black otherwise. On iOS it becomes the title color of `Filled` and
+  `GlassProminent` buttons without a `TextColor` when it is not white. Pin it with `Set(SystemColorRole.OnAccent, …)`.
 - A brand wins over `AndroidDynamicColors` (a branded app keeps its colors instead of following the wallpaper).
 - Below Android 11 only the colors resolved through `{native:SystemColor}` are branded. The Material color utilities
   used to generate the scheme are flagged by Google as internal API: the library guards their use and falls back to
@@ -363,7 +368,7 @@ re-themed. State is preserved:
 - M3 Expressive widgets that need Material Components 1.13+ (loading indicator, wavy progress, button shape morph on press, button groups, split buttons) are not available: MAUI 10.0.101 ships Material Components 1.12 and the newer binding pulls conflicting AndroidX versions.
 - Android `TabbedPage`: the library style sets `ToolbarPlacement=Bottom`, and MAUI's `SetToolbarPlacement()` / `On<Android>().SetToolbarPlacement()` throws when asked for a different value afterwards. To get Material top tabs use the XAML attribute or `page.SetValue(TabbedPage.ToolbarPlacementProperty, ToolbarPlacement.Top)`; they are styled as M3 primary tabs too.
 - List rows have no pressed feedback (ripple / highlight): MAUI item containers own the touch handling, and making the row view clickable would break `CollectionView` selection.
-- Android `Stepper` is a MAUI-drawn control (Android has no stepper); the library restyles its two buttons as Material 3 outlined icon buttons.
+- Android `Stepper` is a MAUI-drawn control (Android has no stepper); the library restyles its two buttons as Material 3 outlined icon buttons (40 dp, with 48 dp touch targets).
 - The iOS 15–18 fallback paths are guarded by `OperatingSystem.IsIOSVersionAtLeast(26)` but were not exercised on an iOS 18 simulator during development.
 - With `UseMaterial3`, Entry and the other input controls use internal `*Handler2` handlers; their mappers are reached through reflection (see `NativeStyles.Android.cs`), and a debug message is logged if the type is not found. These types become public in MAUI 11.
 - All iOS 26 APIs are guarded by `OperatingSystem.IsIOSVersionAtLeast(26)`: on iOS 15–18 the same binary shows the classic appearance.

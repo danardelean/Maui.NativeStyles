@@ -123,7 +123,8 @@ public static partial class NativeStylesExtensions
 				font = WithWeight(font, w);
 			config.TitleTextAttributesTransformer = attrs =>
 			{
-				var transformed = new UIStringAttributes(attrs) { Font = font };
+				// UIKit may pass an immutable (frozen) dictionary: writing into it throws, so work on a copy
+				var transformed = new UIStringAttributes(attrs?.MutableCopy() as NSMutableDictionary ?? new NSMutableDictionary()) { Font = font };
 				if (onAccent is not null && transformed.ForegroundColor is { } incoming)
 					transformed.ForegroundColor = onAccent(incoming);
 				return transformed.Dictionary;

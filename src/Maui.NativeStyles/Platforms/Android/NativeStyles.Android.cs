@@ -146,6 +146,8 @@ public static partial class NativeStylesExtensions
 	}
 
 	/// <summary>Adds a native-style mapping to an internal Material 3 handler's public static Mapper (no-op if the type is missing).</summary>
+	[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The Material 3 handlers are internal, so they are looked up by name. MAUI registers them only with UseMaterial3, and then their constructors reference Mapper, so the type and the field are kept; when trimming removed them the lookup returns null and the hook is skipped.")]
+	[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "See IL2026: the public static Mapper field is kept whenever its handler is used.")]
 	static void HookMaterial3Mapper<TView>(string handlerTypeName, Action<IElementHandler, TView> action, params string[] extraKeys)
 		where TView : IElement
 	{

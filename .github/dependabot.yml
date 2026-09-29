@@ -1,0 +1,34 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directories:
+      - /
+      - /.github/actions/setup-maui
+    target-branch: develop
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ['*']
+
+  - package-ecosystem: nuget
+    directories:
+      - /src/Maui.NativeStyles
+      - /samples/NativeStyles.Sample
+      - /tests/Maui.NativeStyles.Tests
+    target-branch: develop
+    schedule:
+      interval: weekly
+    groups:
+      # Microsoft.Maui.Controls comes from MauiVersion in Directory.Build.props.
+      maui:
+        patterns: ['Microsoft.Maui.*']
+      tests:
+        patterns: ['Microsoft.NET.Test.Sdk', 'xunit*']
+    ignore:
+      # A new major version of MAUI or of the Microsoft.Extensions packages needs a new target framework; the
+      # MAUI canary workflow tracks the next major version instead.
+      - dependency-name: 'Microsoft.Maui.*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'Microsoft.Extensions.*'
+        update-types: ['version-update:semver-major']

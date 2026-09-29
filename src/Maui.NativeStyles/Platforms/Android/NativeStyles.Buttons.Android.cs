@@ -15,10 +15,6 @@ namespace NativeStyles;
 
 public static partial class NativeStylesExtensions
 {
-	// Marks buttons whose colors were overridden by MapDestructiveText, so they can be restored.
-	static readonly BindableProperty DestructiveAppliedProperty =
-		BindableProperty.CreateAttached("DestructiveApplied", typeof(bool), typeof(NativeStylesExtensions), false);
-
 	static void MapButtonIconTint(IButtonHandler handler, IButton button)
 	{
 		if (button is not BindableObject bindable || handler.PlatformView is not Google.Android.Material.Button.MaterialButton platformButton)
@@ -41,32 +37,8 @@ public static partial class NativeStylesExtensions
 
 	static void MapDestructiveText(IButtonHandler handler, IButton button)
 	{
-		if (button is not Button b)
-			return;
-
-		var kind = NativeButton.GetKind(b);
-		var applies = NativeButton.GetIsDestructive(b) && kind is ButtonKind.Text or ButtonKind.Outlined;
-		var applied = (bool)b.GetValue(DestructiveAppliedProperty);
-
-		if (applies)
-		{
-			// Theme-aware local values win over the "Destructive" style setters (error-filled container).
-			var (error, errorDark) = ResolveThemeColors("Error", "#B3261E", "#F2B8B5");
-			b.SetAppThemeColor(Button.TextColorProperty, error, errorDark);
-			b.SetValue(Button.BackgroundColorProperty, Colors.Transparent);
-			if (kind == ButtonKind.Outlined)
-				b.SetAppThemeColor(Button.BorderColorProperty, error, errorDark);
-			b.SetValue(DestructiveAppliedProperty, true);
-		}
-		else if (applied)
-		{
-			b.RemoveBinding(Button.TextColorProperty);
-			b.ClearValue(Button.TextColorProperty);
-			b.ClearValue(Button.BackgroundColorProperty);
-			b.RemoveBinding(Button.BorderColorProperty);
-			b.ClearValue(Button.BorderColorProperty);
-			b.SetValue(DestructiveAppliedProperty, false);
-		}
+		if (button is Button b && NativeButton.GetIsDestructive(b))
+			DestructiveButtons.Attach(b);
 	}
 
 	static void MapStepperButtons(IStepperHandler handler, IStepper stepper)
@@ -98,13 +70,5 @@ public static partial class NativeStylesExtensions
 				button.LayoutParameters = lp;
 			}
 		}
-	}
-
-	static (Color light, Color dark) ResolveThemeColors(string key, string lightFallback, string darkFallback)
-	{
-		var resources = Application.Current?.Resources;
-		var light = resources?.TryGetValue(key, out var l) == true && l is Color lc ? lc : Color.FromArgb(lightFallback);
-		var dark = resources?.TryGetValue(key + "Dark", out var d) == true && d is Color dc ? dc : Color.FromArgb(darkFallback);
-		return (light, dark);
 	}
 }

@@ -55,7 +55,7 @@ public static partial class NativeStylesExtensions
 		// Everything else is expressed in MaterialStyles.xaml and by the Material 3 theme (UseMaterial3).
 		ButtonHandler.Mapper.AppendToMapping(MappingKey, MapDestructiveText);
 
-		// Label weight: Roboto Medium for Medium/Semibold, bold for Bold.
+		// Label weight: the label's typeface at 500 / 600 / 700 (Android 9+; Roboto Medium or bold before).
 		LabelHandler.Mapper.AppendToMapping(MappingKey, MapLabelWeight);
 		LabelHandler.Mapper.AppendToMapping(nameof(ILabel.Font), MapLabelWeight);
 

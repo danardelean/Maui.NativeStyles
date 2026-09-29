@@ -42,16 +42,7 @@ public static partial class NativeStylesExtensions
 
 		// UIButtonConfiguration (iOS 15+) / Liquid Glass (iOS 26+), driven by the NativeButton attached properties.
 		// Re-applied after every MAUI mapping that would otherwise overwrite the configuration.
-		ButtonHandler.Mapper.AppendToMapping(MappingKey, MapButtonConfiguration);
-		ButtonHandler.Mapper.AppendToMapping(nameof(IButton.Background), MapButtonConfiguration);
-		ButtonHandler.Mapper.AppendToMapping(nameof(IButtonStroke.CornerRadius), MapButtonConfiguration);
-		ButtonHandler.Mapper.AppendToMapping(nameof(IButtonStroke.StrokeThickness), MapButtonConfiguration);
-		ButtonHandler.Mapper.AppendToMapping(nameof(ITextStyle.TextColor), MapButtonConfiguration);
-		ButtonHandler.Mapper.AppendToMapping(nameof(ITextStyle.Font), MapButtonConfiguration);
-		ButtonHandler.Mapper.AppendToMapping(nameof(IText.Text), MapButtonConfiguration);
-		ButtonHandler.Mapper.AppendToMapping(nameof(IImageSourcePart.Source), MapButtonConfiguration);
-		ButtonHandler.Mapper.AppendToMapping(nameof(IPadding.Padding), MapButtonConfiguration);
-		ButtonHandler.Mapper.AppendToMapping("LineBreakMode", MapButtonConfiguration);
+		RegisterButtonConfiguration();
 
 		// Entry: iOS 26 text fields are borderless rows on a filled, continuously rounded shape (Settings > Name),
 		// not the legacy UITextBorderStyle.RoundedRect. NativeEntry.IsPlain drops the shape for use inside grouped cells.

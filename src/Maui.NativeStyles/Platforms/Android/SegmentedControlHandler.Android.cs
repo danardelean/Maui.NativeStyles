@@ -1,6 +1,8 @@
 using System.Collections.Specialized;
+using Android.Content;
 using Android.Content.Res;
 using Android.Views;
+using Android.Views.Accessibility;
 using Android.Widget;
 using Google.Android.Material.Button;
 using Google.Android.Material.Color;
@@ -35,7 +37,7 @@ public class SegmentedControlHandler : ViewHandler<SegmentedControl, LinearLayou
 	{
 	}
 
-	protected override LinearLayout CreatePlatformView() => new(Context) { Orientation = Android.Widget.Orientation.Horizontal };
+	protected override LinearLayout CreatePlatformView() => new SegmentGroup(Context) { Orientation = Android.Widget.Orientation.Horizontal };
 
 	// The buttons share the available width (weights), so the group is as wide as its container.
 	public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -84,7 +86,7 @@ public class SegmentedControlHandler : ViewHandler<SegmentedControl, LinearLayou
 		for (var i = 0; i < view.Items.Count; i++)
 		{
 			var index = i;
-			var button = new MaterialButton(context)
+			var button = new SegmentButton(context)
 			{
 				Text = view.Items[i],
 				InsetTop = inset,
@@ -134,6 +136,45 @@ public class SegmentedControlHandler : ViewHandler<SegmentedControl, LinearLayou
 				.SetTopRightCornerSize(right).SetBottomRightCornerSize(right)
 				.Build();
 			button.Selected = selected;
+		}
+	}
+
+	/// <summary>
+	/// TalkBack: a single-selection collection of one row, as MaterialButtonToggleGroup reports itself, so the position of
+	/// each button is announced.
+	/// </summary>
+	sealed class SegmentGroup(Context? context) : LinearLayout(context)
+	{
+		public override void OnInitializeAccessibilityNodeInfo(AccessibilityNodeInfo? info)
+		{
+			base.OnInitializeAccessibilityNodeInfo(info);
+			info?.SetCollectionInfo(OperatingSystem.IsAndroidVersionAtLeast(30)
+				? new AccessibilityNodeInfo.CollectionInfo(1, ChildCount, false, (int)Android.Views.Accessibility.SelectionMode.Single)
+				: AccessibilityNodeInfo.CollectionInfo.Obtain(1, ChildCount, false, Android.Views.Accessibility.SelectionMode.Single));
+		}
+	}
+
+	/// <summary>
+	/// TalkBack: each button is a radio button, checked when selected, at its column in the group. Set after
+	/// MaterialButton's own node info, which reports a plain, non-checkable button.
+	/// </summary>
+	sealed class SegmentButton(Context context) : MaterialButton(context)
+	{
+		public override void OnInitializeAccessibilityNodeInfo(AccessibilityNodeInfo? info)
+		{
+			base.OnInitializeAccessibilityNodeInfo(info);
+			if (info is null)
+				return;
+			info.ClassName = "android.widget.RadioButton";
+			info.Checkable = true;
+			if (OperatingSystem.IsAndroidVersionAtLeast(36))
+				info.CheckedState = Selected ? CheckedState.True : CheckedState.False;
+			else
+				info.Checked = Selected;
+			var index = Parent is ViewGroup group ? group.IndexOfChild(this) : 0;
+			info.SetCollectionItemInfo(OperatingSystem.IsAndroidVersionAtLeast(30)
+				? new AccessibilityNodeInfo.CollectionItemInfo(0, 1, index, 1, false, Selected)
+				: AccessibilityNodeInfo.CollectionItemInfo.Obtain(0, 1, index, 1, false, Selected));
 		}
 	}
 }

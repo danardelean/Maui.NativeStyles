@@ -419,6 +419,9 @@ class AndroidEmulator:
 	def build_and_install(self, configuration: str) -> None:
 		print(f"[android] building and installing the sample ({configuration})", flush=True)
 		env = dict(os.environ, ANDROID_SERIAL=self.serial)
+		# The device may hold another build of the same application id (another checkout, a release build): the Install
+		# target's incremental bookkeeping would then skip the upload, so start from a clean slate.
+		self.adb("uninstall", APP_ID, check=False)
 		run(["dotnet", "build", str(SAMPLE), "-f", "net10.0-android", "-c", configuration, "-t:Install",
 			f"-p:AdbTarget=-s {self.serial}", "-nologo", "-v:q"], capture=False, env=env)
 
@@ -555,7 +558,8 @@ def check_device(device, args, output: Path, masks: dict) -> list[Result]:
 						result.status = "size"
 						result.detail = f"size {current.width}x{current.height}, baseline {baseline.width}x{baseline.height}"
 					else:
-						diff = compare(baseline, current, args.threshold, masks.get(device.name, {}).get(page, []))
+						ignored = masks.get(device.name, {})
+						diff = compare(baseline, current, args.threshold, ignored.get("*", []) + ignored.get(page, []))
 						result.ratio = diff.ratio
 						result.status = "ok" if diff.ratio * 100 <= args.max_diff else "changed"
 						if diff.image is not None:

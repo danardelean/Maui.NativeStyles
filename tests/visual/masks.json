@@ -1,0 +1,6 @@
+{
+	"_about": "Areas ignored by scripts/visual-check.py: [x, y, width, height] in baseline pixels, per platform and page (\"*\" = every page). iOS: the home indicator, which the simulator draws or omits depending on its display state.",
+	"ios": {
+		"*": [[120, 854, 162, 18]]
+	}
+}

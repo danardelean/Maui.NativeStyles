@@ -104,8 +104,11 @@ public static partial class NativeStylesExtensions
 		var (onAccentLight, onAccentDark) = prominent && !destructive && textColor is null && background is null
 			? BrandOnAccent()
 			: default;
+		// UIKit runs the transformers on every state change: a disabled button keeps its own (disabled) colors
+		var weakButton = new WeakReference<UIButton>(platformButton);
 		var onAccent = onAccentLight is null && onAccentDark is null ? null : (Func<UIColor, UIColor>)(incoming =>
-			UIColor.FromDynamicProvider(traits => (traits.UserInterfaceStyle == UIUserInterfaceStyle.Dark ? onAccentDark : onAccentLight)
+			weakButton.TryGetTarget(out var target) && !target.Enabled ? incoming
+			: UIColor.FromDynamicProvider(traits => (traits.UserInterfaceStyle == UIUserInterfaceStyle.Dark ? onAccentDark : onAccentLight)
 				?? incoming.GetResolvedColor(traits)));
 
 		if (button is ITextStyle textStyle)

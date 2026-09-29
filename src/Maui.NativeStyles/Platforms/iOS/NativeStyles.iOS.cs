@@ -12,8 +12,21 @@ public static partial class NativeStylesExtensions
 	{
 		handlers.AddHandler<GlassView, GlassViewHandler>();
 		handlers.AddHandler<SegmentedControl, SegmentedControlHandler>();
+
 		// Entry: same EntryHandler and mapper, but a UITextField that supports text insets and continuous corners.
+		// Without it MapEntryChrome styles whatever UITextField the Entry handler creates.
+		if (!options.ReplaceEntryHandler)
+		{
+			NativeStylesLog.Debug("EntryHandler", "Entry handler left as registered (NativeStylesOptions.ReplaceEntryHandler is false): the native-style mapping shapes its UITextField.");
+			return;
+		}
+		if (handlers.LastOrDefault(d => !d.IsKeyedService && d.ServiceType == typeof(Entry)) is { } registered
+			&& registered.ImplementationType != typeof(EntryHandler) && registered.ImplementationType != typeof(NativeEntryHandler))
+		{
+			NativeStylesLog.Warning("EntryHandlerReplaced", $"UseNativeStyles replaces the Entry handler registered before it ({registered.ImplementationType?.FullName ?? "a factory"}) with NativeEntryHandler. Set NativeStylesOptions.ReplaceEntryHandler to false to keep it.");
+		}
 		handlers.AddHandler<Entry, NativeEntryHandler>();
+		NativeStylesLog.Debug("EntryHandler", "Entry handler: NativeEntryHandler (NativeStylesOptions.ReplaceEntryHandler).");
 	}
 
 	static partial void RegisterPlatformMappers(NativeStylesOptions options)
@@ -56,6 +69,7 @@ public static partial class NativeStylesExtensions
 		// Entry: iOS 26 text fields are borderless rows on a filled, continuously rounded shape (Settings > Name),
 		// not the legacy UITextBorderStyle.RoundedRect. NativeEntry.IsPlain drops the shape for use inside grouped cells.
 		EntryHandler.Mapper.AppendToMapping(MappingKey, MapEntryChrome);
+		EntryHandler.Mapper.AppendToMapping(nameof(IEntry.ClearButtonVisibility), MapEntryChrome);
 
 		// Editor: same filled shape, text inset like a grouped row.
 		EditorHandler.Mapper.AppendToMapping(MappingKey, MapEditorChrome);

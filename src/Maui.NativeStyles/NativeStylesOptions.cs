@@ -23,10 +23,25 @@ public class NativeStylesOptions
 	/// </summary>
 	public bool AndroidRecreateOnThemeChange { get; set; } = true;
 
+	/// <summary>
+	/// iOS: register <c>NativeEntryHandler</c> for <see cref="Entry"/>: its <c>NativeTextField</c> insets the text and
+	/// places the clear button like an iOS 26 Settings row. On by default.
+	/// <para>
+	/// The registration replaces the Entry handler registered before it, and a handler registered after it replaces
+	/// <c>NativeEntryHandler</c>. Set this to false when the app or another library brings its own Entry handler: the
+	/// Entry mapping then shapes the text field that handler creates without subclassing it (continuous corners through
+	/// its layer, the 20 pt text margins as spacer <c>LeftView</c> / <c>RightView</c> views, added only while those are
+	/// unused). UIKit hides the clear button while a right view shows, so the trailing spacer steps aside whenever the
+	/// clear button can appear, and the button sits at UIKit's position near the edge instead of a Settings row's.
+	/// </para>
+	/// </summary>
+	public bool ReplaceEntryHandler { get; set; } = true;
+
 	/// <summary>True when both option sets configure the same styling (brands are compared by value).</summary>
 	internal bool IsEquivalentTo(NativeStylesOptions other) =>
 		AndroidDynamicColors == other.AndroidDynamicColors
 		&& AndroidRecreateOnThemeChange == other.AndroidRecreateOnThemeChange
+		&& ReplaceEntryHandler == other.ReplaceEntryHandler
 		&& BrandsMatch(Brand, other.Brand);
 
 	static bool BrandsMatch(BrandPalette? a, BrandPalette? b)

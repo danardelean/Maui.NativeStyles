@@ -79,6 +79,12 @@ public class NativeStylesOptionsTests
 	static readonly Color Brand = Color.FromArgb("#0B7A75");
 
 	[Fact]
+	public void Entry_handler_is_replaced_by_default()
+	{
+		Assert.True(new NativeStylesOptions().ReplaceEntryHandler);
+	}
+
+	[Fact]
 	public void Default_options_are_equivalent()
 	{
 		Assert.True(new NativeStylesOptions().IsEquivalentTo(new NativeStylesOptions()));
@@ -96,6 +102,7 @@ public class NativeStylesOptionsTests
 	[Theory]
 	[InlineData(nameof(NativeStylesOptions.AndroidDynamicColors))]
 	[InlineData(nameof(NativeStylesOptions.AndroidRecreateOnThemeChange))]
+	[InlineData(nameof(NativeStylesOptions.ReplaceEntryHandler))]
 	[InlineData(nameof(NativeStylesOptions.Brand))]
 	[InlineData(nameof(BrandPalette.TintsSwitches))]
 	[InlineData(nameof(BrandPalette.IOS))]
@@ -108,6 +115,7 @@ public class NativeStylesOptionsTests
 		{
 			case nameof(NativeStylesOptions.AndroidDynamicColors): second.AndroidDynamicColors = true; break;
 			case nameof(NativeStylesOptions.AndroidRecreateOnThemeChange): second.AndroidRecreateOnThemeChange = false; break;
+			case nameof(NativeStylesOptions.ReplaceEntryHandler): second.ReplaceEntryHandler = false; break;
 			case nameof(NativeStylesOptions.Brand): second.Brand = null; break;
 			case nameof(BrandPalette.TintsSwitches): second.Brand!.TintsSwitches = true; break;
 			case nameof(BrandPalette.IOS): second.Brand!.IOS.Accent = Colors.Orange; break;

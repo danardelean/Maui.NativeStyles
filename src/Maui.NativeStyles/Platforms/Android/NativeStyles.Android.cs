@@ -20,6 +20,8 @@ public static partial class NativeStylesExtensions
 	{
 		handlers.AddHandler<GlassView, GlassViewHandler>();
 		handlers.AddHandler<SegmentedControl, SegmentedControlHandler>();
+		// Stepper: same mapper; the styled buttons get 48 dp touch targets without changing the layout.
+		handlers.AddHandler<Stepper, NativeStepperHandler>();
 	}
 
 	static partial void RegisterPlatformMappers(NativeStylesOptions options)

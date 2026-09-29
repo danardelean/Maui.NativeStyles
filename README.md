@@ -274,10 +274,11 @@ Per the HIG, use it only for floating controls above content, never in the conte
 The Android styles follow the current recommendations on [m3.material.io](https://m3.material.io/components):
 expressive segmented lists instead of baseline lists, the flexible navigation bar (64 dp, 56×32 dp active indicator,
 `secondary` active label, `surfaceContainer` container) instead of the 80 dp baseline bar, the contained search bar,
-16 dp button padding and the new outlined-button colors. Shell's bottom navigation, app bar and search view are native
-views created by MAUI after navigation, so the library restyles them from an activity layout listener
-(`ShellChromeStyler`). Text fields, cards (12 dp), switches, sliders and progress indicators already match through
-`UseMaterial3` and are left untouched.
+16 dp button padding and the new outlined-button colors. Shell's bottom navigation, top tabs, app bar, search view and
+flyout are styled by `NativeShellRenderer` (see [Custom Shell renderer](#custom-shell-renderer)) as MAUI creates them;
+`TabbedPage`, `NavigationPage` and `FlyoutPage` have no such extension point and are restyled from an activity layout
+listener (`ShellChromeStyler`). Text fields, cards (12 dp), switches, sliders and progress indicators already match
+through `UseMaterial3` and are left untouched.
 
 ## Branding
 
@@ -345,6 +346,23 @@ color so differently that it resolves into two platform palettes:
 `NativeImage.TintColor`) and its text otherwise. The Shell flyout, top tabs, `TabbedPage` and `NavigationPage` need no
 markup: the implicit styles and the platform hooks restyle them. The legacy `ListView`, `TableView` and `Frame` are
 intentionally not styled: use `CollectionView` / `GroupedCell` and `Border` (`Card`).
+
+## Custom Shell renderer
+
+`UseNativeStyles` registers `NativeShellRenderer` as the Shell renderer on iOS and Android. It applies the Shell chrome
+styling through MAUI's Shell extension points (appearance trackers, toolbar tracker and flyout renderer on Android;
+tab bar, navigation and section controllers and the page tracker on iOS), after MAUI has applied the `Shell.*` colors.
+An app that needs its own Shell renderer derives it from `NativeShellRenderer` instead of `ShellRenderer`, calls the
+base implementation of the `Create*` methods it overrides, and registers it after `UseNativeStyles`:
+
+```csharp
+builder.UseNativeStyles()
+       .ConfigureMauiHandlers(handlers => handlers.AddHandler<Shell, MyShellRenderer>());
+```
+
+With `options.ReplaceShellRenderer = false`, or a Shell renderer that does not derive from `NativeShellRenderer`, the
+chrome is styled as in earlier versions: from an activity layout listener on Android, in passes after each navigation
+on iOS.
 
 ## Theme changes at runtime (Android)
 

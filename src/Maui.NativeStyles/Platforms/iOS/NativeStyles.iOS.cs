@@ -14,7 +14,12 @@ public static partial class NativeStylesExtensions
 		handlers.AddHandler<SegmentedControl, SegmentedControlHandler>();
 		// Entry: same EntryHandler and mapper, but a UITextField that supports text insets and continuous corners.
 		handlers.AddHandler<Entry, NativeEntryHandler>();
+		// Handler registrations run when the app is built, after RegisterPlatformMappers stored the option
+		if (s_replaceShellRenderer)
+			handlers.AddHandler<Shell, NativeShellRenderer>();
 	}
+
+	static bool s_replaceShellRenderer = true;
 
 	static partial void RegisterPlatformMappers(NativeStylesOptions options)
 	{
@@ -77,12 +82,20 @@ public static partial class NativeStylesExtensions
 		Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.Mapper.AppendToMapping(MappingKey, MapTabbedPageMinimize);
 		Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.Mapper.AppendToMapping(nameof(TabbedPage.CurrentPage), MapTabbedPageMinimize);
 
-		// Shell: iOS 26 tab bar minimize behavior. The UITabBarController is created per ShellItem after navigation,
-		// so the value is applied on every Navigated event.
+		// Shell: large titles, segmented top tabs, search field colors and the iOS 26 tab bar minimize behavior.
+		// NativeShellRenderer applies them from its controllers' lifecycle; here only a runtime change of the minimize
+		// behavior. With another renderer the controllers are created per ShellItem after navigation, so they are
+		// reached on every Navigated event.
+		s_replaceShellRenderer = options.ReplaceShellRenderer;
 		Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.Mapper.AppendToMapping(MappingKey, (handler, shell) =>
 		{
 			if (shell is not Shell s || !OperatingSystem.IsIOSVersionAtLeast(26))
 				return;
+			if (handler is NativeShellRenderer)
+			{
+				ApplyTabBarMinimizeBehavior(s, onlyIfChanged: true);
+				return;
+			}
 			s.Navigated -= OnShellNavigated;
 			s.Navigated += OnShellNavigated;
 			ObserveAppTheme();

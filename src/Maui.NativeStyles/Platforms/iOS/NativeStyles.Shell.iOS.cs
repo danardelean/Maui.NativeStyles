@@ -2,11 +2,17 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Platform;
 using UIKit;
+using LargeTitleDisplayMode = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode;
+using PageSpecific = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;
 
 namespace NativeStyles;
 
 public static partial class NativeStylesExtensions
 {
+	/// <summary>
+	/// Shell without <see cref="NativeShellRenderer"/> (another renderer, or ReplaceShellRenderer = false): its
+	/// controllers are reached after each navigation instead of from renderer hooks.
+	/// </summary>
 	static void OnShellNavigated(object? sender, ShellNavigatedEventArgs e)
 	{
 		if (sender is not Shell shell)
@@ -67,7 +73,8 @@ public static partial class NativeStylesExtensions
 		// After MAUI has pushed the new AppThemeBinding values
 		MainThread.BeginInvokeOnMainThread(() =>
 		{
-			if (Shell.Current is { } shell)
+			// NativeShellRenderer follows the page colors itself
+			if (Shell.Current is { Handler: not NativeShellRenderer } shell)
 			{
 				ApplySegmentedTopTabs(shell);
 				ApplySearchFieldColors(shell);
@@ -137,50 +144,84 @@ public static partial class NativeStylesExtensions
 	static void ApplyLargeTitles(Shell shell, bool expandCollapsedBar = false)
 	{
 		if ((shell.Handler as IPlatformViewHandler)?.ViewController is not { } root || shell.CurrentPage is not { } page
-			|| !page.IsSet(Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.LargeTitleDisplayProperty))
+			|| !page.IsSet(PageSpecific.LargeTitleDisplayProperty))
 		{
 			return;
 		}
-		var mode = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetLargeTitleDisplay(page);
+		var mode = PageSpecific.GetLargeTitleDisplay(page);
 		// Top-tab sections use an inline title (see ApplySegmentedTopTabs)
 		if (shell.CurrentItem?.CurrentItem is IShellSectionController section && section.GetItems().Count > 1)
-			mode = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Never;
+			mode = LargeTitleDisplayMode.Never;
 		foreach (var tabBarController in EnumerateTabBarControllers(root))
 		{
 			if (tabBarController.SelectedViewController is not UINavigationController navigation)
 				continue;
-			navigation.NavigationBar.PrefersLargeTitles = mode != Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Never;
-			if (navigation.TopViewController is { } top)
-				top.NavigationItem.LargeTitleDisplayMode = mode switch
-				{
-					Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Always => UINavigationItemLargeTitleDisplayMode.Always,
-					Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Never => UINavigationItemLargeTitleDisplayMode.Never,
-					_ => UINavigationItemLargeTitleDisplayMode.Automatic,
-				};
-
-			// UIKit leaves the bar collapsed when large titles are enabled after the content was laid out. The first time a
-			// page is shown, if its bar is collapsed while the content rests at the top, expand it (never again, so a
-			// position the user scrolled to is kept).
-			if (expandCollapsedBar && navigation.NavigationBar.PrefersLargeTitles
-				&& mode == Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Always
-				&& !s_largeTitleExpanded.TryGetValue(page, out _)
-				&& navigation.TopViewController?.View is { Window: not null } view && FindScrollView(view) is { } scrollView)
-			{
-				s_largeTitleExpanded.Add(page, page);
-				var collapsed = navigation.NavigationBar.Frame.Height < 60;
-				var atRest = Math.Abs(scrollView.ContentOffset.Y + scrollView.AdjustedContentInset.Top) < 1;
-				if (collapsed && atRest)
-				{
-					navigation.NavigationBar.SizeToFit();
-					navigation.View?.SetNeedsLayout();
-					navigation.View?.LayoutIfNeeded();
-					scrollView.SetContentOffset(new CGPoint(scrollView.ContentOffset.X, -scrollView.AdjustedContentInset.Top), false);
-				}
-			}
+			SetLargeTitle(navigation, mode);
+			if (expandCollapsedBar)
+				ExpandCollapsedLargeTitle(navigation, page);
 		}
 	}
 
 	static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Page, object> s_largeTitleExpanded = new();
+
+	/// <summary>
+	/// UIKit leaves the bar collapsed when large titles are enabled after the content was laid out (MAUI does so the first
+	/// time a flyout item is displayed). The first time a page is shown, if its bar is collapsed while the content rests
+	/// at the top, expand it (never again, so a position the user scrolled to is kept).
+	/// </summary>
+	internal static void ExpandCollapsedLargeTitle(UINavigationController navigation, Page page)
+	{
+		if (!navigation.NavigationBar.PrefersLargeTitles
+			|| !page.IsSet(PageSpecific.LargeTitleDisplayProperty) || PageSpecific.GetLargeTitleDisplay(page) != LargeTitleDisplayMode.Always
+			|| s_largeTitleExpanded.TryGetValue(page, out _)
+			|| navigation.TopViewController?.View is not { Window: not null } view || FindScrollView(view) is not { } scrollView)
+		{
+			return;
+		}
+		s_largeTitleExpanded.Add(page, page);
+		var collapsed = navigation.NavigationBar.Frame.Height < 60;
+		var atRest = Math.Abs(scrollView.ContentOffset.Y + scrollView.AdjustedContentInset.Top) < 1;
+		if (collapsed && atRest)
+		{
+			navigation.NavigationBar.SizeToFit();
+			navigation.View?.SetNeedsLayout();
+			navigation.View?.LayoutIfNeeded();
+			scrollView.SetContentOffset(new CGPoint(scrollView.ContentOffset.X, -scrollView.AdjustedContentInset.Top), false);
+		}
+	}
+
+	/// <summary>
+	/// NativeShellRenderer: the large title of a Shell section's navigation bar, as MAUI applies it from
+	/// Page.LargeTitleDisplay, except in a section with top tabs, which uses an inline title (a large title does not
+	/// track the scroll view of a top-tab page, nested below MAUI's header). Idempotent, so every hook that may follow
+	/// MAUI's own update can call it.
+	/// </summary>
+	internal static void ApplySectionLargeTitle(UINavigationController navigation, ShellSection section)
+	{
+		var topTabs = HasTopTabs(section);
+		if (topTabs && navigation.ViewControllers is [var root, ..] && root.NavigationItem.LargeTitleDisplayMode != UINavigationItemLargeTitleDisplayMode.Never)
+			root.NavigationItem.LargeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Never;
+		if (((IShellSectionController)section).PresentedPage is not { } page || !page.IsSet(PageSpecific.LargeTitleDisplayProperty))
+			return;
+		SetLargeTitle(navigation, topTabs ? LargeTitleDisplayMode.Never : PageSpecific.GetLargeTitleDisplay(page));
+	}
+
+	internal static bool HasTopTabs(ShellSection section) => ((IShellSectionController)section).GetItems().Count > 1;
+
+	static void SetLargeTitle(UINavigationController navigation, LargeTitleDisplayMode mode)
+	{
+		var prefersLargeTitles = mode != LargeTitleDisplayMode.Never;
+		if (navigation.NavigationBar.PrefersLargeTitles != prefersLargeTitles)
+			navigation.NavigationBar.PrefersLargeTitles = prefersLargeTitles;
+		var itemMode = mode switch
+		{
+			LargeTitleDisplayMode.Always => UINavigationItemLargeTitleDisplayMode.Always,
+			LargeTitleDisplayMode.Never => UINavigationItemLargeTitleDisplayMode.Never,
+			_ => UINavigationItemLargeTitleDisplayMode.Automatic,
+		};
+		if (navigation.TopViewController is { } top && top.NavigationItem.LargeTitleDisplayMode != itemMode)
+			top.NavigationItem.LargeTitleDisplayMode = itemMode;
+	}
 
 	/// <summary>
 	/// Shell.SearchHandler: MAUI builds the navigation-bar search field's placeholder and text with colors resolved once,
@@ -195,14 +236,17 @@ public static partial class NativeStylesExtensions
 			return;
 		}
 		foreach (var controller in EnumerateControllers<UIViewController>(root))
-		{
-			if (controller.NavigationItem?.SearchController?.SearchBar.SearchTextField is not { } field)
-				continue;
-			if (search.TextColor is null)
-				field.TextColor = UIColor.Label;
-			if (search.PlaceholderColor is null && !string.IsNullOrEmpty(search.Placeholder))
-				field.AttributedPlaceholder = new NSAttributedString(search.Placeholder, foregroundColor: UIColor.PlaceholderText);
-		}
+			ApplySearchFieldColors(controller.NavigationItem, search);
+	}
+
+	internal static void ApplySearchFieldColors(UINavigationItem? item, SearchHandler search)
+	{
+		if (item?.SearchController?.SearchBar.SearchTextField is not { } field)
+			return;
+		if (search.TextColor is null)
+			field.TextColor = UIColor.Label;
+		if (search.PlaceholderColor is null && !string.IsNullOrEmpty(search.Placeholder))
+			field.AttributedPlaceholder = new NSAttributedString(search.Placeholder, foregroundColor: UIColor.PlaceholderText);
 	}
 
 	const int TopTabsOverlayTag = 0x4E5354;
@@ -219,56 +263,78 @@ public static partial class NativeStylesExtensions
 		{
 			if (header.ShellSection is not { } section || header.CollectionView is not { } strip)
 				continue;
-			var items = ((IShellSectionController)section).GetItems();
-			// The overlay lives inside MAUI's strip so it follows it when the large title collapses or the device rotates
-			var overlay = strip.ViewWithTag(TopTabsOverlayTag);
-			UISegmentedControl control;
-			if (overlay is null)
-			{
-				overlay = new UIView(strip.Bounds) { Tag = TopTabsOverlayTag, AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight };
-				overlay.Layer.ZPosition = 10000; // MAUI's selection bar uses 9001
-				control = new UISegmentedControl { TranslatesAutoresizingMaskIntoConstraints = false };
-				control.ValueChanged += (_, _) =>
-				{
-					var current = ((IShellSectionController)section).GetItems();
-					if (control.SelectedSegment >= 0 && control.SelectedSegment < current.Count)
-						section.CurrentItem = current[(int)control.SelectedSegment];
-				};
-				overlay.AddSubview(control);
-				strip.AddSubview(overlay);
-				strip.ScrollEnabled = false;
-				strip.ShowsHorizontalScrollIndicator = false;
-				NSLayoutConstraint.ActivateConstraints(
-				[
-					control.LeadingAnchor.ConstraintEqualTo(overlay.LeadingAnchor, 20),
-					control.TrailingAnchor.ConstraintEqualTo(overlay.TrailingAnchor, -20),
-					control.CenterYAnchor.ConstraintEqualTo(overlay.CenterYAnchor),
-				]);
-			}
-			else
-			{
-				control = (UISegmentedControl)overlay.Subviews[0];
-			}
-
 			// A large title does not track the scroll view of a top-tab page (it is nested below MAUI's header), so content
 			// would slide under the still-expanded title. Like native screens with a segmented control under the bar, use
 			// an inline title here.
 			if (header.ParentViewController is { } host)
 				host.NavigationItem.LargeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Never;
+			StyleTopTabsStrip(strip, section, (shell.CurrentPage?.BackgroundColor)?.ToPlatform());
+		}
+	}
 
-			overlay.BackgroundColor = (shell.CurrentPage?.BackgroundColor)?.ToPlatform() ?? UIColor.SystemBackground;
-			strip.BringSubviewToFront(overlay);
-			// MAUI draws a 30% black hairline below the strip (a 1pt subview kept just under its bounds); iOS 26 has none
-			foreach (var subview in strip.Subviews)
-				if (subview != overlay && subview.Frame.Height <= 1)
-					subview.Hidden = true;
-			if (control.NumberOfSegments != items.Count || Enumerable.Range(0, items.Count).Any(i => control.TitleAt(i) != items[i].Title))
+	/// <summary>
+	/// Lays the segmented control over MAUI's top-tabs strip (a collection view) or updates it: segments and selection
+	/// from the section, the page background behind it, MAUI's hairline hidden.
+	/// </summary>
+	internal static void StyleTopTabsStrip(UICollectionView strip, ShellSection section, UIColor? background)
+	{
+		var items = ((IShellSectionController)section).GetItems();
+		// The overlay lives inside MAUI's strip so it follows it when the large title collapses or the device rotates
+		var overlay = strip.ViewWithTag(TopTabsOverlayTag);
+		UISegmentedControl control;
+		if (overlay is null)
+		{
+			overlay = new UIView(strip.Bounds) { Tag = TopTabsOverlayTag, AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight };
+			overlay.Layer.ZPosition = 10000; // MAUI's selection bar uses 9001
+			control = new UISegmentedControl { TranslatesAutoresizingMaskIntoConstraints = false };
+			control.ValueChanged += (_, _) =>
 			{
-				control.RemoveAllSegments();
-				for (var i = 0; i < items.Count; i++)
-					control.InsertSegment(items[i].Title ?? string.Empty, i, false);
-			}
-			control.SelectedSegment = items.IndexOf(section.CurrentItem);
+				var current = ((IShellSectionController)section).GetItems();
+				if (control.SelectedSegment >= 0 && control.SelectedSegment < current.Count)
+					section.CurrentItem = current[(int)control.SelectedSegment];
+			};
+			overlay.AddSubview(control);
+			strip.AddSubview(overlay);
+			strip.ScrollEnabled = false;
+			strip.ShowsHorizontalScrollIndicator = false;
+			// VoiceOver: the segmented control stands for the whole strip; MAUI's cells below it stay hidden
+			// (UIAccessibilityContainer.accessibilityElements, which the UIView binding does not expose)
+			strip.SetValueForKey(NSArray.FromNSObjects(control), new NSString("accessibilityElements"));
+			NSLayoutConstraint.ActivateConstraints(
+			[
+				control.LeadingAnchor.ConstraintEqualTo(overlay.LeadingAnchor, 20),
+				control.TrailingAnchor.ConstraintEqualTo(overlay.TrailingAnchor, -20),
+				control.CenterYAnchor.ConstraintEqualTo(overlay.CenterYAnchor),
+			]);
+		}
+		else
+		{
+			control = (UISegmentedControl)overlay.Subviews[0];
+		}
+
+		overlay.BackgroundColor = background ?? UIColor.SystemBackground;
+		strip.BringSubviewToFront(overlay);
+		// MAUI draws a 30% black hairline below the strip (a 1pt subview kept just under its bounds); iOS 26 has none
+		foreach (var subview in strip.Subviews)
+			if (subview != overlay && subview.Frame.Height <= 1)
+				subview.Hidden = true;
+		HideFromAccessibility(strip.VisibleCells);
+		if (control.NumberOfSegments != items.Count || Enumerable.Range(0, items.Count).Any(i => control.TitleAt(i) != items[i].Title))
+		{
+			control.RemoveAllSegments();
+			for (var i = 0; i < items.Count; i++)
+				control.InsertSegment(items[i].Title ?? string.Empty, i, false);
+		}
+		if (items.IndexOf(section.CurrentItem) is var selected && control.SelectedSegment != selected)
+			control.SelectedSegment = selected;
+	}
+
+	internal static void HideFromAccessibility(IEnumerable<UIView> views)
+	{
+		foreach (var view in views)
+		{
+			view.IsAccessibilityElement = false;
+			view.AccessibilityElementsHidden = true;
 		}
 	}
 
@@ -281,13 +347,31 @@ public static partial class NativeStylesExtensions
 				yield return found;
 	}
 
-	static void ApplyTabBarMinimizeBehavior(Shell shell)
+	static void ApplyTabBarMinimizeBehavior(Shell shell, bool onlyIfChanged = false)
 	{
 		if ((shell.Handler as IPlatformViewHandler)?.ViewController is { } root)
-			ApplyTabBarMinimizeBehavior(root, NativeShell.GetTabBarMinimizeBehavior(shell));
+			ApplyTabBarMinimizeBehavior(root, NativeShell.GetTabBarMinimizeBehavior(shell), onlyIfChanged);
 	}
 
-	static void ApplyTabBarMinimizeBehavior(UIViewController root, TabBarMinimizeBehavior requested)
+	static void ApplyTabBarMinimizeBehavior(UIViewController root, TabBarMinimizeBehavior requested, bool onlyIfChanged = false)
+	{
+		if (!OperatingSystem.IsIOSVersionAtLeast(26))
+			return;
+		foreach (var tabBarController in EnumerateTabBarControllers(root))
+		{
+			SetTabBarMinimizeBehavior(tabBarController, requested, onlyIfChanged);
+			var visible = tabBarController.SelectedViewController is UINavigationController nav ? nav.TopViewController : tabBarController.SelectedViewController;
+			if (visible?.View is { } view)
+				RegisterContentScrollView(visible, view);
+		}
+	}
+
+	/// <summary>
+	/// <c>onlyIfChanged</c>: skip the assignment when the controller already has the behavior. Assigning the same value
+	/// again is not a no-op for UIKit: done before the controller is on screen, the glass tab bar then renders slightly
+	/// differently.
+	/// </summary>
+	internal static void SetTabBarMinimizeBehavior(UITabBarController tabBarController, TabBarMinimizeBehavior requested, bool onlyIfChanged = false)
 	{
 		if (!OperatingSystem.IsIOSVersionAtLeast(26))
 			return;
@@ -298,15 +382,18 @@ public static partial class NativeStylesExtensions
 			TabBarMinimizeBehavior.OnScrollUp => UITabBarMinimizeBehavior.OnScrollUp,
 			_ => UITabBarMinimizeBehavior.Automatic,
 		};
-		foreach (var tabBarController in EnumerateTabBarControllers(root))
-		{
+		if (!onlyIfChanged || tabBarController.TabBarMinimizeBehavior != behavior)
 			tabBarController.TabBarMinimizeBehavior = behavior;
-			// UIKit minimizes the bar by observing the content scroll view of the visible controller; MAUI's
-			// ScrollView is nested inside container views, so it must be registered explicitly.
-			var visible = tabBarController.SelectedViewController is UINavigationController nav ? nav.TopViewController : tabBarController.SelectedViewController;
-			if (visible?.View is { } view && FindScrollView(view) is { } scrollView)
-				visible.SetContentScrollView(scrollView, NSDirectionalRectEdge.Bottom);
-		}
+	}
+
+	/// <summary>
+	/// UIKit minimizes the tab bar by observing the content scroll view of the visible controller; MAUI's ScrollView is
+	/// nested inside container views, so it must be registered explicitly.
+	/// </summary>
+	internal static void RegisterContentScrollView(UIViewController controller, UIView content)
+	{
+		if (OperatingSystem.IsIOSVersionAtLeast(26) && FindScrollView(content) is { } scrollView)
+			controller.SetContentScrollView(scrollView, NSDirectionalRectEdge.Bottom);
 	}
 
 	static UIScrollView? FindScrollView(UIView view)

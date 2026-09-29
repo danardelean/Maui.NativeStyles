@@ -13,6 +13,13 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 
+		<!-- Trimming and Native AOT: the assembly is marked trimmable and the trim / AOT analyzers check every reflection use.
+		     MAUI's build targets turn the trim analyzer off unless the project publishes with full trimming or Native AOT;
+		     _MauiDoNotConfigureTrimAnalyzer is the switch MAUI provides to keep it on. -->
+		<IsTrimmable>true</IsTrimmable>
+		<IsAotCompatible>true</IsAotCompatible>
+		<_MauiDoNotConfigureTrimAnalyzer>true</_MauiDoNotConfigureTrimAnalyzer>
+
 		<!-- NuGet -->
 		<IsPackable>true</IsPackable>
 		<PackageId>Maui.NativeStyles</PackageId>

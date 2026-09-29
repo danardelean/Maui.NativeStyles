@@ -1,0 +1,30 @@
+name: Set up .NET MAUI
+description: Selects the latest stable Xcode, installs the .NET SDK and the maui workload (macOS runners).
+
+inputs:
+  dotnet-version:
+    description: .NET SDK version, in actions/setup-dotnet syntax.
+    required: false
+    default: 10.0.x
+  dotnet-quality:
+    description: SDK quality for a prerelease channel (for example preview); empty for released SDKs.
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Select Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+        dotnet-quality: ${{ inputs.dotnet-quality }}
+
+    - name: Install MAUI workload
+      shell: bash
+      run: dotnet workload install maui --skip-sign-check

@@ -20,6 +20,9 @@
 		<IsAotCompatible>true</IsAotCompatible>
 		<_MauiDoNotConfigureTrimAnalyzer>true</_MauiDoNotConfigureTrimAnalyzer>
 
+		<!-- CI builds (ContinuousIntegrationBuild, see Directory.Build.props): the library must stay free of warnings. -->
+		<TreatWarningsAsErrors Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TreatWarningsAsErrors>
+
 		<!-- NuGet -->
 		<IsPackable>true</IsPackable>
 		<PackageId>Maui.NativeStyles</PackageId>

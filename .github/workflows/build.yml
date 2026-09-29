@@ -7,29 +7,23 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.0.x
-
-      - name: Install MAUI workload
-        run: dotnet workload install maui --skip-sign-check
+      - name: Set up .NET MAUI
+        uses: ./.github/actions/setup-maui
 
       - name: Restore
         run: dotnet restore Maui.NativeStyles.slnx
 
-      - name: Build library
+      # CI builds set ContinuousIntegrationBuild (Directory.Build.props), which makes library warnings errors.
+      - name: Build library (warnings as errors)
         run: dotnet build src/Maui.NativeStyles/Maui.NativeStyles.csproj -c Release --no-restore
 
       - name: Test
@@ -47,4 +41,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: nuget
-          path: artifacts/*.nupkg
+          path: |
+            artifacts/*.nupkg
+            artifacts/*.snupkg
+          if-no-files-found: error

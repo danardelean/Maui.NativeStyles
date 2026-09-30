@@ -93,6 +93,8 @@ xcrun simctl launch --terminate-running-process <UDID> it.mahiz.mauinativestyle 
 
 The release job fails before publishing anything if the tag does not match `<Version>` or `CHANGELOG.md` has no section for it; fix the release, move the tag and push it again. Re-running the job updates the existing release and skips a package that is already on nuget.org.
 
+CI installs the workload versions pinned in `.github/workload-versions.json` (the output of `dotnet workload update --print-rollback`) and a matching Xcode (`xcode-version` in `.github/actions/setup-maui`): a new iOS workload requires the Xcode released with it, which the hosted runners get later. Update both together.
+
 The **MAUI canary** workflow builds `develop` every Monday against the newest MAUI service release, and against the next major version without failing the run. The library reaches some MAUI internals through reflection, so a failure there usually means MAUI renamed or removed one of them.
 
 ## Reporting issues

@@ -16,7 +16,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Android: `SegmentedControl` and `Stepper` buttons have 48 dp touch targets with the same 40 dp visuals (new `NativeStepperHandler`), and TalkBack announces segments as radio buttons with their checked state and position.
 - NuGet package icon, release notes link, symbol package (`.snupkg`) and Source Link; the library is marked trimmable and AOT compatible and builds without trim or AOT warnings.
 - Tests: reflection canaries for the MAUI internals the library reaches, on-device xunit tests for the iOS and Android handler mappings (`tests/Maui.NativeStyles.DeviceTests`), and a visual regression check with committed baselines (`scripts/visual-check.py`). The sample handles `nativestyles://page/<name>?theme=light|dark` automation links.
-- CI: library warnings are errors; a `v*` tag creates the GitHub release and pushes to nuget.org when `NUGET_API_KEY` is configured; a weekly canary builds against the newest MAUI service release; Dependabot.
+- CI: library warnings are errors; a `v*` tag creates the GitHub release and pushes to nuget.org when `NUGET_API_KEY` is configured; a weekly canary builds against the newest MAUI service release; Dependabot. The workload versions and Xcode are pinned (`.github/workload-versions.json`), because a new iOS workload requires an Xcode the hosted runners get later.
 
 ### Changed
 - `UseNativeStyles` registers its mappings, the brand and the Android activity callbacks once per process: the first call's options stay in effect and a later call with different options is ignored with a warning.

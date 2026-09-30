@@ -47,7 +47,7 @@ public static partial class SystemColors
 			{
 				// com.google.android.material.color.utilities is restricted API: keep working if a release drops it
 				_schemeUtilitiesUnavailable = true;
-				System.Diagnostics.Debug.WriteLine($"[NativeStyles] Material color utilities unavailable: {e.Message}");
+				NativeStylesLog.Warning("MaterialColorUtilities", "Material color utilities (restricted Material Components API) are unavailable: no brand scheme is generated, only the Accent and OnAccent roles are branded.", e);
 			}
 		}
 		// Fallback when the (restricted) Material color utilities are gone: only the accent itself can be branded
@@ -211,7 +211,7 @@ public static partial class SystemColors
 		catch (Exception e) when (e is Java.Lang.Throwable or MissingMethodException or TypeLoadException)
 		{
 			_schemeUtilitiesUnavailable = true;
-			System.Diagnostics.Debug.WriteLine($"[NativeStyles] Material color resource override unavailable: {e.Message}");
+			NativeStylesLog.Warning("MaterialColorResourcesOverride", "Material color resource override (restricted Material Components API) is unavailable: native widgets keep the baseline Material colors, only the Accent and OnAccent roles are branded.", e);
 			return false;
 		}
 	}

@@ -19,13 +19,42 @@ public static partial class NativeStylesExtensions
 			return;
 		var field = handler.PlatformView;
 		field.BorderStyle = UITextBorderStyle.None;
+		var plain = NativeEntry.GetIsPlain(bindable);
 		if (field is NativeTextField native)
 		{
-			var plain = NativeEntry.GetIsPlain(bindable);
 			native.CornerRadius = plain ? 0 : FieldCornerRadius;
 			native.ContentMargin = plain ? 0 : FieldContentMargin;
+			return;
+		}
+
+		// Another Entry handler's text field (NativeStylesOptions.ReplaceEntryHandler = false): same shape through the
+		// layer, fixed at the radius of the 52 pt field, and the content margin as spacer views on both sides. Views
+		// the field already shows there are left alone.
+		field.Layer.CornerCurve = CoreAnimation.CACornerCurve.Continuous;
+		field.Layer.CornerRadius = plain ? 0 : FieldCornerRadius;
+		if (!plain)
+			field.ClipsToBounds = true;
+		if (field.LeftView is null or FieldMarginView)
+		{
+			field.LeftView = plain ? null : field.LeftView ?? new FieldMarginView();
+			field.LeftViewMode = UITextFieldViewMode.Always;
+		}
+		if (field.RightView is null or FieldMarginView)
+		{
+			// A visible right view hides the clear button: the trailing margin steps aside whenever the button can show
+			field.RightView = plain ? null : field.RightView ?? new FieldMarginView();
+			field.RightViewMode = field.ClearButtonMode switch
+			{
+				UITextFieldViewMode.WhileEditing => UITextFieldViewMode.UnlessEditing,
+				UITextFieldViewMode.UnlessEditing => UITextFieldViewMode.WhileEditing,
+				UITextFieldViewMode.Always => UITextFieldViewMode.Never,
+				_ => UITextFieldViewMode.Always,
+			};
 		}
 	}
+
+	/// <summary>Transparent spacer that insets a UITextField's text by the grouped-row content margin.</summary>
+	sealed class FieldMarginView() : UIView(new CGRect(0, 0, FieldContentMargin, 1));
 
 	static void MapEditorChrome(IEditorHandler handler, IEditor editor)
 	{

@@ -148,6 +148,27 @@ builder.UseMauiApp<App>()
 
 5. Do not set `UIDesignRequiresCompatibility` in `Info.plist` (it disables Liquid Glass and is ignored from the iOS 27 SDK on).
 
+Options (`NativeStylesOptions`):
+
+| Option | Default | |
+|---|---|---|
+| `Brand` | none | the app's brand colors, see [Branding](#branding) |
+| `AndroidDynamicColors` | `false` | Material You (wallpaper) colors on Android 12+; a brand wins over it |
+| `AndroidRecreateOnThemeChange` | `true` | see [Theme changes at runtime](#theme-changes-at-runtime-android) |
+| `ReplaceEntryHandler` | `true` | iOS: registers `NativeEntryHandler` for `Entry` |
+
+The mappings are process-wide (MAUI's mappers are static), so they are registered once: calling `UseNativeStyles`
+again, from the app or a library, is harmless, but the first call's options stay in effect and a call with different
+options logs a warning.
+
+`ReplaceEntryHandler`: on iOS the library registers its own Entry handler, whose text field insets the text and places
+the clear button like a Settings row. That registration replaces an Entry handler registered before it, and one
+registered after it replaces the library's. If the app or another library brings its own Entry handler, set it to
+`false`: the Entry mapping then gives whatever text field that handler creates the same continuous capsule shape and
+20 pt text margins (spacer `LeftView` / `RightView`, only while those are unused). The difference is the clear button,
+which UIKit places about 15 pt from the trailing edge instead of 35 pt, and a field in editing mode loses its trailing
+margin while the clear button is hidden (empty text).
+
 ## Shared StyleClass names
 
 Same markup on both platforms; each class maps to the equivalent native role.
@@ -301,7 +322,7 @@ color so differently that it resolves into two platform palettes:
 | What branding means | one tint color; backgrounds, labels and semantic colors stay Apple's | a whole tonal scheme derived from a seed: primary / secondary / tertiary families, tinted surfaces, outlines, light **and** dark |
 | `Accent` | the window tint: buttons, links, selection, tab bar and toolbar items, alerts, and the `Accent` / `TonalContainer` roles | the seed. The library generates the scheme with Material's own algorithm (`SchemeContent`) |
 | `AccentDark` | tint in dark mode (a brighter variant, as Apple does with its system colors); defaults to `Accent` | ignored: Material computes the dark tones from the seed |
-| Native controls | follow the tint automatically. `UISwitch` ignores the tint and stays green, as in Apple's apps; set `TintsSwitches` to brand it | the generated scheme replaces Material's color resources for every activity (Android 11+), so Switch, CheckBox, RadioButton, Slider, progress indicators, text fields, the navigation bar, tabs and dialogs are branded too |
+| Native controls | follow the tint automatically. `UISwitch` ignores the tint and stays green, as in Apple's apps; set `TintsSwitches` to brand it | the generated scheme replaces Material's color resources for every MAUI activity (Android 11+), so Switch, CheckBox, RadioButton, Slider, progress indicators, text fields, the navigation bar, tabs and dialogs are branded too |
 
 - `options.Brand.IOS.Accent` / `options.Brand.Android.Accent` give one platform a different brand color.
 - `options.Brand.Set(SystemColorRole.Destructive, light, dark)` pins an individual role (it wins over everything, but only
@@ -404,6 +425,23 @@ To opt out, keep MAUI's behavior (no recreate; native views keep the colors they
 builder.UseNativeStyles(options => options.AndroidRecreateOnThemeChange = false);
 ```
 
+## Diagnostics
+
+The library logs through the app's `Microsoft.Extensions.Logging` pipeline under the `Maui.NativeStyles` category, so
+the messages reach the app's providers in Release builds too. Each problem is logged once:
+
+- **Warning**: a Material 3 `*Handler2` mapper, `Shell._appearanceObservers` or the restricted Material color API is
+  not available in the MAUI / Material version in use (that part of the styling is skipped), `UseNativeStyles` was called
+  again with different options, or (iOS) it replaced an Entry handler registered before it.
+- **Debug**: which Material 3 handler hooks were installed (Android) and which Entry handler is used (iOS).
+
+Messages from `UseNativeStyles` are written once the `MauiApp` is built. The default minimum level is `Information`;
+to see the Debug lines:
+
+```csharp
+builder.Logging.AddFilter("Maui.NativeStyles", LogLevel.Debug);
+```
+
 ## Known limitations
 
 - **iOS `Switch`** may show glass artifacts on the active side ([dotnet/maui#34560](https://github.com/dotnet/maui/issues/34560)).
@@ -414,7 +452,7 @@ builder.UseNativeStyles(options => options.AndroidRecreateOnThemeChange = false)
 - List rows have no pressed feedback (ripple / highlight): MAUI item containers own the touch handling, and making the row view clickable would break `CollectionView` selection.
 - Android `Stepper` is a MAUI-drawn control (Android has no stepper); the library restyles its two buttons as Material 3 outlined icon buttons (40 dp, with 48 dp touch targets).
 - The iOS 15–18 fallback paths are guarded by `OperatingSystem.IsIOSVersionAtLeast(26)` but were not exercised on an iOS 18 simulator during development.
-- With `UseMaterial3`, Entry and the other input controls use internal `*Handler2` handlers; their mappers are reached through reflection (see `NativeStyles.Android.cs`), and a debug message is logged if the type is not found. These types become public in MAUI 11.
+- With `UseMaterial3`, Entry and the other input controls use internal `*Handler2` handlers; their mappers are reached through reflection (see `NativeStyles.Android.cs`), and a warning is logged if the type is not found (see [Diagnostics](#diagnostics)). These types become public in MAUI 11.
 - All iOS 26 APIs are guarded by `OperatingSystem.IsIOSVersionAtLeast(26)`: on iOS 15–18 the same binary shows the classic appearance.
 
 ## Requirements

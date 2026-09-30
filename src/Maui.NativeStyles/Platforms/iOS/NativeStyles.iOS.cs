@@ -8,18 +8,28 @@ using PlatformContentView = Microsoft.Maui.Platform.ContentView;
 namespace NativeStyles;
 public static partial class NativeStylesExtensions
 {
-	static partial void RegisterPlatformHandlers(IMauiHandlersCollection handlers)
+	static partial void RegisterPlatformHandlers(IMauiHandlersCollection handlers, NativeStylesOptions options)
 	{
 		handlers.AddHandler<GlassView, GlassViewHandler>();
 		handlers.AddHandler<SegmentedControl, SegmentedControlHandler>();
-		// Entry: same EntryHandler and mapper, but a UITextField that supports text insets and continuous corners.
-		handlers.AddHandler<Entry, NativeEntryHandler>();
-		// Handler registrations run when the app is built, after RegisterPlatformMappers stored the option
-		if (s_replaceShellRenderer)
+		if (options.ReplaceShellRenderer)
 			handlers.AddHandler<Shell, NativeShellRenderer>();
-	}
 
-	static bool s_replaceShellRenderer = true;
+		// Entry: same EntryHandler and mapper, but a UITextField that supports text insets and continuous corners.
+		// Without it MapEntryChrome styles whatever UITextField the Entry handler creates.
+		if (!options.ReplaceEntryHandler)
+		{
+			NativeStylesLog.Debug("EntryHandler", "Entry handler left as registered (NativeStylesOptions.ReplaceEntryHandler is false): the native-style mapping shapes its UITextField.");
+			return;
+		}
+		if (handlers.LastOrDefault(d => !d.IsKeyedService && d.ServiceType == typeof(Entry)) is { } registered
+			&& registered.ImplementationType != typeof(EntryHandler) && registered.ImplementationType != typeof(NativeEntryHandler))
+		{
+			NativeStylesLog.Warning("EntryHandlerReplaced", $"UseNativeStyles replaces the Entry handler registered before it ({registered.ImplementationType?.FullName ?? "a factory"}) with NativeEntryHandler. Set NativeStylesOptions.ReplaceEntryHandler to false to keep it.");
+		}
+		handlers.AddHandler<Entry, NativeEntryHandler>();
+		NativeStylesLog.Debug("EntryHandler", "Entry handler: NativeEntryHandler (NativeStylesOptions.ReplaceEntryHandler).");
+	}
 
 	static partial void RegisterPlatformMappers(NativeStylesOptions options)
 	{
@@ -52,6 +62,7 @@ public static partial class NativeStylesExtensions
 		// Entry: iOS 26 text fields are borderless rows on a filled, continuously rounded shape (Settings > Name),
 		// not the legacy UITextBorderStyle.RoundedRect. NativeEntry.IsPlain drops the shape for use inside grouped cells.
 		EntryHandler.Mapper.AppendToMapping(MappingKey, MapEntryChrome);
+		EntryHandler.Mapper.AppendToMapping(nameof(IEntry.ClearButtonVisibility), MapEntryChrome);
 
 		// Editor: same filled shape, text inset like a grouped row.
 		EditorHandler.Mapper.AppendToMapping(MappingKey, MapEditorChrome);
@@ -86,7 +97,6 @@ public static partial class NativeStylesExtensions
 		// NativeShellRenderer applies them from its controllers' lifecycle; here only a runtime change of the minimize
 		// behavior. With another renderer the controllers are created per ShellItem after navigation, so they are
 		// reached on every Navigated event.
-		s_replaceShellRenderer = options.ReplaceShellRenderer;
 		Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.Mapper.AppendToMapping(MappingKey, (handler, shell) =>
 		{
 			if (shell is not Shell s || !OperatingSystem.IsIOSVersionAtLeast(26))

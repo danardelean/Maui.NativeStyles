@@ -3,7 +3,10 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.12.0] - 2026-09-30
+
+### Versioning
+- The project is renumbered to 0.x: it has not reached a stable 1.0 (the styling defaults still change between minor versions and the library depends on MAUI internals), and nothing had been published on nuget.org. The development milestones tagged 1.M.P are now 0.(M+1).P (1.0.0 is 0.1.0, 1.10.1 is 0.11.1) and their tags were renamed accordingly; commit messages in the history keep the old numbers.
 
 ### Added
 - `NativeShellRenderer` (iOS, Android) and `NativeStylesOptions.ReplaceShellRenderer` (on by default): the Shell chrome is styled through MAUI's Shell extension points instead of a layout listener (Android) and delayed passes after navigation (iOS). An app with its own Shell renderer derives it from `NativeShellRenderer`.
@@ -34,7 +37,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Documentation
 - README: options table, Diagnostics, Custom Shell renderer, and what an Android theme recreate preserves. CONTRIBUTING: Testing and Releasing.
 
-## [1.10.1] - 2026-09-17
+## [0.11.1] - 2026-09-17
 
 ### Changed
 - iOS: the dynamic colors of the `Shell.SearchHandler` field are also applied in the later post-navigation pass, because the search controller of a page shown for the first time is attached after the earlier ones.
@@ -42,22 +45,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Documentation
 - README: the iOS brand-palette screenshot was re-captured (the previous one caught a switch mid-animation); every gallery image was reviewed.
 
-## [1.10.0] - 2026-09-17
+## [0.11.0] - 2026-09-17
 
 ### Added
 - `BrandPalette.TintsSwitches` (iOS): draws switches in the brand color when they are on. `UISwitch` does not follow the tint color, and the Human Interface Guidelines recommend changing its color "only if necessary", so the option is off by default; a `Switch` that sets `OnColor` keeps it. The sample enables it.
 
-## [1.9.2] - 2026-09-17
+## [0.10.2] - 2026-09-17
 
 ### Documentation
 - README: before / after comparison of the same `dotnet new maui` app and page with the default template styles and with Maui.NativeStyles, on iOS 26 and Android. The shared page is in `docs/comparison/ComparisonPage.xaml`.
 
-## [1.9.1] - 2026-09-17
+## [0.10.1] - 2026-09-17
 
 ### Documentation
 - README: screenshot gallery of the sample on iOS 26 and Android (default palette, dark mode and a brand palette), referenced through absolute URLs so it also renders on nuget.org.
 
-## [1.9.0] - 2026-09-17
+## [0.10.0] - 2026-09-17
 
 ### Added
 - `Icon` class for `Button` (`NativeButton.TintsImage`): the button image is drawn as a template in the label color on both platforms, so monochrome icons follow the button role, the brand and dark mode. `NativeImage.TintColor` also works on `Button` for an explicit color. Off by default, as MAUI button images may be full-color artwork.
@@ -65,19 +68,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Fixed
 - iOS: a Shell flyout item displayed for the first time showed an inline title although `LargeTitleDisplay` was `Always`. MAUI applies large titles through the tab controller's selected navigation controller, which is not set yet at that point, and UIKit leaves the bar collapsed when large titles are enabled after layout. The library re-applies the mode after navigation and expands the bar the first time the page is shown (a scrolled position is never touched). Top-tab sections stay inline.
 
-## [1.8.2] - 2026-09-17
+## [0.9.2] - 2026-09-17
 
 ### Fixed
 - iOS: the navigation-bar search field (`Shell.SearchHandler`) kept its previous placeholder and text colors after a runtime light/dark switch (nearly invisible placeholder in dark). Unless the handler sets `TextColor` / `PlaceholderColor`, the field now uses the dynamic `label` / `placeholderText` colors.
 - iOS: on Shell top-tab pages the content could slide under the still-expanded large title while scrolling, because the title does not track the nested scroll view. Top-tab pages now use an inline title, like native screens with a segmented control under the bar.
 
-## [1.8.1] - 2026-09-17
+## [0.9.1] - 2026-09-17
 
 ### Fixed
 - iOS: after a runtime light/dark switch the Shell top-tabs segmented control kept the previous page background, and the background behind a transparent `NavigationPage` bar could go stale; both are refreshed when the app theme changes (system appearance or `Application.UserAppTheme`).
 - iOS: with a brand palette, `NavigationPage` toolbar items stayed system blue (on iOS 26 MAUI copies the bar tint to each bar button item when it creates them); the bar and its items now use the brand tint unless the page sets `IconColor`.
 
-## [1.8.0] - 2026-09-17
+## [0.9.0] - 2026-09-17
 
 ### Added
 - Android: **runtime theme switching**. `NativeStylesOptions.AndroidRecreateOnThemeChange` (on by default) recreates the activity when the effective app theme changes (system dark mode or `Application.UserAppTheme`), so native widgets, the navigation bar, status bar icons, dialogs and the brand scheme are re-themed; previously only `{native:SystemColor}` values updated. The page that was showing is moved to the recreated window, so navigation state, the selected tab, control values and view models survive even with the template's `new Window(new AppShell())`.
@@ -87,7 +90,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Android: replaced root pages (for example a Shell swapped for another page) are disconnected before the recreate, and the dead appearance observer MAUI 10 leaves on a replaced Shell is cleared; it caused a `NullReferenceException` inside MAUI on the following theme change.
 - Android: the `GlassView` theme handler no longer uses throwing accessors on a disconnected handler; themed contexts cached for `{native:SystemColor}` are dropped with their activity.
 
-## [1.7.0] - 2026-09-17
+## [0.8.0] - 2026-09-17
 
 ### Added
 - **Branding**: `NativeStylesOptions.Brand` (`BrandPalette`). One brand color serves both platforms: on iOS it becomes the window tint (with an optional dark-mode variant) and the accent roles; on Android it is the seed of a generated Material 3 scheme (light and dark, tinted surfaces included) that is resolved by every `{native:SystemColor}` role and also replaces Material's color resources for each activity (Android 11+), so native widgets, the navigation bar, tabs and dialogs are branded. Per-platform overrides (`Brand.IOS`, `Brand.Android`), per-role pins (`Brand.Set`) and `MaterialColorMatch` (exact brand color as light-theme primary).
@@ -99,7 +102,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Changed
 - The sample application sets a brand palette.
 
-## [1.6.4] - 2026-09-17
+## [0.7.4] - 2026-09-17
 
 ### Fixed
 - Android: `TabbedPage` with top tabs kept MAUI's primary-colored strip and untinted icons. Tabs now paint their own container in the app-bar color and tint icons like the labels (`primary` when selected, `onSurfaceVariant` otherwise).
@@ -107,24 +110,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Notes
 - Documented that MAUI's `SetToolbarPlacement()` throws after the library style has set `Bottom`; use the XAML attribute or `SetValue` for top tabs. The sample gains a top-tabs `TabbedPage` demo and an `EmptyState` example.
 
-## [1.6.3] - 2026-09-17
+## [0.7.3] - 2026-09-17
 
 ### Changed
 - Android: the Shell flyout / `FlyoutPage` sheet follows the M3 modal navigation drawer: at most 360 dp wide leaving 56 dp of scrim, 16 dp corners on the trailing side, and a uniform `surfaceContainerLow` background (the body previously stayed `surface`).
 - Android: primary tabs draw the 1 dp `outlineVariant` divider inside the tab row.
 - Android: trailing toolbar icons and the overflow glyph use `onSurfaceVariant` on a themed (surface) app bar; the navigation icon stays `onSurface`.
 
-## [1.6.2] - 2026-09-17
+## [0.7.2] - 2026-09-17
 
 ### Added
 - `Icon` class for `ImageButton`, and `NativeImage.TintColor` now also applies to `ImageButton`: the image is drawn as a template (iOS tint color / Material `onSurfaceVariant`), so monochrome icons stay visible in dark mode.
 
-## [1.6.1] - 2026-09-17
+## [0.7.1] - 2026-09-17
 
 ### Fixed
 - iOS: the hairline MAUI draws under the Shell top-tabs strip is hidden (iOS 26 has no separator under the segmented control).
 
-## [1.6.0] - 2026-09-17
+## [0.7.0] - 2026-09-17
 
 ### Added
 - `NativeSwipeItem` (`SwipeItemView`): swipe actions drawn like the platform instead of MAUI's square color blocks. iOS 26: separated, continuously rounded actions; Android: M3 swipe-to-reveal round tonal / primary / error buttons. `SwipeRole` (`Default`, `Primary`, `Destructive`).
@@ -138,7 +141,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Notes
 - The legacy `ListView`, `TableView` and `Frame` controls are intentionally left unstyled.
 
-## [1.5.0] - 2026-09-17
+## [0.6.0] - 2026-09-17
 
 ### Added
 - `CarouselView` implicit styles and the `CarouselItem` class for `Border`. iOS: leading-aligned paging (card on the 20 pt content margin, 12 pt gap, next card peeking from the trailing edge). Android: Material 3 *uncontained* carousel (16 dp leading padding, 8 dp gaps, 28 dp item corners, items bleed off the trailing edge). Carousels no longer loop. MAUI centers the current item and averages the peek insets, so the alignment uses a symmetric peek plus a negative leading margin.
@@ -146,7 +149,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Changed
 - `IndicatorView`: on iOS the native `UIPageControl` is no longer scaled (`IndicatorSize` 6) and uses `label` / `tertiaryLabel`; both platforms center it and leave 8 units above it.
 
-## [1.4.0] - 2026-09-17
+## [0.5.0] - 2026-09-17
 
 Android audit against the current Material 3 Expressive component specs on m3.material.io.
 
@@ -165,7 +168,7 @@ Android audit against the current Material 3 Expressive component specs on m3.ma
 - Android: `SearchBar` and `Shell.SearchHandler` render the M3 search bar (56 dp pill, `surfaceContainerHigh`) instead of an underlined field / elevated white card.
 - Android: `Plain` entries inside list rows no longer inflate the row height.
 
-## [1.3.0] - 2026-09-17
+## [0.4.0] - 2026-09-17
 
 ### Added
 - `Expressive` class for `Entry` and `Editor` (`NativeEntry.IsContained`): on Android a borderless field in a filled `surfaceContainerHighest` container with 28 dp corners, the containment pattern of the Material 3 Expressive compose concepts. No-op on iOS, where the default field already has this shape.
@@ -174,7 +177,7 @@ Android audit against the current Material 3 Expressive component specs on m3.ma
 ### Fixed
 - Android: `Editor` no longer shows the Material 2 underline (MAUI renders it as a bare `TextInputEditText`); it gets the Material 3 outlined container: 4 dp corners, 1 dp `outline`, 2 dp `primary` when focused, 16 dp padding.
 
-## [1.2.0] - 2026-09-17
+## [0.3.0] - 2026-09-17
 
 ### Changed
 - iOS: `Entry` no longer uses the legacy `UITextBorderStyle.RoundedRect`. It renders like an iOS 26 Settings text row: borderless, 52 pt tall, filled with `secondarySystemGroupedBackground`, 26 pt continuous corners (a capsule for a single line), 20 pt text inset and a clear button while editing. `Editor` gets the same shape and insets. `Plain` keeps the bare field for grouped rows. On a non-grouped page set `BackgroundColor="{native:SystemColor Fill}"`.
@@ -186,33 +189,33 @@ Android audit against the current Material 3 Expressive component specs on m3.ma
 - `ContentMargin` resource (`Thickness`): 20 pt on iOS, 16 dp on Android.
 - Documentation and sample: navigation-bar search (`Shell.SearchHandler`) as the native search field on iOS 26.
 
-## [1.1.3] - 2026-09-17
+## [0.2.3] - 2026-09-17
 
 ### Fixed
 - iOS: inset grouped sections and cards use the iOS 26 corner radius (26 pt); `DatePicker`/`TimePicker` compact pills are 34 pt capsules; row separators are inset 16 pt on both sides, matching Settings.
 
-## [1.1.2] - 2026-09-17
+## [0.2.2] - 2026-09-17
 
 ### Fixed
 - Android: `Picker`, `DatePicker` and `TimePicker` no longer show the Material 2 underline; the value is secondary text with a trailing menu arrow, calendar or clock icon, as in Material list rows.
 
-## [1.1.1] - 2026-09-17
+## [0.2.1] - 2026-09-17
 
 ### Fixed
 - iOS: `Picker` renders as a pull-down value with `chevron.up.chevron.down`, `DatePicker` and `TimePicker` as the compact `tertiarySystemFill` pill, instead of bordered text fields.
 
-## [1.1.0] - 2026-09-17
+## [0.2.0] - 2026-09-17
 
 ### Added
 - `Expressive` class for `Border` (Android): Material 3 Expressive list group as in Android 16 Settings, `surfaceContainer` with 28 dp corners; `Gap` class for `BoxView` renders the 2 dp gap between rows (hairline separator on iOS).
 - `SystemColorRole.GroupContainer` (iOS secondarySystemGroupedBackground / Android colorSurfaceContainer).
 
-## [1.0.1] - 2026-09-17
+## [0.1.1] - 2026-09-17
 
 ### Changed
 - Android: `GroupedCell` sections are flat, edge-to-edge Material 3 list sections instead of iOS-style inset cards; dividers use the M3 16 dp inset.
 
-## [1.0.0] - 2026-09-17
+## [0.1.0] - 2026-09-17
 
 ### Added
 - `Maui.NativeStyles` class library (net10.0, net10.0-android, net10.0-ios) with `NativeStyleDictionary`: iOS 26 Liquid Glass styles on iOS, Material 3 styles on Android.

@@ -7,6 +7,8 @@
 .NET MAUI styles that respect each platform's design language:
 **iOS 26 (Liquid Glass, Human Interface Guidelines)** and **Android (Material 3 Expressive)**.
 
+> **Status: 0.x.** The styling defaults and the API can still change between minor versions; see the [changelog](https://github.com/danardelean/Maui.NativeStyles/blob/main/CHANGELOG.md).
+
 The `dotnet new maui` template ships implicit styles (`Styles.xaml`) that destroy the native look:
 fixed background and corner radius on `Button`, `BackgroundColor="Transparent"` on inputs (which erases the Material underline/box),
 `FontFamily="OpenSansRegular"`, `FontSize 14` everywhere, and custom colors on Switch/Slider/CheckBox/ProgressBar.

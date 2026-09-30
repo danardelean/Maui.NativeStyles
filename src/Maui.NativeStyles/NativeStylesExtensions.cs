@@ -24,7 +24,7 @@ public static partial class NativeStylesExtensions
 		public const string Large = "Large";                   // NativeButton.Size = Large
 		public const string Plain = "Plain";                   // NativeEntry.IsPlain = true
 		public const string Semibold = "Semibold";             // NativeText.Weight = Semibold
-		public const string Expressive = "Expressive";         // Entry/Editor: filled 28 dp container (Android only); no-op on Border since 1.4
+		public const string Expressive = "Expressive";         // Entry/Editor: filled 28 dp container (Android only); no-op on Border since 0.5
 		public const string Gap = "Gap";                       // BoxView: alias of Separator (2 dp segment gap on Android, hairline on iOS)
 	}
 

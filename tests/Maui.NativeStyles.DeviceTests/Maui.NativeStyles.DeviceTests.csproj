@@ -31,6 +31,8 @@
 		<GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
 		<!-- TRX, event stream and device log of `dotnet test` (git-ignored); override with results-directory -->
 		<TestResultsDirectory>$(MSBuildProjectDirectory)/TestResults/</TestResultsDirectory>
+		<!-- Android deploys through the platform's Install target: send it to the device the runner launches the app on -->
+		<AdbTarget Condition="'$(AdbTarget)' == '' and '$(DeviceRunnersDevice)' != '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">-s $(DeviceRunnersDevice)</AdbTarget>
 	</PropertyGroup>
 
 	<ItemGroup>

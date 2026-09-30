@@ -3,6 +3,37 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- `NativeShellRenderer` (iOS, Android) and `NativeStylesOptions.ReplaceShellRenderer` (on by default): the Shell chrome is styled through MAUI's Shell extension points instead of a layout listener (Android) and delayed passes after navigation (iOS). An app with its own Shell renderer derives it from `NativeShellRenderer`.
+- `NativeStylesOptions.ReplaceEntryHandler` (iOS, on by default): turn it off to keep another Entry handler; the Entry mapping then shapes the text field that handler creates.
+- Diagnostics through `Microsoft.Extensions.Logging` (category `Maui.NativeStyles`), so a missing MAUI internal or Material API is reported in Release builds too.
+- Brand `OnAccent` is chosen by WCAG contrast (white while it reaches 3:1, otherwise black), per theme; on iOS it is the title color of `Filled` / `GlassProminent` buttons, so a light brand accent stays readable.
+- Android: `SegmentedControl` and `Stepper` buttons have 48 dp touch targets with the same 40 dp visuals (new `NativeStepperHandler`), and TalkBack announces segments as radio buttons with their checked state and position.
+- NuGet package icon, release notes link, symbol package (`.snupkg`) and Source Link; the library is marked trimmable and AOT compatible and builds without trim or AOT warnings.
+- Tests: reflection canaries for the MAUI internals the library reaches, on-device xunit tests for the iOS and Android handler mappings (`tests/Maui.NativeStyles.DeviceTests`), and a visual regression check with committed baselines (`scripts/visual-check.py`). The sample handles `nativestyles://page/<name>?theme=light|dark` automation links.
+- CI: library warnings are errors; a `v*` tag creates the GitHub release and pushes to nuget.org when `NUGET_API_KEY` is configured; a weekly canary builds against the newest MAUI service release; Dependabot.
+
+### Changed
+- `UseNativeStyles` registers its mappings, the brand and the Android activity callbacks once per process: the first call's options stay in effect and a later call with different options is ignored with a warning.
+- iOS: button titles follow Dynamic Type and `FontFamily`; the button configuration is built once per connect (was 12 times) and once per property change.
+- `NativeText.Weight` keeps the label's font family and italic style (and Dynamic Type on iOS). Android 9+ uses exact weights, so `Semibold` is 600 instead of Medium.
+- Android: destructive `Text` / `Outlined` buttons use the brand or dynamic `Destructive` color and give the app's own colors back when `Destructive` is removed.
+- Android: brand and dynamic colors are applied to MAUI activities only, not to activities started by third-party SDKs.
+- Android: the activity layout listener only styles `TabbedPage`, `NavigationPage` and `FlyoutPage` chrome, returns immediately for a Shell rendered by `NativeShellRenderer` and caches theme colors; view tags use the library's own resource ids.
+- The platform sources are split into one file per area.
+
+### Fixed
+- iOS: the button title transformer wrote into the attribute dictionary UIKit passes in, which can be immutable and then terminated the app.
+- iOS: apps published with Native AOT crashed at startup because `{native:SystemColor}` could not create MAUI's internal `AppThemeBinding`; Shell flyout menu items lost their text.
+- iOS: the `Shell.SearchHandler` placeholder could keep MAUI's black color on a page's first display.
+- iOS: VoiceOver reads only the segmented control over Shell top tabs, not MAUI's hidden tab cells as well.
+- Android: styling no longer throws under a theme without the Material 3 color roles; the Material 3 baseline values are used and the chrome keeps MAUI's look.
+
+### Documentation
+- README: options table, Diagnostics, Custom Shell renderer, and what an Android theme recreate preserves. CONTRIBUTING: Testing and Releasing.
+
 ## [1.10.1] - 2026-09-17
 
 ### Changed

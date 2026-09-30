@@ -122,10 +122,14 @@ public class SegmentedControlHandler : ViewHandler<SegmentedControl, LinearLayou
 			if (group.GetChildAt(i) is not MaterialButton button)
 				continue;
 			var selected = i == view.SelectedIndex;
-			var container = selected ? Resource.Attribute.colorSecondary : Resource.Attribute.colorSecondaryContainer;
-			var label = selected ? Resource.Attribute.colorOnSecondary : Resource.Attribute.colorOnSecondaryContainer;
-			button.BackgroundTintList = ColorStateList.ValueOf(new Android.Graphics.Color(MaterialColors.GetColor(button, container)));
-			button.SetTextColor(new Android.Graphics.Color(MaterialColors.GetColor(button, label)));
+			var container = selected
+				? NativeStylesExtensions.ThemeColor(button, Resource.Attribute.colorSecondary, 0xFF625B71, 0xFFCCC2DC)
+				: NativeStylesExtensions.ThemeColor(button, Resource.Attribute.colorSecondaryContainer, 0xFFE8DEF8, 0xFF4A4458);
+			var label = selected
+				? NativeStylesExtensions.ThemeColor(button, Resource.Attribute.colorOnSecondary, 0xFFFFFFFF, 0xFF332D41)
+				: NativeStylesExtensions.ThemeColor(button, Resource.Attribute.colorOnSecondaryContainer, 0xFF4A4458, 0xFFE8DEF8);
+			button.BackgroundTintList = ColorStateList.ValueOf(new Android.Graphics.Color(container));
+			button.SetTextColor(new Android.Graphics.Color(label));
 
 			var first = i == 0;
 			var last = i == group.ChildCount - 1;

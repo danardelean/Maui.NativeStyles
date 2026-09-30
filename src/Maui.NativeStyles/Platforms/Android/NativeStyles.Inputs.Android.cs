@@ -24,7 +24,7 @@ public static partial class NativeStylesExtensions
 		layout.SetBoxCornerRadii(radius, radius, radius, radius);
 		layout.BoxStrokeWidth = 0;
 		layout.BoxStrokeWidthFocused = 0;
-		layout.BoxBackgroundColor = MaterialColors.GetColor(layout, Resource.Attribute.colorSurfaceContainerHigh);
+		layout.BoxBackgroundColor = ThemeColor(layout, Resource.Attribute.colorSurfaceContainerHigh, 0xFFECE6F0, 0xFF2B2930);
 		layout.SetMinimumHeight((int)context.ToPixels(56));
 	}
 
@@ -53,18 +53,18 @@ public static partial class NativeStylesExtensions
 			return shape;
 		}
 
-		var onSurface = MaterialColors.GetColor(field, Resource.Attribute.colorOnSurface);
+		var onSurface = ThemeColor(field, Resource.Attribute.colorOnSurface, 0xFF1D1B20, 0xFFE6E0E9);
 		if (NativeEntry.GetIsContained(bindable))
 		{
-			field.Background = Shape(ContainedCornerRadius, MaterialColors.GetColor(field, Resource.Attribute.colorSurfaceContainerHighest), 0, 0);
+			field.Background = Shape(ContainedCornerRadius, ThemeColor(field, Resource.Attribute.colorSurfaceContainerHighest, 0xFFE6E0E9, 0xFF36343B), 0, 0);
 		}
 		else
 		{
 			// Outlined text field tokens: 4 dp corners, 1 dp outline, 2 dp primary when focused, onSurface 12% when disabled.
 			var states = new StateListDrawable();
 			states.AddState([-Android.Resource.Attribute.StateEnabled], Shape(4, AColor.Transparent, 1, MaterialColors.CompositeARGBWithAlpha(onSurface, 31)));
-			states.AddState([Android.Resource.Attribute.StateFocused], Shape(4, AColor.Transparent, 2, MaterialColors.GetColor(field, Resource.Attribute.colorPrimary)));
-			states.AddState([], Shape(4, AColor.Transparent, 1, MaterialColors.GetColor(field, Resource.Attribute.colorOutline)));
+			states.AddState([Android.Resource.Attribute.StateFocused], Shape(4, AColor.Transparent, 2, ThemeColor(field, Resource.Attribute.colorPrimary, 0xFF6750A4, 0xFFD0BCFF)));
+			states.AddState([], Shape(4, AColor.Transparent, 1, ThemeColor(field, Resource.Attribute.colorOutline, 0xFF79747E, 0xFF938F99)));
 			field.Background = states;
 		}
 		var padding = (int)context.ToPixels(16);

@@ -99,7 +99,7 @@ public static partial class NativeStylesExtensions
 				layout.SetBoxCornerRadii(radius, radius, radius, radius);
 				layout.BoxStrokeWidth = 0;
 				layout.BoxStrokeWidthFocused = 0;
-				layout.BoxBackgroundColor = MaterialColors.GetColor(layout, Resource.Attribute.colorSurfaceContainerHighest);
+				layout.BoxBackgroundColor = ThemeColor(layout, Resource.Attribute.colorSurfaceContainerHighest, 0xFFE6E0E9, 0xFF36343B);
 			}
 		});
 
@@ -188,6 +188,16 @@ public static partial class NativeStylesExtensions
 			view.SetColorFilter(tint.ToPlatform(), PorterDuff.Mode.SrcIn!);
 		else
 			view.ClearColorFilter();
+	}
+
+	/// <summary>
+	/// A Material 3 color role from the view's theme. MaterialColors.GetColor without a default throws when the theme
+	/// lacks the role (an app that is not on a Material 3 theme): the Material 3 baseline value is used there instead.
+	/// </summary>
+	internal static int ThemeColor(AView view, int attribute, uint lightBaseline, uint darkBaseline)
+	{
+		var night = (view.Resources?.Configuration?.UiMode & Android.Content.Res.UiMode.NightMask) == Android.Content.Res.UiMode.NightYes;
+		return MaterialColors.GetColor(view, attribute, unchecked((int)(night ? darkBaseline : lightBaseline)));
 	}
 
 	internal static DynamicColorsOptions? s_dynamicColors;

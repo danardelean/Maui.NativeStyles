@@ -284,7 +284,7 @@
         <Setter Property="Shadow" Value="{x:Null}" />
     </Style>
     <Style TargetType="Border" Class="Expressive">
-        <!-- Kept for compatibility: GroupedCell is the expressive segmented list by default since 1.4 -->
+        <!-- Kept for compatibility: GroupedCell is the expressive segmented list by default since 0.5 -->
     </Style>
     <Style TargetType="Border" Class="Outlined">
         <Setter Property="StrokeThickness" Value="1" />

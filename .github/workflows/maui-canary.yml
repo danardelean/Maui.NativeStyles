@@ -24,7 +24,7 @@ jobs:
     outputs:
       matrix: ${{ steps.versions.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || 'develop' }}
           sparse-checkout: Directory.Build.props
@@ -87,7 +87,7 @@ jobs:
       FROM_TFM: ${{ matrix.from }}
       TFM: ${{ matrix.tfm }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || 'develop' }}
 

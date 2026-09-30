@@ -96,6 +96,9 @@ jobs:
         with:
           dotnet-version: ${{ matrix.dotnet }}
           dotnet-quality: ${{ matrix.quality }}
+          # The next major version needs its own (newest) workloads and Xcode; the current one uses the pinned ones
+          xcode-version: ${{ matrix.experimental && 'latest-stable' || '^26.5' }}
+          workload-versions: ${{ !matrix.experimental && '.github/workload-versions.json' || '' }}
 
       - name: Retarget the projects to ${{ matrix.tfm }}
         if: matrix.from != matrix.tfm

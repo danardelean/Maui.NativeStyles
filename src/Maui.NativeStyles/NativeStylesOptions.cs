@@ -3,7 +3,7 @@ namespace NativeStyles;
 public class NativeStylesOptions
 {
 	/// <summary>
-	/// Android 12+: apply Material You dynamic colors (derived from the wallpaper) to every activity and resolve
+	/// Android 12+: apply Material You dynamic colors (derived from the wallpaper) to every MAUI activity and resolve
 	/// <c>{native:SystemColor}</c> through them. Off by default so the Material 3 baseline palette is used.
 	/// </summary>
 	public bool AndroidDynamicColors { get; set; }
@@ -22,4 +22,55 @@ public class NativeStylesOptions
 	/// them; the MAUI page tree, navigation state and view models are preserved. On by default.
 	/// </summary>
 	public bool AndroidRecreateOnThemeChange { get; set; } = true;
+
+	/// <summary>
+	/// Register <c>NativeStyles.NativeShellRenderer</c> as the Shell renderer (iOS and Android). It styles the Shell
+	/// chrome (tab/navigation bar, top tabs, app bar, search bar, flyout) through MAUI's Shell extension points, as MAUI
+	/// creates or updates it. On by default. An app that registers its own Shell renderer derives it from
+	/// <c>NativeShellRenderer</c>. When this is false, or the Shell uses another renderer, the chrome is styled as
+	/// earlier versions did: from a layout listener on Android, in passes after each navigation on iOS.
+	/// </summary>
+	public bool ReplaceShellRenderer { get; set; } = true;
+
+	/// <summary>
+	/// iOS: register <c>NativeEntryHandler</c> for <see cref="Entry"/>: its <c>NativeTextField</c> insets the text and
+	/// places the clear button like an iOS 26 Settings row. On by default.
+	/// <para>
+	/// The registration replaces the Entry handler registered before it, and a handler registered after it replaces
+	/// <c>NativeEntryHandler</c>. Set this to false when the app or another library brings its own Entry handler: the
+	/// Entry mapping then shapes the text field that handler creates without subclassing it (continuous corners through
+	/// its layer, the 20 pt text margins as spacer <c>LeftView</c> / <c>RightView</c> views, added only while those are
+	/// unused). UIKit hides the clear button while a right view shows, so the trailing spacer steps aside whenever the
+	/// clear button can appear, and the button sits at UIKit's position near the edge instead of a Settings row's.
+	/// </para>
+	/// </summary>
+	public bool ReplaceEntryHandler { get; set; } = true;
+
+	/// <summary>True when both option sets configure the same styling (brands are compared by value).</summary>
+	internal bool IsEquivalentTo(NativeStylesOptions other) =>
+		AndroidDynamicColors == other.AndroidDynamicColors
+		&& AndroidRecreateOnThemeChange == other.AndroidRecreateOnThemeChange
+		&& ReplaceEntryHandler == other.ReplaceEntryHandler
+		&& ReplaceShellRenderer == other.ReplaceShellRenderer
+		&& BrandsMatch(Brand, other.Brand);
+
+	static bool BrandsMatch(BrandPalette? a, BrandPalette? b)
+	{
+		if (ReferenceEquals(a, b))
+			return true;
+		if (a is null || b is null)
+			return false;
+		if (!Equals(a.Accent, b.Accent) || !Equals(a.AccentDark, b.AccentDark)
+			|| a.MaterialColorMatch != b.MaterialColorMatch || a.TintsSwitches != b.TintsSwitches
+			|| !Equals(a.IOS.Accent, b.IOS.Accent) || !Equals(a.IOS.AccentDark, b.IOS.AccentDark)
+			|| !Equals(a.Android.Accent, b.Android.Accent) || !Equals(a.Android.AccentDark, b.Android.AccentDark))
+			return false;
+		foreach (var role in Enum.GetValues<SystemColorRole>())
+		{
+			var hasA = a.TryGetRole(role, out var colorsA);
+			if (hasA != b.TryGetRole(role, out var colorsB) || (hasA && !colorsA.Equals(colorsB)))
+				return false;
+		}
+		return true;
+	}
 }

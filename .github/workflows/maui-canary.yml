@@ -1,0 +1,121 @@
+# Early warning for MAUI updates. The library reaches into MAUI internals (the internal AppThemeBinding, the Material 3
+# *Handler2 mappers, Shell's appearance observers), so every week develop is built and tested against the newest
+# service release of the MAUI version it targets and, without failing the run, against the newest release of the next
+# major version (previews included), retargeted to that .NET version.
+name: MAUI canary
+
+on:
+  schedule:
+    - cron: '0 5 * * 1' # Mondays, 05:00 UTC
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag or commit to test
+        required: false
+        default: develop
+
+permissions:
+  contents: read
+
+jobs:
+  resolve:
+    name: Resolve MAUI versions
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.versions.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || 'develop' }}
+          sparse-checkout: Directory.Build.props
+          sparse-checkout-cone-mode: false
+
+      - name: Find the newest Microsoft.Maui.Controls versions
+        id: versions
+        shell: python3 {0}
+        run: |
+          import json, os, re, urllib.request
+
+          # The MAUI major version the repository targets, from MauiVersion in Directory.Build.props.
+          with open("Directory.Build.props") as props:
+              current = int(re.search(r"<MauiVersion>(\d+)\.", props.read()).group(1))
+          upcoming = current + 1
+
+          url = "https://api.nuget.org/v3-flatcontainer/microsoft.maui.controls/index.json"
+          with urllib.request.urlopen(url) as response:
+              versions = json.load(response)["versions"]
+
+          def precedence(version):
+              # Semantic Versioning order: numeric core, then a release above its prereleases, then prerelease fields.
+              core, _, prerelease = version.partition("-")
+              numbers = tuple(int(n) for n in core.split("."))
+              if not prerelease:
+                  return numbers, (1,)
+              fields = tuple((0, int(f), "") if f.isdigit() else (1, 0, f) for f in prerelease.split("."))
+              return numbers, (0,) + fields
+
+          def newest(major, stable):
+              candidates = [v for v in versions if v.split(".")[0] == str(major) and (not stable or "-" not in v)]
+              return max(candidates, key=precedence) if candidates else None
+
+          matrix = []
+          version = newest(current, stable=True)
+          if version:
+              matrix.append({"name": f"MAUI {version}", "maui": version, "from": f"net{current}.0",
+                             "tfm": f"net{current}.0", "dotnet": f"{current}.0.x", "quality": "",
+                             "experimental": False})
+          version = newest(upcoming, stable=False)
+          if version:
+              matrix.append({"name": f"MAUI {version} (next major, non-blocking)", "maui": version,
+                             "from": f"net{current}.0", "tfm": f"net{upcoming}.0", "dotnet": f"{upcoming}.0.x",
+                             "quality": "preview" if "-" in version else "", "experimental": True})
+          print(json.dumps(matrix, indent=2))
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"matrix={json.dumps(matrix)}\n")
+
+  build:
+    name: ${{ matrix.name }}
+    needs: resolve
+    runs-on: macos-latest
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.resolve.outputs.matrix) }}
+    env:
+      MAUI_VERSION: ${{ matrix.maui }}
+      FROM_TFM: ${{ matrix.from }}
+      TFM: ${{ matrix.tfm }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || 'develop' }}
+
+      - name: Set up .NET MAUI
+        uses: ./.github/actions/setup-maui
+        with:
+          dotnet-version: ${{ matrix.dotnet }}
+          dotnet-quality: ${{ matrix.quality }}
+
+      - name: Retarget the projects to ${{ matrix.tfm }}
+        if: matrix.from != matrix.tfm
+        run: |
+          git ls-files '*.csproj' | xargs perl -pi -e "s/\b\Q$FROM_TFM\E\b/$TFM/g"
+          git diff --stat
+
+      - name: Restore
+        id: restore
+        run: dotnet restore Maui.NativeStyles.slnx -p:MauiVersion="$MAUI_VERSION"
+
+      # The remaining steps run even when an earlier one fails, so a run shows every part that breaks.
+      - name: Build library (warnings as errors)
+        if: ${{ !cancelled() && steps.restore.outcome == 'success' }}
+        run: dotnet build src/Maui.NativeStyles/Maui.NativeStyles.csproj -c Release --no-restore -p:MauiVersion="$MAUI_VERSION"
+
+      - name: Test
+        if: ${{ !cancelled() && steps.restore.outcome == 'success' }}
+        run: dotnet test tests/Maui.NativeStyles.Tests/Maui.NativeStyles.Tests.csproj -c Release --no-restore -p:MauiVersion="$MAUI_VERSION"
+
+      - name: Build sample (Android)
+        if: ${{ !cancelled() && steps.restore.outcome == 'success' }}
+        run: dotnet build samples/NativeStyles.Sample/NativeStyles.Sample.csproj -f "$TFM-android" -c Release --no-restore -p:MauiVersion="$MAUI_VERSION"

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using NativeStyles;
+using NativeStyles.Sample.Automation;
 
 namespace NativeStyles.Sample;
 
@@ -22,6 +23,9 @@ public static class MauiProgram
 					TintsSwitches = true,
 				};
 			});
+
+		// nativestyles:// links that open a page in a given theme, used by scripts/visual-check.py
+		builder.UseAutomationLinks();
 
 #if DEBUG
 		builder.Logging.AddDebug();

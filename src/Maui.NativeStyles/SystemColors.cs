@@ -74,6 +74,9 @@ public static partial class SystemColors
 	/// Microsoft.Maui.Controls.AppThemeBinding is internal and AppThemeBindingExtension needs a XAML service
 	/// provider, so the binding is instantiated through its parameterless constructor and Light/Dark properties.
 	/// </summary>
+	[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "AppThemeBinding is internal, so it is looked up by name; the DynamicDependency on Create keeps it.")]
+	[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2077", Justification = "The public parameterless constructor of AppThemeBinding is kept by the DynamicDependency on Create.")]
+	[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2080", Justification = "The Light and Dark properties of AppThemeBinding are kept by the DynamicDependency on Create.")]
 	static class AppThemeBindingFactory
 	{
 		static readonly Type BindingType = typeof(BindingBase).Assembly.GetType("Microsoft.Maui.Controls.AppThemeBinding")
@@ -81,6 +84,7 @@ public static partial class SystemColors
 		static readonly System.Reflection.PropertyInfo LightProperty = BindingType.GetProperty("Light")!;
 		static readonly System.Reflection.PropertyInfo DarkProperty = BindingType.GetProperty("Dark")!;
 
+		[System.Diagnostics.CodeAnalysis.DynamicDependency(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties, "Microsoft.Maui.Controls.AppThemeBinding", "Microsoft.Maui.Controls")]
 		public static BindingBase Create(Color light, Color dark)
 		{
 			var binding = (BindingBase)Activator.CreateInstance(BindingType)!;
@@ -107,6 +111,8 @@ public static partial class SystemColors
 		{
 			SystemColorRole.Accent or SystemColorRole.OnTonalContainer => accent,
 			SystemColorRole.TonalContainer => (accent.Light.WithAlpha(0.15f), accent.Dark.WithAlpha(0.15f)),
+			// White stays white on the usual accents; a light brand color (yellow, mint) gets black titles
+			SystemColorRole.OnAccent => (ColorContrast.OnColor(accent.Light), ColorContrast.OnColor(accent.Dark)),
 			_ => null,
 		};
 	}

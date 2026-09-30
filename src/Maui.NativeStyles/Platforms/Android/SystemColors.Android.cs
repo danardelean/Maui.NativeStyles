@@ -47,14 +47,14 @@ public static partial class SystemColors
 			{
 				// com.google.android.material.color.utilities is restricted API: keep working if a release drops it
 				_schemeUtilitiesUnavailable = true;
-				System.Diagnostics.Debug.WriteLine($"[NativeStyles] Material color utilities unavailable: {e.Message}");
+				NativeStylesLog.Warning("MaterialColorUtilities", "Material color utilities (restricted Material Components API) are unavailable: no brand scheme is generated, only the Accent and OnAccent roles are branded.", e);
 			}
 		}
 		// Fallback when the (restricted) Material color utilities are gone: only the accent itself can be branded
 		return role switch
 		{
 			SystemColorRole.Accent => accent,
-			SystemColorRole.OnAccent => accent.Light.GetLuminosity() > 0.6f ? (Colors.Black, Colors.Black) : (Colors.White, Colors.White),
+			SystemColorRole.OnAccent => (ColorContrast.OnColor(accent.Light), ColorContrast.OnColor(accent.Light)),
 			_ => null,
 		};
 	}
@@ -75,8 +75,8 @@ public static partial class SystemColors
 			return name switch
 			{
 				"primary" => _seed,
-				// Black or white, whichever contrasts more with the brand color
-				"on_primary" => new AColor(_seed).GetBrightness() > 0.62f ? unchecked((int)0xFF000000) : unchecked((int)0xFFFFFFFF),
+				// White, or black when white does not contrast enough with the brand color
+				"on_primary" => ColorContrast.OnColor(ToColor(_seed)).ToPlatform().ToArgb(),
 				_ => color.GetArgb(_light),
 			};
 		}
@@ -211,7 +211,7 @@ public static partial class SystemColors
 		catch (Exception e) when (e is Java.Lang.Throwable or MissingMethodException or TypeLoadException)
 		{
 			_schemeUtilitiesUnavailable = true;
-			System.Diagnostics.Debug.WriteLine($"[NativeStyles] Material color resource override unavailable: {e.Message}");
+			NativeStylesLog.Warning("MaterialColorResourcesOverride", "Material color resource override (restricted Material Components API) is unavailable: native widgets keep the baseline Material colors, only the Accent and OnAccent roles are branded.", e);
 			return false;
 		}
 	}

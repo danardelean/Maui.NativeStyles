@@ -26,6 +26,18 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<!-- nativestyles:// automation links (Automation/AutomationLinks.cs) -->
+			<key>CFBundleURLName</key>
+			<string>it.mahiz.mauinativestyle.automation</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>nativestyles</string>
+			</array>
+		</dict>
+	</array>
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/appicon.appiconset</string>
 </dict>

@@ -6,6 +6,7 @@
     <Project Path="src/Maui.NativeStyles/Maui.NativeStyles.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Maui.NativeStyles.DeviceTests/Maui.NativeStyles.DeviceTests.csproj" />
     <Project Path="tests/Maui.NativeStyles.Tests/Maui.NativeStyles.Tests.csproj" />
   </Folder>
 </Solution>

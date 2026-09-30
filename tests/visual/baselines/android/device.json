@@ -1,0 +1,8 @@
+{
+  "device": "sdk_gphone16k_arm64",
+  "avd": "Pixel_10_Pro",
+  "android": "16",
+  "api": "36",
+  "size": "1280x2856",
+  "density": "480"
+}

@@ -1,7 +1,13 @@
 # Maui.NativeStyles
 
+[![Build](https://github.com/danardelean/Maui.NativeStyles/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/danardelean/Maui.NativeStyles/actions/workflows/build.yml)
+[![NuGet](https://img.shields.io/nuget/v/Maui.NativeStyles.svg)](https://www.nuget.org/packages/Maui.NativeStyles)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/danardelean/Maui.NativeStyles/blob/main/LICENSE)
+
 .NET MAUI styles that respect each platform's design language:
 **iOS 26 (Liquid Glass, Human Interface Guidelines)** and **Android (Material 3 Expressive)**.
+
+> **Status: 0.x.** The styling defaults and the API can still change between minor versions; see the [changelog](https://github.com/danardelean/Maui.NativeStyles/blob/main/CHANGELOG.md).
 
 The `dotnet new maui` template ships implicit styles (`Styles.xaml`) that destroy the native look:
 fixed background and corner radius on `Button`, `BackgroundColor="Transparent"` on inputs (which erases the Material underline/box),
@@ -118,7 +124,7 @@ tests/Maui.NativeStyles.Tests/    xunit tests (net10.0)
 
 ## Getting started
 
-1. Reference the library (project reference, or the `Maui.NativeStyles` NuGet package once published).
+1. Add the package with `dotnet add package Maui.NativeStyles` (every [GitHub release](https://github.com/danardelean/Maui.NativeStyles/releases) also carries the `.nupkg` and `.snupkg`), or reference `src/Maui.NativeStyles/Maui.NativeStyles.csproj` from a clone.
 2. In the app `.csproj`: `<UseMaterial3>true</UseMaterial3>` and Microsoft.Maui.Controls >= 10.0.60 (this repo pins 10.0.101 in `Directory.Build.props`); remove the OpenSans `ConfigureFonts` registration so the system fonts are used.
 3. Delete the template's `Resources/Styles/Styles.xaml` and `Colors.xaml`.
 4. Merge the platform dictionary and register the handlers:
@@ -144,6 +150,27 @@ builder.UseMauiApp<App>()
 
 5. Do not set `UIDesignRequiresCompatibility` in `Info.plist` (it disables Liquid Glass and is ignored from the iOS 27 SDK on).
 
+Options (`NativeStylesOptions`):
+
+| Option | Default | |
+|---|---|---|
+| `Brand` | none | the app's brand colors, see [Branding](#branding) |
+| `AndroidDynamicColors` | `false` | Material You (wallpaper) colors on Android 12+; a brand wins over it |
+| `AndroidRecreateOnThemeChange` | `true` | see [Theme changes at runtime](#theme-changes-at-runtime-android) |
+| `ReplaceEntryHandler` | `true` | iOS: registers `NativeEntryHandler` for `Entry` |
+
+The mappings are process-wide (MAUI's mappers are static), so they are registered once: calling `UseNativeStyles`
+again, from the app or a library, is harmless, but the first call's options stay in effect and a call with different
+options logs a warning.
+
+`ReplaceEntryHandler`: on iOS the library registers its own Entry handler, whose text field insets the text and places
+the clear button like a Settings row. That registration replaces an Entry handler registered before it, and one
+registered after it replaces the library's. If the app or another library brings its own Entry handler, set it to
+`false`: the Entry mapping then gives whatever text field that handler creates the same continuous capsule shape and
+20 pt text margins (spacer `LeftView` / `RightView`, only while those are unused). The difference is the clear button,
+which UIKit places about 15 pt from the trailing edge instead of 35 pt, and a field in editing mode loses its trailing
+margin while the clear button is hidden (empty text).
+
 ## Shared StyleClass names
 
 Same markup on both platforms; each class maps to the equivalent native role.
@@ -160,7 +187,7 @@ react to runtime changes:
 | StyleClass | iOS 26 | Android (M3) |
 |---|---|---|
 | *(none)* | `UIButtonConfiguration.plain` (tinted text) | Filled (primary) |
-| `Filled` | `filled` (tinted capsule, white label) | Filled |
+| `Filled` | `filled` (tinted capsule, white label; black on a light brand accent) | Filled |
 | `Tonal` | `tinted` (15% tint) | Filled tonal (secondaryContainer) |
 | `Outlined` | `gray` | Outlined: 1 dp `outlineVariant`, `onSurfaceVariant` label (M3 Expressive) |
 | `Text` | `plain` | Text |
@@ -173,7 +200,7 @@ react to runtime changes:
 | Entry / Editor `Plain` | no shape and no inset: the value part of a grouped row | no Material box |
 | Picker / DatePicker / TimePicker | pull-down value with chevrons / compact `tertiarySystemFill` capsule (no text-field border) | secondary text with trailing menu arrow / calendar / clock icon, no underline; Material dialogs on tap |
 | Label `Secondary` / `Tertiary` / `Accent` | `secondaryLabel` / `tertiaryLabel` / `systemBlue` | `onSurfaceVariant` / `outline` / `primary` |
-| Label `Semibold` | SF Pro Semibold | Roboto Medium |
+| Label `Semibold` | SF Pro Semibold | weight 600 of the label's font (Roboto Medium below Android 9) |
 | Border `Card` / `Outlined` | inset grouped card, 26 pt radius (iOS 26), `secondarySystemGroupedBackground` | M3 card, 12 dp radius, `surfaceContainerLow` |
 | Border `GroupedCell` | inset grouped section (26 pt radius, 20 pt margins) | M3 Expressive **segmented list**: transparent group clipped to 16 dp outer corners, 16 dp margins (baseline flat lists are no longer recommended by M3) |
 | Grid `ListRow` | 52 pt row, `systemGray5` selection | expressive list item: `surfaceBright` container with 4 dp corners, 56 dp, 16×10 dp padding, 12 dp slot spacing; selected → `secondaryContainer` with 16 dp corners (`NativeList.ItemCornerRadius`) |
@@ -182,7 +209,7 @@ react to runtime changes:
 | CheckBox `Leading` | — | leading control of a list row on the 16 dp keyline (native `RadioButton` rows are aligned automatically) |
 | SearchBar / `Shell.SearchHandler` | 60 pt glass capsule / system navigation-bar search | M3 search bar: 56 dp pill, `surfaceContainerHigh` |
 | `native:NativeSwipeItem` (in `SwipeItems`) | separated, continuously rounded action (26 pt, a capsule on a 52 pt row): `systemGray` / accent / `systemRed`, white content | M3 swipe-to-reveal button: fully round 56 dp, tonal (`secondaryContainer`) / `primary` / `error`, 4 dp apart |
-| `native:SegmentedControl` | `UISegmentedControl` | M3 Expressive connected button group (tonal toggles, 8 dp inner corners, selected button fully round) |
+| `native:SegmentedControl` | `UISegmentedControl` | M3 Expressive connected button group (tonal toggles, 8 dp inner corners, selected button fully round, 48 dp touch targets; TalkBack reads each segment as a radio button with its position) |
 | Shell top tabs | `UISegmentedControl` laid over MAUI's tab strip, inline title | M3 primary tabs: `primary` label and indicator, 1 dp `outlineVariant` divider, fixed tabs sharing the width (scrollable above four) |
 | Shell flyout (`ItemTemplate` / `MenuItemTemplate`, Label `FlyoutHeader`) | sidebar: grouped background, 52 pt rows, continuous `systemFill` selection, accent icons, large-title header | M3 modal navigation drawer: `surfaceContainerLow` sheet at most 360 dp wide (56 dp of scrim left) with 16 dp trailing corners, 56 dp items inset 12 dp with a full-round `secondaryContainer` indicator, title-small headline |
 | TabbedPage / NavigationPage | glass tab bar (supports `NativeShell.TabBarMinimizeBehavior`), transparent navigation bar in the page color with large titles | navigation bar at the bottom (flexible, 64 dp), flat app bar in the page color, trailing toolbar icons in `onSurfaceVariant` |
@@ -195,6 +222,8 @@ react to runtime changes:
 | IndicatorView | native `UIPageControl` at its natural size (`label` / `tertiaryLabel`) | 8 dp dots, `primary` / `outlineVariant` (Material has no page-indicator component) |
 | Label `Chevron` | `›` in `tertiaryLabel` | hidden (Material lists have no chevrons) |
 | ContentPage `Grouped` | `systemGroupedBackground` | `surfaceContainer` page and app bar (tinted surface behind segmented lists, as in Android 16 Settings) |
+
+Button titles (iOS) and `NativeText.Weight` keep the `FontFamily`, italic style and Dynamic Type scaling of the text.
 
 Shared typography keys: `TitleXL`, `TitleL`, `TitleM`, `TitleS`, `Headline`, `BodyEmphasized`, `Body`, `BodySecondary`, `Caption`,
 `SectionHeader`, `SectionFooter` (iOS 26: 17 pt semibold sentence-case header aligned with the row text; Android: `titleSmall` in `primary`).
@@ -268,10 +297,11 @@ Per the HIG, use it only for floating controls above content, never in the conte
 The Android styles follow the current recommendations on [m3.material.io](https://m3.material.io/components):
 expressive segmented lists instead of baseline lists, the flexible navigation bar (64 dp, 56×32 dp active indicator,
 `secondary` active label, `surfaceContainer` container) instead of the 80 dp baseline bar, the contained search bar,
-16 dp button padding and the new outlined-button colors. Shell's bottom navigation, app bar and search view are native
-views created by MAUI after navigation, so the library restyles them from an activity layout listener
-(`ShellChromeStyler`). Text fields, cards (12 dp), switches, sliders and progress indicators already match through
-`UseMaterial3` and are left untouched.
+16 dp button padding and the new outlined-button colors. Shell's bottom navigation, top tabs, app bar, search view and
+flyout are styled by `NativeShellRenderer` (see [Custom Shell renderer](#custom-shell-renderer)) as MAUI creates them;
+`TabbedPage`, `NavigationPage` and `FlyoutPage` have no such extension point and are restyled from an activity layout
+listener (`ShellChromeStyler`). Text fields, cards (12 dp), switches, sliders and progress indicators already match
+through `UseMaterial3` and are left untouched.
 
 ## Branding
 
@@ -294,7 +324,7 @@ color so differently that it resolves into two platform palettes:
 | What branding means | one tint color; backgrounds, labels and semantic colors stay Apple's | a whole tonal scheme derived from a seed: primary / secondary / tertiary families, tinted surfaces, outlines, light **and** dark |
 | `Accent` | the window tint: buttons, links, selection, tab bar and toolbar items, alerts, and the `Accent` / `TonalContainer` roles | the seed. The library generates the scheme with Material's own algorithm (`SchemeContent`) |
 | `AccentDark` | tint in dark mode (a brighter variant, as Apple does with its system colors); defaults to `Accent` | ignored: Material computes the dark tones from the seed |
-| Native controls | follow the tint automatically. `UISwitch` ignores the tint and stays green, as in Apple's apps; set `TintsSwitches` to brand it | the generated scheme replaces Material's color resources for every activity (Android 11+), so Switch, CheckBox, RadioButton, Slider, progress indicators, text fields, the navigation bar, tabs and dialogs are branded too |
+| Native controls | follow the tint automatically. `UISwitch` ignores the tint and stays green, as in Apple's apps; set `TintsSwitches` to brand it | the generated scheme replaces Material's color resources for every MAUI activity (Android 11+), so Switch, CheckBox, RadioButton, Slider, progress indicators, text fields, the navigation bar, tabs and dialogs are branded too |
 
 - `options.Brand.IOS.Accent` / `options.Brand.Android.Accent` give one platform a different brand color.
 - `options.Brand.Set(SystemColorRole.Destructive, light, dark)` pins an individual role (it wins over everything, but only
@@ -308,6 +338,9 @@ color so differently that it resolves into two platform palettes:
 - Every `{native:SystemColor}` role, the shared `AccentColor` / `DestructiveColor` resources, `NativeSwipeItem`,
   `SegmentedControl` and the Shell chrome follow the brand. The static per-platform keys (`Primary`, `SystemBlue`, …)
   stay the baseline palette.
+- `OnAccent` (the label on accent-filled buttons) is resolved per theme from the brand color: white while it keeps a
+  3:1 contrast (WCAG AA for large text), black otherwise. On iOS it becomes the title color of `Filled` and
+  `GlassProminent` buttons without a `TextColor` when it is not white. Pin it with `Set(SystemColorRole.OnAccent, …)`.
 - A brand wins over `AndroidDynamicColors` (a branded app keeps its colors instead of following the wallpaper).
 - Below Android 11 only the colors resolved through `{native:SystemColor}` are branded. The Material color utilities
   used to generate the scheme are flagged by Google as internal API: the library guards their use and falls back to
@@ -337,6 +370,23 @@ color so differently that it resolves into two platform palettes:
 markup: the implicit styles and the platform hooks restyle them. The legacy `ListView`, `TableView` and `Frame` are
 intentionally not styled: use `CollectionView` / `GroupedCell` and `Border` (`Card`).
 
+## Custom Shell renderer
+
+`UseNativeStyles` registers `NativeShellRenderer` as the Shell renderer on iOS and Android. It applies the Shell chrome
+styling through MAUI's Shell extension points (appearance trackers, toolbar tracker and flyout renderer on Android;
+tab bar, navigation and section controllers and the page tracker on iOS), after MAUI has applied the `Shell.*` colors.
+An app that needs its own Shell renderer derives it from `NativeShellRenderer` instead of `ShellRenderer`, calls the
+base implementation of the `Create*` methods it overrides, and registers it after `UseNativeStyles`:
+
+```csharp
+builder.UseNativeStyles()
+       .ConfigureMauiHandlers(handlers => handlers.AddHandler<Shell, MyShellRenderer>());
+```
+
+With `options.ReplaceShellRenderer = false`, or a Shell renderer that does not derive from `NativeShellRenderer`, the
+chrome is styled as in earlier versions: from an activity layout listener on Android, in passes after each navigation
+on iOS.
+
 ## Theme changes at runtime (Android)
 
 MAUI handles the `uiMode` configuration change itself, so the activity survives a light/dark switch and every native
@@ -345,15 +395,54 @@ the status bar icons, dialogs. `{native:SystemColor}` values update, the rest do
 
 With `AndroidRecreateOnThemeChange` (on by default) the library does what Android does by default: when the effective
 app theme changes (system dark mode or `Application.UserAppTheme`) it recreates the activity, so everything is
-re-themed. State is preserved:
+re-themed.
 
-- MAUI asks the app for a window again, and the standard template (`new Window(new AppShell())`) would answer with a new
-  page tree. The library moves the page that was showing to the new window, so the selected tab, the navigation stack,
-  control values and view models survive. Scroll positions and open native dialogs do not.
-- Root pages that the app replaced earlier (login shell → main shell, Shell → TabbedPage) get their handlers
-  disconnected before the recreate. MAUI 10 otherwise leaves a disposed Shell renderer registered on such a Shell,
-  which throws on the following theme change; the library also clears that (private) observer list.
-- Set `options.AndroidRecreateOnThemeChange = false` to keep MAUI's behavior.
+MAUI asks the app for a window again, and the standard template (`new Window(new AppShell())`) would answer with a new
+page tree. The library moves the page that was showing to the new window instead, so the same page and view model
+instances stay on screen; MAUI then builds new native views for them in the new activity. The rule of thumb: state held
+by a MAUI property survives, state that only lives in the native view does not. Verified on an Android 16 emulator
+with the sample's "Toggle light / dark" menu item (and `UserAppTheme` set in code, the same path):
+
+| After a theme change | |
+|---|---|
+| Selected Shell tab, selected top tab | kept |
+| Shell navigation stack (pushed pages, back button), `NavigationPage` stack inside a `TabbedPage` | kept |
+| Values held by MAUI properties (text typed in an `Entry`, `IsToggled`, `SelectedIndex`...) and view models | kept |
+| Scroll position of `ScrollView` and `CollectionView` | lost: back at the top |
+| Focus and the soft keyboard | lost: nothing is focused, the keyboard closes |
+| `WebView` page state (DOM, script variables, links followed inside the page) | lost: `Source` is loaded again |
+| Open alerts, action sheets and picker dialogs | lost |
+
+Apps that need more can save it themselves, for example the scroll offset in the view model (`ScrollView.Scrolled`,
+then `ScrollToAsync`) or a WebView's current URL (`Navigated`, then `Source`).
+
+Root pages that the app replaced earlier (login shell → main shell, Shell → TabbedPage) get their handlers disconnected
+before the recreate. MAUI 10 otherwise leaves a disposed Shell renderer registered on such a Shell, which throws on the
+following theme change; the library also clears that (private) observer list.
+
+To opt out, keep MAUI's behavior (no recreate; native views keep the colors they resolved at creation, only
+`{native:SystemColor}` values follow the new theme):
+
+```csharp
+builder.UseNativeStyles(options => options.AndroidRecreateOnThemeChange = false);
+```
+
+## Diagnostics
+
+The library logs through the app's `Microsoft.Extensions.Logging` pipeline under the `Maui.NativeStyles` category, so
+the messages reach the app's providers in Release builds too. Each problem is logged once:
+
+- **Warning**: a Material 3 `*Handler2` mapper, `Shell._appearanceObservers` or the restricted Material color API is
+  not available in the MAUI / Material version in use (that part of the styling is skipped), `UseNativeStyles` was called
+  again with different options, or (iOS) it replaced an Entry handler registered before it.
+- **Debug**: which Material 3 handler hooks were installed (Android) and which Entry handler is used (iOS).
+
+Messages from `UseNativeStyles` are written once the `MauiApp` is built. The default minimum level is `Information`;
+to see the Debug lines:
+
+```csharp
+builder.Logging.AddFilter("Maui.NativeStyles", LogLevel.Debug);
+```
 
 ## Known limitations
 
@@ -363,9 +452,9 @@ re-themed. State is preserved:
 - M3 Expressive widgets that need Material Components 1.13+ (loading indicator, wavy progress, button shape morph on press, button groups, split buttons) are not available: MAUI 10.0.101 ships Material Components 1.12 and the newer binding pulls conflicting AndroidX versions.
 - Android `TabbedPage`: the library style sets `ToolbarPlacement=Bottom`, and MAUI's `SetToolbarPlacement()` / `On<Android>().SetToolbarPlacement()` throws when asked for a different value afterwards. To get Material top tabs use the XAML attribute or `page.SetValue(TabbedPage.ToolbarPlacementProperty, ToolbarPlacement.Top)`; they are styled as M3 primary tabs too.
 - List rows have no pressed feedback (ripple / highlight): MAUI item containers own the touch handling, and making the row view clickable would break `CollectionView` selection.
-- Android `Stepper` is a MAUI-drawn control (Android has no stepper); the library restyles its two buttons as Material 3 outlined icon buttons.
+- Android `Stepper` is a MAUI-drawn control (Android has no stepper); the library restyles its two buttons as Material 3 outlined icon buttons (40 dp, with 48 dp touch targets).
 - The iOS 15–18 fallback paths are guarded by `OperatingSystem.IsIOSVersionAtLeast(26)` but were not exercised on an iOS 18 simulator during development.
-- With `UseMaterial3`, Entry and the other input controls use internal `*Handler2` handlers; their mappers are reached through reflection (see `NativeStyles.Android.cs`), and a debug message is logged if the type is not found. These types become public in MAUI 11.
+- With `UseMaterial3`, Entry and the other input controls use internal `*Handler2` handlers; their mappers are reached through reflection (see `NativeStyles.Android.cs`), and a warning is logged if the type is not found (see [Diagnostics](#diagnostics)). These types become public in MAUI 11.
 - All iOS 26 APIs are guarded by `OperatingSystem.IsIOSVersionAtLeast(26)`: on iOS 15–18 the same binary shows the classic appearance.
 
 ## Requirements

@@ -13,23 +13,43 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 
+		<!-- Trimming and Native AOT: the assembly is marked trimmable and the trim / AOT analyzers check every reflection use.
+		     MAUI's build targets turn the trim analyzer off unless the project publishes with full trimming or Native AOT;
+		     _MauiDoNotConfigureTrimAnalyzer is the switch MAUI provides to keep it on. -->
+		<IsTrimmable>true</IsTrimmable>
+		<IsAotCompatible>true</IsAotCompatible>
+		<_MauiDoNotConfigureTrimAnalyzer>true</_MauiDoNotConfigureTrimAnalyzer>
+
+		<!-- CI builds (ContinuousIntegrationBuild, see Directory.Build.props): the library must stay free of warnings. -->
+		<TreatWarningsAsErrors Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TreatWarningsAsErrors>
+
 		<!-- NuGet -->
 		<IsPackable>true</IsPackable>
 		<PackageId>Maui.NativeStyles</PackageId>
-		<Version>1.10.1</Version>
+		<Version>0.12.0</Version>
 		<Authors>Dan Ardelean</Authors>
-		<Description>Native-looking .NET MAUI styles: iOS 26 Liquid Glass and Android Material 3. Per-platform resource dictionaries plus a few handler mappings that let the native rendering through instead of the generic MAUI template look.</Description>
+		<Description>Native-looking .NET MAUI styles: iOS 26 Liquid Glass and Android Material 3 Expressive. Per-platform resource dictionaries plus a few handler mappings that let the native rendering through instead of the generic MAUI template look, one-color branding for both platforms (BrandPalette) and theme-aware {native:SystemColor} roles that follow light / dark mode and Material You.</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/danardelean/Maui.NativeStyles</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/danardelean/Maui.NativeStyles</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<PackageTags>dotnet-maui;maui;ios;android;liquid-glass;material3;material-design;styles;xaml</PackageTags>
+		<PackageTags>dotnet-maui;maui;ios;ios26;android;liquid-glass;material3;material3-expressive;material-design;material-you;native;styles;theming;branding;dark-mode;xaml</PackageTags>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageIcon>icon.png</PackageIcon>
+		<PackageReleaseNotes>Release notes for every version: https://github.com/danardelean/Maui.NativeStyles/blob/main/CHANGELOG.md</PackageReleaseNotes>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+
+		<!-- Symbols and Source Link (built into the .NET SDK): a .snupkg next to the .nupkg, the repository URL and commit
+		     in the nuspec, and the files that are not in git (generated sources) embedded in the PDB. -->
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<None Include="../../README.md" Pack="true" PackagePath="/" />
+		<None Include="icon.png" Pack="true" PackagePath="/" />
 	</ItemGroup>
 
 	<ItemGroup>

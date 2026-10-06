@@ -105,7 +105,6 @@ $RECYCLE.BIN/
 *.env
 appsettings.*.local.json
 
-# .NET 11 nightly SDK installed in-folder by scripts/install-dotnet11-nightly.sh, and the local files that point at it
+# .NET 11 nightly SDK installed in-folder by scripts/install-dotnet11-nightly.sh, and the global.json that points at it
 /.dotnet/
 /global.json
-/NuGet.config

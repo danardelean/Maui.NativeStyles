@@ -3,13 +3,13 @@
 	<!--
 		xunit tests that run inside a MAUI app on the iOS simulator / Android emulator, with the real handlers and native
 		views. Headless run (build, deploy, launch, collect a TRX) through DeviceRunners.Testing.Targets:
-		  dotnet test tests/Maui.NativeStyles.DeviceTests -f net10.0-ios -p:DeviceRunnersDevice=<simulator UDID>
-		  dotnet test tests/Maui.NativeStyles.DeviceTests -f net10.0-android -p:DeviceRunnersDevice=emulator-5554
+		  dotnet test tests/Maui.NativeStyles.DeviceTests -f net11.0-ios -p:DeviceRunnersDevice=<simulator UDID>
+		  dotnet test tests/Maui.NativeStyles.DeviceTests -f net11.0-android -p:DeviceRunnersDevice=emulator-5554
 		Launched normally (IDE, dotnet build -t:Run) it shows the DeviceRunners visual runner instead.
 	-->
 
 	<PropertyGroup>
-		<TargetFrameworks>net10.0-android;net10.0-ios</TargetFrameworks>
+		<TargetFrameworks>net11.0-android;net11.0-ios</TargetFrameworks>
 		<OutputType>Exe</OutputType>
 		<RootNamespace>NativeStyles.DeviceTests</RootNamespace>
 		<UseMaui>true</UseMaui>
@@ -55,7 +55,7 @@
 	-->
 	<Target Name="RequireDeviceRunnersDevice" BeforeTargets="_DeviceRunnersMarkTestRun">
 		<Error Condition="'$(DeviceRunnersDevice)' == ''"
-			Text="Device tests need a target: dotnet test tests/Maui.NativeStyles.DeviceTests -f net10.0-ios|net10.0-android -p:DeviceRunnersDevice=&lt;simulator UDID or emulator serial&gt;. Unit tests: dotnet test tests/Maui.NativeStyles.Tests." />
+			Text="Device tests need a target: dotnet test tests/Maui.NativeStyles.DeviceTests -f net11.0-ios|net11.0-android -p:DeviceRunnersDevice=&lt;simulator UDID or emulator serial&gt;. Unit tests: dotnet test tests/Maui.NativeStyles.Tests." />
 	</Target>
 
 </Project>

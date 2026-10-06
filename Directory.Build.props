@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <MauiVersion>10.0.101</MauiVersion>
+    <MauiVersion>11.0.0-rc.2.26505.5</MauiVersion>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

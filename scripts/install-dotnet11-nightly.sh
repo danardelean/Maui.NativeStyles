@@ -42,6 +42,7 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
 SDK_VERSION="$("$DOTNET_DIR/dotnet" --version)"
 # Version band of the SDK: 11.0.100-rc.2.26504.105 -> 11.0.100-rc.2, 11.0.100-rtm.26480.113 -> 11.0.100
 BAND="$(echo "$SDK_VERSION" | sed -E 's/^([0-9]+\.[0-9]+\.[0-9])[0-9][0-9](-(preview|rc|alpha)\.[0-9]+)?.*$/\100\2/')"
+LABEL="${BAND#*-}"; [ "$LABEL" = "$BAND" ] && LABEL=""   # prerelease label of the band: rc.2, preview.7, or empty (RTM)
 MANIFESTS_DIR="$DOTNET_DIR/sdk-manifests/$BAND"
 echo "SDK $SDK_VERSION (band $BAND) in $DOTNET_DIR"
 mkdir -p "$MANIFESTS_DIR"
@@ -105,6 +106,11 @@ while IFS= read -r id || [ -n "$id" ]; do
   for feed in "${FEEDS[@]}"; do
     for v in $(versions "$feed" "$pkg"); do printf '%s\t%s\n' "$v" "$feed" >> "$work/candidates"; done
   done
+  # Prefer the builds of this band's prerelease lane (rc.2): other lanes publish into the band too, e.g. an Android
+  # 37.99.0-preview.1 build from main outranks the RC2 37.2.0-rc.2 build by version alone.
+  if [ -n "$LABEL" ] && grep -q -F -- "$LABEL" "$work/candidates"; then
+    grep -F -- "$LABEL" "$work/candidates" > "$work/candidates.lane" && mv "$work/candidates.lane" "$work/candidates"
+  fi
   chosen="$(pick_highest < "$work/candidates")"
   best="${chosen%%	*}"; best_feed="${chosen#*	}"
   if [ -z "$best" ]; then

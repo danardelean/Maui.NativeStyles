@@ -115,7 +115,7 @@ public static partial class NativeStylesExtensions
 		{
 			// The app's font manager applies FontFamily and Dynamic Type scaling, as for every other MAUI text
 			var font = (handler.MauiContext?.Services.GetService(typeof(IFontManager)) as IFontManager)?.GetFont(textStyle.Font, UIFont.ButtonFontSize)
-				?? UIFont.SystemFontOfSize(textStyle.Font.Size > 0 ? (nfloat)textStyle.Font.Size : UIFont.ButtonFontSize);
+				?? UIFont.SystemFontOfSize(textStyle.Font.Size > 0 ? (nfloat)textStyle.Font.Size : UIFont.ButtonFontSize)!; // the system font always exists
 			UIFontWeight? weight = textStyle.Font.Weight >= FontWeight.Bold ? UIFontWeight.Bold
 				: prominent || textStyle.Font.Weight >= FontWeight.Semibold ? UIFontWeight.Semibold
 				: null;

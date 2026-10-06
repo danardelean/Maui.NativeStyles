@@ -1,6 +1,9 @@
 <Project>
   <PropertyGroup>
     <MauiVersion>11.0.0-rc.2.26505.5</MauiVersion>
+    <!-- Microsoft.Maui.Controls.Compatibility stopped shipping after .NET 11 Preview 6: the device tests pull it in through
+         DeviceRunners.VisualRunners.Maui, so they reference the newest build there is. -->
+    <MauiCompatibilityVersion>11.0.0-preview.6.26324.7</MauiCompatibilityVersion>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

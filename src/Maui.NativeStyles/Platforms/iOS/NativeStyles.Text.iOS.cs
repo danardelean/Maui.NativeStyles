@@ -36,7 +36,7 @@ public static partial class NativeStylesExtensions
 			SymbolicTrait = descriptor.SymbolicTraits & UIFontDescriptorSymbolicTraits.Italic,
 		};
 		if (descriptor.FontAttributes.Name is null)
-			return UIFont.FromDescriptor(descriptor.CreateWithAttributes(new UIFontAttributes { Traits = traits }), 0);
+			return UIFont.FromDescriptor(descriptor.CreateWithAttributes(new UIFontAttributes { Traits = traits }), 0) ?? font;
 
 		var face = new UIFontDescriptor(new UIFontAttributes { Family = font.FamilyName, Traits = traits });
 		// A family without that weight keeps its closest face; never fall back to another family

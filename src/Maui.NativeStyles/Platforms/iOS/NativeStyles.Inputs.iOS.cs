@@ -75,7 +75,7 @@ public static partial class NativeStylesExtensions
 		if (field.RightView is not UIImageView)
 		{
 			var chevrons = new UIImageView(UIImage.GetSystemImage("chevron.up.chevron.down",
-				UIImageSymbolConfiguration.Create(UIFont.SystemFontOfSize(13, UIFontWeight.Semibold))))
+				UIImageSymbolConfiguration.Create(UIFont.SystemFontOfSize(13, UIFontWeight.Semibold)!))) // the system font always exists
 			{
 				TintColor = UIColor.SecondaryLabel,
 				ContentMode = UIViewContentMode.Center,

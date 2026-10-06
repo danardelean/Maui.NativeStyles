@@ -25,7 +25,7 @@
 		<ApplicationVersion>1</ApplicationVersion>
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
 
 		<!-- The MAUI app has its own entry point: no generated test platform entry point -->
 		<GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
@@ -37,8 +37,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-		<!-- DeviceRunners.VisualRunners.Maui depends on an older Compatibility package: keep it on the pinned MAUI version -->
-		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
+		<!-- DeviceRunners.VisualRunners.Maui depends on an older Compatibility package: keep it on the newest one (Directory.Build.props) -->
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiCompatibilityVersion)" />
 		<PackageReference Include="DeviceRunners.VisualRunners.Maui" Version="0.1.0-preview.12" />
 		<PackageReference Include="DeviceRunners.VisualRunners.Xunit" Version="0.1.0-preview.12" />
 		<PackageReference Include="DeviceRunners.Testing.Targets" Version="0.1.0-preview.12" />

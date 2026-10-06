@@ -8,7 +8,7 @@
 #   NET10_COMPAT_VERSION=10.0.12 ./scripts/...                 # .NET 10 runtime packs for the net10 compat workloads (default: newest on nuget.org)
 #
 # How it works. The daily SDK bundles stale baseline workload manifests (preview-era iOS / MAUI, in an older band folder
-# that the SDK falls back to), so for every manifest the SDK lists in IncludedWorkloadManifests.txt the newest package
+# that the SDK falls back to), so for every manifest the SDK lists in KnownWorkloadManifests.txt the newest package
 # of the SDK's own version band is downloaded into sdk-manifests/<band>/ (what dotnet/maui's own build does). The feeds
 # searched are dotnet11 plus the feeds dotnet/maui's RC2 branch builds against (its NuGet.config), because macios / android
 # release-branch builds land on isolated darc-pub-* feeds. The net10 compat manifests are then pointed at a public .NET 10
@@ -43,10 +43,19 @@ SDK_VERSION="$("$DOTNET_DIR/dotnet" --version)"
 # Version band of the SDK: 11.0.100-rc.2.26504.105 -> 11.0.100-rc.2, 11.0.100-rtm.26480.113 -> 11.0.100
 BAND="$(echo "$SDK_VERSION" | sed -E 's/^([0-9]+\.[0-9]+\.[0-9])[0-9][0-9](-(preview|rc|alpha)\.[0-9]+)?.*$/\100\2/')"
 MANIFESTS_DIR="$DOTNET_DIR/sdk-manifests/$BAND"
-INCLUDED="$DOTNET_DIR/sdk/$SDK_VERSION/IncludedWorkloadManifests.txt"
 echo "SDK $SDK_VERSION (band $BAND) in $DOTNET_DIR"
-[ -f "$INCLUDED" ] || { echo "Missing $INCLUDED" >&2; exit 1; }
 mkdir -p "$MANIFESTS_DIR"
+# The manifest ids the SDK resolves: KnownWorkloadManifests.txt (IncludedWorkloadManifests.txt in older SDKs), else
+# whatever manifest folders the SDK ships in any band.
+INCLUDED="$work/manifest-ids.txt"
+if [ -f "$DOTNET_DIR/sdk/$SDK_VERSION/KnownWorkloadManifests.txt" ]; then
+  cp "$DOTNET_DIR/sdk/$SDK_VERSION/KnownWorkloadManifests.txt" "$INCLUDED"
+elif [ -f "$DOTNET_DIR/sdk/$SDK_VERSION/IncludedWorkloadManifests.txt" ]; then
+  cp "$DOTNET_DIR/sdk/$SDK_VERSION/IncludedWorkloadManifests.txt" "$INCLUDED"
+else
+  ls -d "$DOTNET_DIR"/sdk-manifests/*/*/ | xargs -n1 basename | grep -v '^workloadsets$' | sort -u > "$INCLUDED"
+fi
+echo "Manifests: $(tr '\r\n' '  ' < "$INCLUDED")"
 
 # ---- 2. Feeds ----------------------------------------------------------------------------------------------------------
 # dotnet11 first, then every dnceng feed of dotnet/maui's branch (dotnet11-transport and the isolated darc-pub-* feeds).

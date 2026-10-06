@@ -8,8 +8,9 @@ namespace NativeStyles.Sample.Automation;
 /// A link can only switch between the sample's own pages and set <see cref="Application.UserAppTheme"/>, so it is
 /// harmless when something else opens it; normal launches carry no link and are unaffected.
 /// Android: VIEW intent (intent filter on MainActivity, not BROWSABLE so web pages cannot open it).
-/// iOS: CFBundleURLTypes in Info.plist, or the <c>-NativeStylesLink &lt;link&gt;</c> launch argument: SpringBoard asks
-/// for confirmation before opening a custom scheme (simctl openurl included), a launch argument does not.
+/// iOS: CFBundleURLTypes in Info.plist (delivered to the scene, see UIApplicationSceneManifest there), or the
+/// <c>-NativeStylesLink &lt;link&gt;</c> launch argument: SpringBoard asks for confirmation before opening a custom scheme
+/// (simctl openurl included), a launch argument does not.
 /// </summary>
 public static class AutomationLinks
 {
@@ -42,13 +43,20 @@ public static class AutomationLinks
 				.OnCreate((activity, state) => { if (state is null) HandleIntent(activity.Intent); })
 				.OnNewIntent((_, intent) => HandleIntent(intent)));
 #elif IOS
+			// With a scene manifest (Platforms/iOS/Info.plist) UIKit hands URLs to the scene, not to the application delegate:
+			// at a cold start in the connection options, afterwards through OpenUrlContexts.
 			events.AddiOS(ios => ios
 				.FinishedLaunching((_, _) =>
 				{
 					Handle(Foundation.NSUserDefaults.StandardUserDefaults.StringForKey(LaunchArgument));
 					return true;
 				})
-				.OpenUrl((_, url, _) => Handle(url.AbsoluteString)));
+				.SceneWillConnect((_, _, options) =>
+				{
+					foreach (var context in options.UrlContexts)
+						Handle(context.Url.AbsoluteString);
+				})
+				.SceneOpenUrl((_, contexts) => contexts.Any(context => Handle(context.Url.AbsoluteString))));
 #endif
 		});
 		return builder;

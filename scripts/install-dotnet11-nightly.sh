@@ -71,20 +71,42 @@ echo "Feeds:"; printf '  %s\n' "${FEEDS[@]}"
 # NuGet v3 flat container: <feed>/flat2/<id>/index.json lists the versions, <feed>/flat2/<id>/<v>/<id>.<v>.nupkg is the package.
 flat() { echo "${1%/index.json}/flat2"; }
 versions() { curl -sSfL "$(flat "$1")/$2/index.json" 2>/dev/null | tr -d ' \n' | grep -o '"versions":\[[^]]*\]' | grep -o '"[^"]*"' | tr -d '"' || true; }
-# Highest of two versions by their numeric fields (27.0.12211-net11-rc.2 > 26.5.12253-net11-rc.2; 11.0.0-rc.2.26504.105 > 11.0.0-rc.2.26480.1)
-higher() { printf '%s\n%s\n' "$1" "$2" | sort -t. -k1,1n -k2,2n -k3,3n -k4,4n -k5,5n -k6,6n | tail -1; }
+# Reads "version<TAB>feed" lines and prints the one with the highest version, by Semantic Versioning precedence:
+# numeric core first, then a release above its prereleases, then prerelease fields (numeric < alphanumeric, so
+# 11.0.0-rc.2.26504.105 > 11.0.0-preview.7.26471.7 and 27.0.12211-net11-rc.2 > 26.5.12253-net11-rc.2).
+pick_highest() {
+  perl -e '
+    sub cmpv {
+      my ($v1, $v2) = @_;
+      my ($c1, $p1) = split /-/, $v1, 2; my ($c2, $p2) = split /-/, $v2, 2;
+      my @n1 = split /\./, $c1; my @n2 = split /\./, $c2;
+      for my $i (0..2) { my $c = ($n1[$i] // 0) <=> ($n2[$i] // 0); return $c if $c; }
+      return 0 if !defined $p1 && !defined $p2; return 1 if !defined $p1; return -1 if !defined $p2;
+      my @f1 = split /\./, $p1; my @f2 = split /\./, $p2;
+      for my $i (0..($#f1 > $#f2 ? $#f1 : $#f2)) {
+        my ($x, $y) = ($f1[$i], $f2[$i]);
+        return -1 if !defined $x; return 1 if !defined $y;
+        my $c = ($x =~ /^\d+$/ && $y =~ /^\d+$/) ? $x <=> $y : ($x =~ /^\d+$/ ? -1 : ($y =~ /^\d+$/ ? 1 : $x cmp $y));
+        return $c if $c;
+      }
+      return 0;
+    }
+    my @lines = grep { /\S/ } map { chomp; $_ } <STDIN>;
+    my ($best) = sort { cmpv((split /\t/, $b)[0], (split /\t/, $a)[0]) } @lines;
+    print "$best\n" if defined $best;'
+}
 
 # ---- 3. Newest manifests of this band ----------------------------------------------------------------------------------
 while IFS= read -r id || [ -n "$id" ]; do
   id="$(echo "$id" | tr -d '\r' | tr '[:upper:]' '[:lower:]')"
   [ -z "$id" ] && continue
   pkg="$id.manifest-$BAND"                                  # e.g. microsoft.net.sdk.ios.manifest-11.0.100-rc.2
-  best="" best_feed=""
+  : > "$work/candidates"
   for feed in "${FEEDS[@]}"; do
-    for v in $(versions "$feed" "$pkg"); do
-      if [ -z "$best" ] || [ "$(higher "$best" "$v")" = "$v" ]; then best="$v"; best_feed="$feed"; fi
-    done
+    for v in $(versions "$feed" "$pkg"); do printf '%s\t%s\n' "$v" "$feed" >> "$work/candidates"; done
   done
+  chosen="$(pick_highest < "$work/candidates")"
+  best="${chosen%%	*}"; best_feed="${chosen#*	}"
   if [ -z "$best" ]; then
     have="$(ls -d "$DOTNET_DIR"/sdk-manifests/*/"$id"/*/ 2>/dev/null | tail -1 || true)"
     echo "$id: no $pkg on any feed, keeping the SDK's ${have:-<none>}"
@@ -123,6 +145,8 @@ done
 sources=()
 for feed in "${FEEDS[@]}" "$NUGET_ORG"; do sources+=(--source "$feed"); done
 "$DOTNET_DIR/dotnet" workload install maui --skip-manifest-update --skip-sign-check "${sources[@]}"
+# Packs of manifest versions replaced above (an earlier run) are no longer referenced: drop them
+"$DOTNET_DIR/dotnet" workload clean >/dev/null || true
 "$DOTNET_DIR/dotnet" workload list
 
 # ---- 6. global.json ----------------------------------------------------------------------------------------------------
@@ -137,4 +161,5 @@ cat > global.json <<JSON
 }
 JSON
 echo "Wrote global.json pinned to $SDK_VERSION"
-echo "iOS workload manifest: $(ls "$MANIFESTS_DIR/microsoft.net.sdk.ios" 2>/dev/null || echo '<not in band folder>')  (27.0.* = built for Xcode 27)"
+echo "Manifests in $MANIFESTS_DIR (iOS 27.0.* = built for Xcode 27):"
+for d in "$MANIFESTS_DIR"/*/; do [ "$(basename "$d")" = "workloadsets" ] || echo "  $(basename "$d"): $(ls "$d" | tr '\n' ' ')"; done

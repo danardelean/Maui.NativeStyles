@@ -42,7 +42,12 @@ check "newest public .NET 10 runtime is a release" "" "$(newest_public_runtime 1
 echo "== channels from the builds table (network: GitHub; aka.ms versions may be unreachable)"
 channels="$("$SCRIPT" --list-channels 2>&1)"
 echo "$channels" | sed 's/^/     | /'
-check "header"            "channel          current daily SDK" "$(echo "$channels" | head -1)"
+check "header"            "channel              current daily SDK" "$(echo "$channels" | head -1)"
+candidates="$(channel_candidates)"
+check "candidates: table channel"        "1" "$(echo "$candidates" | grep -c -x '11.0.1xx-rc2')"
+check "candidates: Arcade name, next major" "1" "$(echo "$candidates" | grep -c -x '12.0.1xx')"
+check "candidates: Arcade name, preview"  "1" "$(echo "$candidates" | grep -c -x '11.0.1xx-preview7')"
+check "candidates: no old majors"         "0" "$(echo "$candidates" | grep -c -E '^[0-9]\.')"
 check "rc2 channel listed" "1" "$(echo "$channels" | grep -c '^11.0.1xx-rc2 ')"
 check "main channel listed" "1" "$(echo "$channels" | grep -c '^11.0.1xx ')"
 check "channel names look like channels" "" "$(echo "$channels" | tail -n +2 | cut -d' ' -f1 | grep -v -E '^[0-9]+\.[0-9]+\.[0-9]xx(-[a-z0-9]+)?$' || true)"

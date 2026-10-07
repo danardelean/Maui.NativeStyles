@@ -54,6 +54,7 @@ INSTALL_SCRIPT_URL="https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet
 NUGET_ORG="https://api.nuget.org/v3/index.json"
 DNCENG="https://pkgs.dev.azure.com/dnceng/public/_packaging"
 BUILDS_TABLE_URL="https://raw.githubusercontent.com/dotnet/dotnet/main/docs/builds-table.md"
+AKAMS_CHANNELS_URL="https://raw.githubusercontent.com/dotnet/arcade/main/src/Microsoft.DotNet.Build.Tasks.Feed/src/model/PublishingConstants.cs"
 CURL=(curl -sSL --max-time 60)
 
 log() { printf '%s\n' "$*"; }
@@ -128,12 +129,17 @@ patch_compat_manifests() {
   done
 }
 
-# The channels with daily builds: the ones the .NET builds table (dotnet/dotnet, docs/builds-table.md) links to as
-# https://aka.ms/dotnet/<channel>/daily/..., one per actively built branch (main is its X.Y.1xx channel). Older release
-# branches keep their channel but no longer get dailies. A channel's current SDK version is read the way dotnet-install
-# does it: the aka.ms link of the SDK archive redirects to the build's own URL, which carries the version
-# (.../Sdk/<version>/dotnet-sdk-<version>-<rid>.tar.gz); a HEAD request follows it without downloading. An unknown
-# aka.ms path does not 404 but lands on a Microsoft search page, hence the pattern check.
+# Channels. A channel is an aka.ms name that Arcade's publishing constants (dotnet/arcade, PublishingConstants.cs)
+# assign to a build channel: X.Y.1xx for the X.Y.1xx SDK channel, X.Y.1xx-rc2 for its RC 2, X.Y.1xx-preview3 ... The
+# .NET builds table (dotnet/dotnet, docs/builds-table.md) links the actively built ones, but it lags behind a branding
+# change: when main moves to the next major its column keeps the old name for a while, so the old name serves the new
+# major's alphas until the new release branch takes it over. So the candidates are the table's channels plus every SDK
+# channel name Arcade declares for those majors and the next one, and each is probed; only the ones that resolve are
+# shown (the table's own always are, with ? when they do not).
+# A channel's current SDK version is read the way dotnet-install does it: the aka.ms link of the SDK archive redirects
+# to the build's own URL, which carries the version (.../Sdk/<version>/dotnet-sdk-<version>-<rid>.tar.gz); a HEAD
+# request follows it without downloading. An unknown aka.ms path does not 404 but lands on a Microsoft search page,
+# hence the pattern check.
 channel_version() {
   local url
   url="$(curl -sSIL --max-time 60 -o /dev/null -w '%{url_effective}' "https://aka.ms/dotnet/$1/daily/dotnet-sdk-linux-x64.tar.gz" 2>/dev/null || true)"
@@ -142,12 +148,27 @@ channel_version() {
     *) echo "?" ;;
   esac
 }
+table_channels() {
+  "${CURL[@]}" -f "$BUILDS_TABLE_URL" | grep -o 'aka\.ms/dotnet/[^/)" ]*/daily' | sed 's#aka\.ms/dotnet/##; s#/daily##' | sort -u
+}
+channel_candidates() {
+  local table majors next names m
+  table="$(table_channels)"
+  [ -n "$table" ] || die "could not read the builds table at $BUILDS_TABLE_URL"
+  majors="$(echo "$table" | cut -d. -f1 | sort -un)"
+  next=$(( $(echo "$majors" | tail -1) + 1 ))
+  names="$("${CURL[@]}" -f "$AKAMS_CHANNELS_URL" 2>/dev/null | grep -o -E '"[0-9]+\.[0-9]+\.[0-9]xx[^"]*"' | tr -d '"' || true)"
+  { echo "$table"; for m in $majors $next; do echo "$names" | grep -E "^$m\." || true; done; } | sort -u
+}
 list_channels() {
-  local channels ch
-  channels="$("${CURL[@]}" -f "$BUILDS_TABLE_URL" | grep -o 'aka\.ms/dotnet/[^/)" ]*/daily' | sed 's#aka\.ms/dotnet/##; s#/daily##' | sort -u)"
-  [ -n "$channels" ] || die "could not read the builds table at $BUILDS_TABLE_URL"
-  printf '%-16s %s\n' "channel" "current daily SDK"
-  for ch in $channels; do printf '%-16s %s\n' "$ch" "$(channel_version "$ch")"; done
+  local table ch version
+  table="$(table_channels)"
+  printf '%-20s %s\n' "channel" "current daily SDK"
+  for ch in $(channel_candidates); do
+    version="$(channel_version "$ch")"
+    if [ "$version" = "?" ]; then echo "$table" | grep -q -x -F "$ch" || continue; fi
+    printf '%-20s %s\n' "$ch" "$version"
+  done
 }
 
 # Highest version folder under DIR/<sub>

@@ -130,17 +130,24 @@ patch_compat_manifests() {
 
 # The channels with daily builds: the ones the .NET builds table (dotnet/dotnet, docs/builds-table.md) links to as
 # https://aka.ms/dotnet/<channel>/daily/..., one per actively built branch (main is its X.Y.1xx channel). Older release
-# branches keep their channel but no longer get dailies. Each channel's current SDK version
-# comes from https://aka.ms/dotnet/<channel>/daily/sdk-productVersion.txt.
+# branches keep their channel but no longer get dailies. A channel's current SDK version is read the way dotnet-install
+# does it: the aka.ms link of the SDK archive redirects to the build's own URL, which carries the version
+# (.../Sdk/<version>/dotnet-sdk-<version>-<rid>.tar.gz); a HEAD request follows it without downloading. An unknown
+# aka.ms path does not 404 but lands on a Microsoft search page, hence the pattern check.
+channel_version() {
+  local url
+  url="$(curl -sSIL --max-time 60 -o /dev/null -w '%{url_effective}' "https://aka.ms/dotnet/$1/daily/dotnet-sdk-linux-x64.tar.gz" 2>/dev/null || true)"
+  case "$url" in
+    *dotnet-sdk-*-linux-x64.tar.gz) echo "$url" | sed -E 's#.*/dotnet-sdk-(.+)-linux-x64\.tar\.gz$#\1#' ;;
+    *) echo "?" ;;
+  esac
+}
 list_channels() {
-  local channels ch version
+  local channels ch
   channels="$("${CURL[@]}" -f "$BUILDS_TABLE_URL" | grep -o 'aka\.ms/dotnet/[^/)" ]*/daily' | sed 's#aka\.ms/dotnet/##; s#/daily##' | sort -u)"
   [ -n "$channels" ] || die "could not read the builds table at $BUILDS_TABLE_URL"
   printf '%-16s %s\n' "channel" "current daily SDK"
-  for ch in $channels; do
-    version="$("${CURL[@]}" -f "https://aka.ms/dotnet/$ch/daily/sdk-productVersion.txt" 2>/dev/null | tr -d '\r\n' || true)"
-    printf '%-16s %s\n' "$ch" "${version:-?}"
-  done
+  for ch in $channels; do printf '%-16s %s\n' "$ch" "$(channel_version "$ch")"; done
 }
 
 # Highest version folder under DIR/<sub>

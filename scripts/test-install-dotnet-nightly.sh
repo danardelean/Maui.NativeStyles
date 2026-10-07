@@ -46,6 +46,8 @@ check "header"            "channel          current daily SDK" "$(echo "$channel
 check "rc2 channel listed" "1" "$(echo "$channels" | grep -c '^11.0.1xx-rc2 ')"
 check "main channel listed" "1" "$(echo "$channels" | grep -c '^11.0.1xx ')"
 check "channel names look like channels" "" "$(echo "$channels" | tail -n +2 | cut -d' ' -f1 | grep -v -E '^[0-9]+\.[0-9]+\.[0-9]xx(-[a-z0-9]+)?$' || true)"
+check "versions are versions or ?, never a web page" "" "$(echo "$channels" | tail -n +2 | awk '{print $2}' | grep -v -E '^(\?|[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.]+)?)$' || true)"
+check "channel_version: unknown channel gives ?" "?" "$(channel_version no.such.channel)"
 
 echo "== channel required"
 msg="$("$SCRIPT" --no-global-json 2>&1)"; rc=$?

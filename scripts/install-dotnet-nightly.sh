@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# install-dotnet-nightly.sh: a .NET nightly SDK and its MAUI / mobile workloads in a folder of your choice.
+# install-dotnet-nightly.sh: a .NET nightly SDK and any of its workloads in a folder of your choice.
 #
 # Nothing is written to the machine-wide .NET install: the SDK, its runtime, the workload manifests and packs all land
 # in one folder (default ./.dotnet), and a global.json in the current directory makes the regular `dotnet` command
@@ -16,10 +16,12 @@
 #   -c, --channel CHANNEL     daily-build channel: 11.0.1xx-rc2, 11.0.1xx, 12.0.1xx ... (default: 11.0.1xx-rc2)
 #   -q, --quality QUALITY     daily | preview | ga (default: daily)
 #   -v, --version VERSION     an exact SDK version instead of the newest build of the channel
-#   -w, --workloads LIST      workloads to install, comma-separated (default: maui on macOS, maui-android elsewhere)
+#   -w, --workloads LIST      workloads to install, comma-separated: maui, ios, android, maui-android, wasm-tools,
+#                             aspire ... (default: none, the SDK and the refreshed manifests only)
 #   -b, --maui-branch BRANCH  dotnet/maui branch whose NuGet.config lists the feeds its build uses: release branches of
 #                             dotnet/macios and dotnet/android publish to isolated darc-pub-* feeds, and that file names
-#                             them (default: release/11.0.1xx-rc2; "none" to skip)
+#                             them. "auto" (default) derives it from the SDK band: release/11.0.1xx-rc2 for an rc.2
+#                             band, net11.0 for a release band, main for an alpha; "none" to skip
 #   -f, --feeds LIST          extra NuGet v3 feeds to search for manifests and packs, comma-separated
 #       --no-default-feeds    do not search the dotnet<major> feed (pkgs.dev.azure.com/dnceng/public/_packaging/dotnetN)
 #       --compat-runtime VER  runtime version for the previous major's compat manifests (default: newest on nuget.org)
@@ -29,7 +31,7 @@
 #       --prune               remove older SDK, runtime and host versions from DIR
 #   -h, --help
 #
-# Requires: bash 3.2+, curl, unzip, perl. macOS (iOS, Mac Catalyst) or Linux (Android).
+# Requires: bash 3.2+, curl, unzip, perl. macOS or Linux (Apple workloads need macOS).
 #
 # How it works
 #   1. SDK: the official dotnet-install script, --install-dir DIR, nothing on PATH.
@@ -38,8 +40,8 @@
 #      SDK's own version band (<id>.Manifest-<band>) is downloaded from the feeds and placed in sdk-manifests/<band>/,
 #      what dotnet/maui's own build does. Builds of the band's prerelease lane (rc.2) win over other lanes that publish
 #      into the band.
-#   3. Compat manifests: the microsoft-net-runtime-*-net<previous> workloads (pulled in by maui, ios, android for apps on
-#      the previous .NET) reference the previous runtime the SDK was built with, often a servicing release that reaches
+#   3. Compat manifests: the *-net<previous> workloads (pulled in by maui, ios, android, wasm-tools for apps on the
+#      previous .NET) reference the previous runtime the SDK was built with, often a servicing release that reaches
 #      nuget.org only on Patch Tuesday. They are pointed at the newest public one instead; they are not used to build
 #      for the new .NET anyway.
 #   4. Packs: `dotnet workload install` with --skip-manifest-update (exactly the manifests placed above) from the same
@@ -59,6 +61,16 @@ band_of() { echo "$1" | sed -E 's/^([0-9]+\.[0-9]+\.[0-9])[0-9][0-9](-(preview|r
 # 11.0.100-rc.2 -> rc.2 ; 11.0.100 -> (empty)
 label_of() { case "$1" in *-*) echo "${1#*-}" ;; *) echo "" ;; esac; }
 major_of() { echo "${1%%.*}"; }
+# The dotnet/maui branch that builds against a band: 11.0.100-rc.2 -> release/11.0.1xx-rc2, 11.0.100-preview.7 ->
+# release/11.0.1xx-preview7, 11.0.100 -> net11.0, 12.0.100-alpha.1 -> main
+maui_branch_for() {
+  local major label; major="$(major_of "$1")"; label="$(label_of "$1")"
+  case "$label" in
+    "") echo "net$major.0" ;;
+    alpha.*) echo "main" ;;
+    *) echo "release/$major.0.1xx-$(echo "$label" | tr -d .)" ;;
+  esac
+}
 
 # NuGet v3 flat container: <feed>/flat2/<id>/index.json lists the versions, <feed>/flat2/<id>/<v>/<id>.<v>.nupkg is the package.
 flat() {
@@ -116,7 +128,7 @@ patch_compat_manifests() {
 newest_dir() { ls -d "${1:?}"/*/ 2>/dev/null | xargs -n1 basename | sed 's/$/	/' | pick_highest | cut -f1; }
 
 main() {
-  local dir="./.dotnet" channel="11.0.1xx-rc2" quality="daily" version="" workloads="" maui_branch="release/11.0.1xx-rc2"
+  local dir="./.dotnet" channel="11.0.1xx-rc2" quality="daily" version="" workloads="" maui_branch="auto"
   local extra_feeds="" default_feeds=1 compat_runtime="" global_json=1 skip_sdk=0 manifests_only=0 prune=0
   while [ $# -gt 0 ]; do
     case "$1" in
@@ -137,9 +149,6 @@ main() {
       *) die "unknown option $1 (see --help)" ;;
     esac
   done
-  if [ -z "$workloads" ]; then
-    case "$(uname -s)" in Darwin) workloads="maui" ;; *) workloads="maui-android" ;; esac
-  fi
   mkdir -p "$dir"
   dir="$(cd "$dir" && pwd)"
   work="$(mktemp -d)"   # not local: the EXIT trap runs after main returns
@@ -174,6 +183,7 @@ main() {
   local feeds=() f
   add_feed() { for f in "${feeds[@]+"${feeds[@]}"}"; do [ "$f" = "$1" ] && return 0; done; feeds+=("$1"); }
   [ "$default_feeds" = 1 ] && add_feed "$DNCENG/dotnet$major/nuget/v3/index.json"
+  [ "$maui_branch" = "auto" ] && maui_branch="$(maui_branch_for "$band")"
   if [ "$maui_branch" != "none" ]; then
     for f in $("${CURL[@]}" -f "https://raw.githubusercontent.com/dotnet/maui/$maui_branch/NuGet.config" 2>/dev/null \
         | grep -o 'value="https://pkgs.dev.azure.com/dnceng/public/_packaging/[^"]*"' | cut -d'"' -f2 \
@@ -236,9 +246,11 @@ main() {
   fi
 
   # ---- 5. Packs ----------------------------------------------------------------------------------------------------------
-  if [ "$manifests_only" = 0 ]; then
-    local sources=()
-    for f in "${feeds[@]}" "$NUGET_ORG"; do sources+=(--source "$f"); done
+  local sources=()
+  for f in "${feeds[@]}" "$NUGET_ORG"; do sources+=(--source "$f"); done
+  if [ "$manifests_only" = 1 ] || [ -z "$workloads" ]; then
+    [ -n "$workloads" ] || log "No workloads requested (-w). Later: $dir/dotnet workload install <id> --skip-manifest-update --skip-sign-check ${sources[*]}"
+  else
     # shellcheck disable=SC2046
     dotnet workload install $(echo "$workloads" | tr ',' ' ') --skip-manifest-update --skip-sign-check "${sources[@]}"
     dotnet workload clean >/dev/null 2>&1 || true

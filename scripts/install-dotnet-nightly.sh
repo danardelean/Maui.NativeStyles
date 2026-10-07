@@ -29,6 +29,7 @@
 #       --skip-sdk            do not (re)install the SDK; use the newest one already in DIR
 #       --manifests-only      stop after placing the manifests (no workload install)
 #       --prune               remove older SDK, runtime and host versions from DIR
+#       --list-channels       show the channels that currently have daily builds, with today's SDK version, and exit
 #   -h, --help
 #
 # Requires: bash 3.2+, curl, unzip, perl. macOS or Linux (Apple workloads need macOS).
@@ -51,6 +52,7 @@ set -euo pipefail
 INSTALL_SCRIPT_URL="https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.sh"
 NUGET_ORG="https://api.nuget.org/v3/index.json"
 DNCENG="https://pkgs.dev.azure.com/dnceng/public/_packaging"
+BUILDS_TABLE_URL="https://raw.githubusercontent.com/dotnet/dotnet/main/docs/builds-table.md"
 CURL=(curl -sSL --max-time 60)
 
 log() { printf '%s\n' "$*"; }
@@ -124,6 +126,21 @@ patch_compat_manifests() {
   done
 }
 
+# The channels with daily builds: the ones the .NET builds table (dotnet/dotnet, docs/builds-table.md) links to as
+# https://aka.ms/dotnet/<channel>/daily/..., one per actively built branch (main is its X.Y.1xx channel). Older release
+# branches keep their channel (10.0.1xx, 9.0.1xx ...) but no longer get dailies. Each channel's current SDK version
+# comes from https://aka.ms/dotnet/<channel>/daily/sdk-productVersion.txt.
+list_channels() {
+  local channels ch version
+  channels="$("${CURL[@]}" -f "$BUILDS_TABLE_URL" | grep -o 'aka\.ms/dotnet/[^/)" ]*/daily' | sed 's#aka\.ms/dotnet/##; s#/daily##' | sort -u)"
+  [ -n "$channels" ] || die "could not read the builds table at $BUILDS_TABLE_URL"
+  printf '%-16s %s\n' "channel" "current daily SDK"
+  for ch in $channels; do
+    version="$("${CURL[@]}" -f "https://aka.ms/dotnet/$ch/daily/sdk-productVersion.txt" 2>/dev/null | tr -d '\r\n' || true)"
+    printf '%-16s %s\n' "$ch" "${version:-?}"
+  done
+}
+
 # Highest version folder under DIR/<sub>
 newest_dir() { ls -d "${1:?}"/*/ 2>/dev/null | xargs -n1 basename | sed 's/$/	/' | pick_highest | cut -f1; }
 
@@ -145,6 +162,7 @@ main() {
       --skip-sdk) skip_sdk=1; shift ;;
       --manifests-only) manifests_only=1; shift ;;
       --prune) prune=1; shift ;;
+      --list-channels) list_channels; return 0 ;;
       -h|--help) sed -n '2,/^set -euo/p' "$0" | sed '$d' | sed 's/^# \{0,1\}//'; return 0 ;;
       *) die "unknown option $1 (see --help)" ;;
     esac

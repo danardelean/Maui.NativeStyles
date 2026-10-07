@@ -39,6 +39,14 @@ check "pick empty"       ""                   "$(printf '' | pick_highest)"
 check "newest public .NET 10 runtime (nuget.org)" "10.0." "$(newest_public_runtime 10 | cut -c1-5)"
 check "newest public .NET 10 runtime is a release" "" "$(newest_public_runtime 10 | grep -- - || true)"
 
+echo "== channels from the builds table (network: GitHub; aka.ms versions may be unreachable)"
+channels="$("$SCRIPT" --list-channels 2>&1)"
+echo "$channels" | sed 's/^/     | /'
+check "header"            "channel          current daily SDK" "$(echo "$channels" | head -1)"
+check "rc2 channel listed" "1" "$(echo "$channels" | grep -c '^11.0.1xx-rc2 ')"
+check "main channel listed" "1" "$(echo "$channels" | grep -c '^11.0.1xx ')"
+check "channel names look like channels" "" "$(echo "$channels" | tail -n +2 | cut -d' ' -f1 | grep -v -E '^[0-9]+\.[0-9]+\.[0-9]xx(-[a-z0-9]+)?$' || true)"
+
 echo "== compat manifest patch"
 t="$(mktemp -d)"
 mkdir -p "$t/sdk-manifests/11.0.100-rc.2/microsoft.net.workload.mono.toolchain.net10/11.0.100-rc.2.1"

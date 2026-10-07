@@ -90,6 +90,7 @@ check "workload clean + list called" "2" "$(grep -c 'workload clean\|workload li
 check "global.json re-pinned" "$SDKV" "$(grep -o '11\.0\.100[^"]*' global.json | head -1)"
 check "global.json relative path" '"paths": [ ".dotnet", "$host$" ],' "$(grep paths global.json | sed 's/^ *//')"
 check "old SDK not pruned without --prune" "2" "$(ls .dotnet/sdk | wc -l | tr -d ' ')"
+check "workload command hint" "1" "$(echo "$run1" | grep -c "use $root/.dotnet/dotnet workload list")"
 
 echo "== second run: idempotent, --manifests-only, --no-global-json, --prune"
 rm -f global.json; : > "$FAKE_LOG"

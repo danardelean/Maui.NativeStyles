@@ -7,6 +7,10 @@
 # installed next to the old one, the manifests are refreshed, global.json is re-pinned (--prune drops the old SDKs).
 # Remove the folder and global.json to undo.
 #
+# Builds (`dotnet build`, the IDE) find the SDK, the workload manifests and the packs through global.json. The
+# `dotnet workload ...` commands do not: they look at the folder of the dotnet executable that runs them, so run them
+# as DIR/dotnet workload list (or put DIR first on PATH).
+#
 # Usage: install-dotnet-nightly.sh [options]
 #   -d, --dir DIR             install folder (default: ./.dotnet)
 #   -c, --channel CHANNEL     daily-build channel: 11.0.1xx-rc2, 11.0.1xx, 12.0.1xx ... (default: 11.0.1xx-rc2)
@@ -270,6 +274,7 @@ JSON
   fi
   log "Manifests in $manifests_dir:"
   for d in "$manifests_dir"/*/; do [ "$(basename "$d")" = "workloadsets" ] || log "  $(basename "$d"): $(ls "$d" | tr '\n' ' ')"; done
+  log "Workload commands look at the folder of the dotnet that runs them: use $dir/dotnet workload list (builds need nothing)."
 }
 
 if [ "${BASH_SOURCE[0]}" = "$0" ]; then main "$@"; fi

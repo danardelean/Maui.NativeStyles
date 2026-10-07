@@ -47,6 +47,12 @@ check "rc2 channel listed" "1" "$(echo "$channels" | grep -c '^11.0.1xx-rc2 ')"
 check "main channel listed" "1" "$(echo "$channels" | grep -c '^11.0.1xx ')"
 check "channel names look like channels" "" "$(echo "$channels" | tail -n +2 | cut -d' ' -f1 | grep -v -E '^[0-9]+\.[0-9]+\.[0-9]xx(-[a-z0-9]+)?$' || true)"
 
+echo "== channel required"
+msg="$("$SCRIPT" --no-global-json 2>&1)"; rc=$?
+check "no channel: exit 1" "1" "$rc"
+check "no channel: points at --list-channels" "1" "$(echo "$msg" | grep -c -- '--channel .*--list-channels')"
+check "no dated default anywhere" "" "$(grep -n -E '[0-9]+\.[0-9]+\.[0-9]{3}[-.][a-z0-9.]*[0-9]{5}' "$SCRIPT" || true)"
+
 echo "== compat manifest patch"
 t="$(mktemp -d)"
 mkdir -p "$t/sdk-manifests/11.0.100-rc.2/microsoft.net.workload.mono.toolchain.net10/11.0.100-rc.2.1"

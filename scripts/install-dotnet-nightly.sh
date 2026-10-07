@@ -13,15 +13,16 @@
 #
 # Usage: install-dotnet-nightly.sh [options]
 #   -d, --dir DIR             install folder (default: ./.dotnet)
-#   -c, --channel CHANNEL     daily-build channel: 11.0.1xx-rc2, 11.0.1xx, 12.0.1xx ... (default: 11.0.1xx-rc2)
+#   -c, --channel CHANNEL     daily-build channel, a release/* branch of dotnet/dotnet without the prefix (see
+#                             --list-channels); required unless --version or --skip-sdk is given
 #   -q, --quality QUALITY     daily | preview | ga (default: daily)
 #   -v, --version VERSION     an exact SDK version instead of the newest build of the channel
 #   -w, --workloads LIST      workloads to install, comma-separated: maui, ios, android, maui-android, wasm-tools,
 #                             aspire ... (default: none, the SDK and the refreshed manifests only)
 #   -b, --maui-branch BRANCH  dotnet/maui branch whose NuGet.config lists the feeds its build uses: release branches of
 #                             dotnet/macios and dotnet/android publish to isolated darc-pub-* feeds, and that file names
-#                             them. "auto" (default) derives it from the SDK band: release/11.0.1xx-rc2 for an rc.2
-#                             band, net11.0 for a release band, main for an alpha; "none" to skip
+#                             them. "auto" (default) derives it from the SDK band: release/<major>.0.1xx-<label> for
+#                             a preview or rc band, net<major>.0 for a release band, main for an alpha; "none" to skip
 #   -f, --feeds LIST          extra NuGet v3 feeds to search for manifests and packs, comma-separated
 #       --no-default-feeds    do not search the dotnet<major> feed (pkgs.dev.azure.com/dnceng/public/_packaging/dotnetN)
 #       --compat-runtime VER  runtime version for the previous major's compat manifests (default: newest on nuget.org)
@@ -39,8 +40,8 @@
 #   2. Manifests: a daily SDK bundles stale baseline workload manifests (preview-era iOS / MAUI, in an older band folder
 #      that it falls back to). For every manifest id the SDK lists (KnownWorkloadManifests.txt) the newest package of the
 #      SDK's own version band (<id>.Manifest-<band>) is downloaded from the feeds and placed in sdk-manifests/<band>/,
-#      what dotnet/maui's own build does. Builds of the band's prerelease lane (rc.2) win over other lanes that publish
-#      into the band.
+#      what dotnet/maui's own build does. Builds of the band's own prerelease lane (its rc.N or preview.N label) win
+#      over other lanes that publish into the band.
 #   3. Compat manifests: the *-net<previous> workloads (pulled in by maui, ios, android, wasm-tools for apps on the
 #      previous .NET) reference the previous runtime the SDK was built with, often a servicing release that reaches
 #      nuget.org only on Patch Tuesday. They are pointed at the newest public one instead; they are not used to build
@@ -58,13 +59,14 @@ CURL=(curl -sSL --max-time 60)
 log() { printf '%s\n' "$*"; }
 die() { printf 'error: %s\n' "$*" >&2; exit 1; }
 
-# 11.0.100-rc.2.26504.105 -> 11.0.100-rc.2 ; 11.0.100-rtm.26480.113 -> 11.0.100 ; 12.0.100-alpha.1.26480.102 -> 12.0.100-alpha.1
+# Version band of an SDK version: the patch number rounded down to the hundred and the preview/rc/alpha label kept,
+# the build number and an rtm/servicing label dropped (X.Y.Zpp-<label>.N.<build> -> X.Y.Z00-<label>.N)
 band_of() { echo "$1" | sed -E 's/^([0-9]+\.[0-9]+\.[0-9])[0-9][0-9](-(preview|rc|alpha)\.[0-9]+)?.*$/\100\2/'; }
-# 11.0.100-rc.2 -> rc.2 ; 11.0.100 -> (empty)
+# Prerelease label of a band (rc.N, preview.N, alpha.N), empty for a release band
 label_of() { case "$1" in *-*) echo "${1#*-}" ;; *) echo "" ;; esac; }
 major_of() { echo "${1%%.*}"; }
-# The dotnet/maui branch that builds against a band: 11.0.100-rc.2 -> release/11.0.1xx-rc2, 11.0.100-preview.7 ->
-# release/11.0.1xx-preview7, 11.0.100 -> net11.0, 12.0.100-alpha.1 -> main
+# The dotnet/maui branch that builds against a band: release/<major>.0.1xx-<label without the dot> for a preview or
+# rc band, net<major>.0 for a release band, main for an alpha band
 maui_branch_for() {
   local major label; major="$(major_of "$1")"; label="$(label_of "$1")"
   case "$label" in
@@ -84,7 +86,7 @@ flat() {
 versions() { "${CURL[@]}" -f "$(flat "$1")/$2/index.json" 2>/dev/null | tr -d ' \n' | grep -o '"versions":\[[^]]*\]' | grep -o '"[^"]*"' | tr -d '"' || true; }
 
 # stdin: "version<TAB>anything" lines; stdout: the line with the highest version by Semantic Versioning precedence
-# (numeric core, a release above its prereleases, prerelease fields numeric < alphanumeric: rc.2.26504 > preview.7.26471).
+# (numeric core, a release above its prereleases, prerelease fields compared one by one, numeric < alphanumeric).
 pick_highest() {
   perl -e '
     sub cmpv {
@@ -128,7 +130,7 @@ patch_compat_manifests() {
 
 # The channels with daily builds: the ones the .NET builds table (dotnet/dotnet, docs/builds-table.md) links to as
 # https://aka.ms/dotnet/<channel>/daily/..., one per actively built branch (main is its X.Y.1xx channel). Older release
-# branches keep their channel (10.0.1xx, 9.0.1xx ...) but no longer get dailies. Each channel's current SDK version
+# branches keep their channel but no longer get dailies. Each channel's current SDK version
 # comes from https://aka.ms/dotnet/<channel>/daily/sdk-productVersion.txt.
 list_channels() {
   local channels ch version
@@ -145,7 +147,7 @@ list_channels() {
 newest_dir() { ls -d "${1:?}"/*/ 2>/dev/null | xargs -n1 basename | sed 's/$/	/' | pick_highest | cut -f1; }
 
 main() {
-  local dir="./.dotnet" channel="11.0.1xx-rc2" quality="daily" version="" workloads="" maui_branch="auto"
+  local dir="./.dotnet" channel="" quality="daily" version="" workloads="" maui_branch="auto"
   local extra_feeds="" default_feeds=1 compat_runtime="" global_json=1 skip_sdk=0 manifests_only=0 prune=0
   while [ $# -gt 0 ]; do
     case "$1" in
@@ -167,6 +169,9 @@ main() {
       *) die "unknown option $1 (see --help)" ;;
     esac
   done
+  if [ "$skip_sdk" = 0 ] && [ -z "$channel" ] && [ -z "$version" ]; then
+    die "choose a daily-build channel with --channel (or an exact SDK with --version). The channels with dailies: $0 --list-channels"
+  fi
   mkdir -p "$dir"
   dir="$(cd "$dir" && pwd)"
   work="$(mktemp -d)"   # not local: the EXIT trap runs after main returns
@@ -230,8 +235,8 @@ main() {
     for f in "${feeds[@]}"; do
       for v in $(versions "$f" "$pkg"); do printf '%s\t%s\n' "$v" "$f" >> "$work/candidates"; done
     done
-    # builds of this band's prerelease lane first: other lanes publish into the band too (an Android 37.99.0-preview.1
-    # build from main outranks the RC2 37.2.0-rc.2 build by version alone)
+    # builds of this band's own prerelease lane first: other lanes publish into the band too, and a preview build from
+    # main can outrank the band's rc build by version alone
     if [ -n "$label" ] && grep -q -F -- "$label" "$work/candidates"; then
       grep -F -- "$label" "$work/candidates" > "$work/candidates.lane" && mv "$work/candidates.lane" "$work/candidates"
     fi

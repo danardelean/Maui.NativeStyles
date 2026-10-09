@@ -5,7 +5,7 @@
 # in one folder (default ./.dotnet), and a global.json in the current directory makes the regular `dotnet` command
 # pick that SDK up from there ("sdk.paths", a .NET 10 SDK host feature). Run it again to update: a newer daily is
 # installed next to the old one, the manifests are refreshed, global.json is re-pinned (--prune drops the old SDKs).
-# Remove the folder and global.json to undo.
+# --clean removes the folder and the global.json that points at it.
 #
 # Builds (`dotnet build`, the IDE) find the SDK, the workload manifests and the packs through global.json. The
 # `dotnet workload ...` commands do not: they look at the folder of the dotnet executable that runs them, so run them
@@ -24,13 +24,14 @@
 #                             them. "auto" (default) derives it from the SDK band: release/<major>.0.1xx-<label> for
 #                             a preview or rc band, net<major>.0 for a release band, main for an alpha; "none" to skip
 #   -f, --feeds LIST          extra NuGet v3 feeds to search for manifests and packs, comma-separated
-#       --no-default-feeds    do not search the dotnet<major> feed (pkgs.dev.azure.com/dnceng/public/_packaging/dotnetN)
+#       --no-default-feeds    do not search the default feeds: the dotnet<major> feed on dnceng and nuget.org
 #       --compat-runtime VER  runtime version for the previous major's compat manifests (default: newest on nuget.org)
 #       --no-global-json      do not write global.json in the current directory
 #       --skip-sdk            do not (re)install the SDK; use the newest one already in DIR
 #       --manifests-only      stop after placing the manifests (no workload install)
 #       --prune               remove older SDK, runtime and host versions from DIR
 #       --list-channels       show the channels that currently have daily builds, with today's SDK version, and exit
+#       --clean               remove DIR and, when it points at DIR, the global.json in the current directory, and exit
 #   -h, --help
 #
 # Requires: bash 3.2+, curl, unzip, perl. macOS or Linux (Apple workloads need macOS).
@@ -176,7 +177,7 @@ newest_dir() { ls -d "${1:?}"/*/ 2>/dev/null | xargs -n1 basename | sed 's/$/	/'
 
 main() {
   local dir="./.dotnet" channel="" quality="daily" version="" workloads="" maui_branch="auto"
-  local extra_feeds="" default_feeds=1 compat_runtime="" global_json=1 skip_sdk=0 manifests_only=0 prune=0
+  local extra_feeds="" default_feeds=1 compat_runtime="" global_json=1 skip_sdk=0 manifests_only=0 prune=0 clean=0
   while [ $# -gt 0 ]; do
     case "$1" in
       -d|--dir) dir="$2"; shift 2 ;;
@@ -193,10 +194,28 @@ main() {
       --manifests-only) manifests_only=1; shift ;;
       --prune) prune=1; shift ;;
       --list-channels) list_channels; return 0 ;;
+      --clean) clean=1; shift ;;
       -h|--help) sed -n '2,/^set -euo/p' "$0" | sed '$d' | sed 's/^# \{0,1\}//'; return 0 ;;
       *) die "unknown option $1 (see --help)" ;;
     esac
   done
+  if [ "$clean" = 1 ]; then
+    [ -d "$dir" ] || die "$dir does not exist"
+    dir="$(cd "$dir" && pwd)"
+    # only a folder this script could have made: a dotnet executable or an sdk/ folder inside
+    if [ ! -x "$dir/dotnet" ] && [ ! -f "$dir/dotnet.exe" ] && [ ! -d "$dir/sdk" ]; then
+      die "$dir does not look like a .NET folder (no dotnet executable, no sdk/): not removing it"
+    fi
+    rm -rf "${dir:?}"
+    log "Removed $dir"
+    local rel="$dir"
+    case "$dir" in "$PWD"/*) rel="${dir#"$PWD"/}" ;; esac
+    if [ -f global.json ] && grep -q -F -- "\"$rel\"" global.json; then
+      rm -f global.json
+      log "Removed global.json (it pointed at $rel)"
+    fi
+    return 0
+  fi
   if [ "$skip_sdk" = 0 ] && [ -z "$channel" ] && [ -z "$version" ]; then
     die "choose a daily-build channel with --channel (or an exact SDK with --version). The channels with dailies: $0 --list-channels"
   fi
@@ -231,9 +250,11 @@ main() {
   dotnet() { (cd "$run_dir" && DOTNET_ROOT="$dir" DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 "$dir/dotnet" "$@"); }
 
   # ---- 2. Feeds --------------------------------------------------------------------------------------------------------
+  # the dotnet<major> feed and nuget.org (a released preview or RC has its manifests there), then the feeds of
+  # dotnet/maui's branch (dotnet<major>-transport and the isolated darc-pub-* feeds)
   local feeds=() f
   add_feed() { for f in "${feeds[@]+"${feeds[@]}"}"; do [ "$f" = "$1" ] && return 0; done; feeds+=("$1"); }
-  [ "$default_feeds" = 1 ] && add_feed "$DNCENG/dotnet$major/nuget/v3/index.json"
+  if [ "$default_feeds" = 1 ]; then add_feed "$DNCENG/dotnet$major/nuget/v3/index.json"; add_feed "$NUGET_ORG"; fi
   [ "$maui_branch" = "auto" ] && maui_branch="$(maui_branch_for "$band")"
   if [ "$maui_branch" != "none" ]; then
     for f in $("${CURL[@]}" -f "https://raw.githubusercontent.com/dotnet/maui/$maui_branch/NuGet.config" 2>/dev/null \
@@ -298,7 +319,8 @@ main() {
 
   # ---- 5. Packs ----------------------------------------------------------------------------------------------------------
   local sources=()
-  for f in "${feeds[@]}" "$NUGET_ORG"; do sources+=(--source "$f"); done
+  add_feed "$NUGET_ORG"   # packs of released runtimes and tools
+  for f in "${feeds[@]}"; do sources+=(--source "$f"); done
   if [ "$manifests_only" = 1 ] || [ -z "$workloads" ]; then
     [ -n "$workloads" ] || log "No workloads requested (-w). Later: $dir/dotnet workload install <id> --skip-manifest-update --skip-sign-check ${sources[*]}"
   else

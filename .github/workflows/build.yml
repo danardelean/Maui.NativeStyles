@@ -61,6 +61,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
       TAG: ${{ github.ref_name }}
+      PACKAGE_ID: NativeStyles.Maui
     steps:
       - uses: actions/checkout@v4
 
@@ -73,7 +74,7 @@ jobs:
         run: |
           version="${TAG#v}"
           echo "VERSION=$version" >> "$GITHUB_ENV"
-          if [ ! -f "artifacts/Maui.NativeStyles.$version.nupkg" ] || [ ! -f "artifacts/Maui.NativeStyles.$version.snupkg" ]; then
+          if [ ! -f "artifacts/$PACKAGE_ID.$version.nupkg" ] || [ ! -f "artifacts/$PACKAGE_ID.$version.snupkg" ]; then
             echo "::error::Tag $TAG does not match the packed version: $(ls artifacts)"
             exit 1
           fi
@@ -132,6 +133,13 @@ jobs:
         env:
           NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
         run: |
+          # A re-run skips a version that is already on nuget.org. The push itself does not use --skip-duplicate:
+          # nuget.org answers 409 Conflict to a reserved package id as well, and --skip-duplicate would hide that.
+          id="$(echo "$PACKAGE_ID" | tr '[:upper:]' '[:lower:]')"
+          if curl -sf "https://api.nuget.org/v3-flatcontainer/$id/index.json" | grep -qi "\"$VERSION\""; then
+            echo "::notice title=nuget.org::$PACKAGE_ID $VERSION is already on nuget.org; not pushed again."
+            exit 0
+          fi
           # The .snupkg next to the .nupkg is pushed to the symbol server too.
-          dotnet nuget push "artifacts/Maui.NativeStyles.$VERSION.nupkg" --api-key "$NUGET_API_KEY" \
-            --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push "artifacts/$PACKAGE_ID.$VERSION.nupkg" --api-key "$NUGET_API_KEY" \
+            --source https://api.nuget.org/v3/index.json

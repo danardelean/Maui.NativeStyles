@@ -87,7 +87,7 @@ xcrun simctl launch --terminate-running-process <UDID> it.mahiz.mauinativestyle 
 
 ## Releasing
 
-1. Branch `release/X.Y.Z` from `develop`, set `<Version>` in `src/Maui.NativeStyles/Maui.NativeStyles.csproj` and add a `## [X.Y.Z] - YYYY-MM-DD` section to `CHANGELOG.md`.
+1. Branch `release/X.Y.Z` from `develop`, set `<Version>` in `src/Maui.NativeStyles/Maui.NativeStyles.csproj` and add a `## [X.Y.Z] - YYYY-MM-DD` section to `CHANGELOG.md`. The package id is `NativeStyles.Maui` (nuget.org reserves the `Maui.*` prefix); the assembly, namespace and repository keep the `Maui.NativeStyles` name.
 2. Merge the release branch into `main` and back into `develop` with `--no-ff`, tag the `main` merge `vX.Y.Z` and push both branches and the tag.
 3. The Build workflow on the tag builds, tests and packs, then its release job creates the GitHub release (the CHANGELOG section as notes, the `.nupkg` and `.snupkg` attached) and pushes the package to nuget.org when the `NUGET_USER` repository secret holds the nuget.org profile name that owns the package. The push uses [Trusted Publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing): the job exchanges its GitHub OIDC token for a one-hour API key, which nuget.org only issues when that account has a trusted publishing policy for repository owner `danardelean`, repository `Maui.NativeStyles` and workflow file `build.yml` (no environment). No long-lived API key is stored anywhere. Without the secret the job only leaves a notice, and the attached package can be pushed by hand.
 

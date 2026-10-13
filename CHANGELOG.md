@@ -3,7 +3,17 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.12.1-preview.2] - 2026-10-13
+
+First version on nuget.org, published as a prerelease: the library is 0.x (the styling defaults still change between minor versions and it depends on MAUI internals). The code is 0.12.0; .NET 10 and Microsoft.Maui.Controls 10.0.101.
+
+### Changed
+- The package id is `NativeStyles.Maui`: nuget.org rejected `Maui.NativeStyles` because the `Maui.*` prefix is reserved. The assembly (`Maui.NativeStyles`), the `NativeStyles` namespace and the repository keep their names, so `xmlns:native="clr-namespace:NativeStyles;assembly=Maui.NativeStyles"` is unchanged.
+- CI: the release job fails on a rejected push instead of treating every 409 as a duplicate; a version that is already on nuget.org is skipped by checking the feed first.
+
 ## [0.12.1-preview.1] - 2026-10-13
+
+Not on nuget.org: the push was rejected because the `Maui.NativeStyles` id falls under a reserved prefix (see 0.12.1-preview.2). The GitHub release carries the package under that id.
 
 First version on nuget.org, published as a prerelease: the library is 0.x (the styling defaults still change between minor versions and it depends on MAUI internals). The code is 0.12.0; .NET 10 and Microsoft.Maui.Controls 10.0.101.
 

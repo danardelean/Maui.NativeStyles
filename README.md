@@ -25,19 +25,10 @@ standard controls only, no library types), first with the template's `Styles.xam
 [Getting started](#getting-started): `<UseMaterial3>`, `<native:NativeStyleDictionary />` instead of the template
 styles, and `.UseNativeStyles()`.
 
-<table>
-<tr><th></th><th>Default MAUI template</th><th>Maui.NativeStyles</th></tr>
-<tr>
-<td align="center"><b>iOS 26</b></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-before.png" width="220" alt="Default MAUI template on iOS"></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-after.png" width="220" alt="Maui.NativeStyles on iOS"></td>
-</tr>
-<tr>
-<td align="center"><b>Android</b></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-before.png" width="220" alt="Default MAUI template on Android"></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-after.png" width="220" alt="Maui.NativeStyles on Android"></td>
-</tr>
-</table>
+| | Default MAUI template | Maui.NativeStyles |
+|---|---|---|
+| **iOS 26** | ![Default MAUI template on iOS](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-before.png) | ![Maui.NativeStyles on iOS](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-after.png) |
+| **Android** | ![Default MAUI template on Android](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-before.png) | ![Maui.NativeStyles on Android](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-after.png) |
 
 The template paints the same purple rectangle button, OpenSans 14 and custom-colored switch, slider and checkbox on
 both platforms, and a magenta tab selection. With the library iOS gets large titles, borderless fields on a grouped
@@ -49,54 +40,26 @@ search bar, a pill button, the M3 switch and slider, and the flexible navigation
 The same XAML on both platforms: the sample app on iOS 26 (iPhone 17 Pro) and Android 16 (Pixel 10 Pro), with the
 platform default palette unless noted.
 
-<table>
-<tr><th></th><th>iOS 26</th><th>Android (Material 3 Expressive)</th></tr>
-<tr>
-<td align="center"><b>Buttons</b><br><sub>Liquid Glass / tinted / plain &mdash; filled / tonal / outlined / elevated</sub></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-buttons.png" width="220" alt="Buttons on iOS 26"></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-buttons.png" width="220" alt="Buttons on Android"></td>
-</tr>
-<tr>
-<td align="center"><b>Inputs</b><br><sub>borderless 52 pt fields &mdash; outlined text fields, M3 search bar</sub></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-inputs.png" width="220" alt="Inputs on iOS 26"></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-inputs.png" width="220" alt="Inputs on Android"></td>
-</tr>
-<tr>
-<td align="center"><b>Selection</b><br><sub>segmented control, switches, check and radio rows</sub></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-selection.png" width="220" alt="Selection on iOS 26"></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-selection.png" width="220" alt="Selection on Android"></td>
-</tr>
-<tr>
-<td align="center"><b>Lists</b><br><sub>inset grouped &mdash; expressive segmented list; top tabs</sub></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-lists.png" width="220" alt="Lists on iOS 26"></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-lists.png" width="220" alt="Lists on Android"></td>
-</tr>
-<tr>
-<td align="center"><b>Views</b><br><sub>carousel, page indicator, swipe actions</sub></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-views.png" width="220" alt="Views on iOS 26"></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-views.png" width="220" alt="Views on Android"></td>
-</tr>
-<tr>
-<td align="center"><b>Flyout</b><br><sub>sidebar &mdash; navigation drawer</sub></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-flyout.png" width="220" alt="Flyout on iOS 26"></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-flyout.png" width="220" alt="Flyout on Android"></td>
-</tr>
-<tr>
-<td align="center"><b>Dark mode</b></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-selection-dark.png" width="220" alt="Dark mode on iOS 26"></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-selection-dark.png" width="220" alt="Dark mode on Android"></td>
-</tr>
-<tr>
-<td align="center"><b>Dark mode</b></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-buttons-dark.png" width="220" alt="Dark mode on iOS 26"></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-buttons-dark.png" width="220" alt="Dark mode on Android"></td>
-</tr>
-<tr>
-<td align="center"><b>Brand palette</b><br><sub><code>options.Brand</code>: iOS tint &mdash; generated Material scheme</sub></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-brand.png" width="220" alt="Brand palette on iOS 26"></td>
-<td><img src="https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-brand.png" width="220" alt="Brand palette on Android"></td>
-</tr>
-</table>
+| iOS 26 | Android (Material 3 Expressive) |
+|---|---|
+| **Buttons**: Liquid Glass, tinted, plain | **Buttons**: filled, tonal, outlined, elevated |
+| ![Buttons on iOS 26](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-buttons.png) | ![Buttons on Android](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-buttons.png) |
+| **Inputs**: borderless 52 pt fields | **Inputs**: outlined text fields, M3 search bar |
+| ![Inputs on iOS 26](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-inputs.png) | ![Inputs on Android](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-inputs.png) |
+| **Selection**: segmented control, switches, check and radio rows | **Selection**: segmented control, switches, check and radio rows |
+| ![Selection on iOS 26](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-selection.png) | ![Selection on Android](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-selection.png) |
+| **Lists**: inset grouped, top tabs | **Lists**: expressive segmented list, top tabs |
+| ![Lists on iOS 26](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-lists.png) | ![Lists on Android](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-lists.png) |
+| **Views**: carousel, page indicator, swipe actions | **Views**: carousel, page indicator, swipe actions |
+| ![Views on iOS 26](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-views.png) | ![Views on Android](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-views.png) |
+| **Flyout**: sidebar | **Flyout**: navigation drawer |
+| ![Flyout on iOS 26](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-flyout.png) | ![Flyout on Android](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-flyout.png) |
+| **Dark mode**: selection | **Dark mode**: selection |
+| ![Dark mode on iOS 26](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-selection-dark.png) | ![Dark mode on Android](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-selection-dark.png) |
+| **Dark mode**: buttons | **Dark mode**: buttons |
+| ![Dark mode on iOS 26](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-buttons-dark.png) | ![Dark mode on Android](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-buttons-dark.png) |
+| **Brand palette**: `options.Brand` as the tint | **Brand palette**: `options.Brand` as the generated Material scheme |
+| ![Brand palette on iOS 26](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/ios-brand.png) | ![Brand palette on Android](https://raw.githubusercontent.com/danardelean/Maui.NativeStyles/main/docs/screenshots/android-brand.png) |
 
 ## Principle
 

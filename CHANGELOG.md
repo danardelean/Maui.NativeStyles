@@ -3,6 +3,13 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.12.1-preview.1] - 2026-10-13
+
+First version on nuget.org, published as a prerelease: the library is 0.x (the styling defaults still change between minor versions and it depends on MAUI internals). The code is 0.12.0; .NET 10 and Microsoft.Maui.Controls 10.0.101.
+
+### Changed
+- CI: the package is pushed to nuget.org through [Trusted Publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing) (the release job's GitHub OIDC token is exchanged for a one-hour key) instead of a stored `NUGET_API_KEY`. The workload versions and Xcode used by CI are pinned (`.github/workload-versions.json`).
+
 ## [0.12.0] - 2026-09-30
 
 ### Versioning

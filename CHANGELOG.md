@@ -3,6 +3,11 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.12.1-preview.3] - 2026-10-13
+
+### Documentation
+- README: the before / after comparison and the screenshot grid are Markdown tables instead of HTML. nuget.org does not render HTML in a package readme and showed the tags as text; the captions are now per platform.
+
 ## [0.12.1-preview.2] - 2026-10-13
 
 First version on nuget.org, published as a prerelease: the library is 0.x (the styling defaults still change between minor versions and it depends on MAUI internals). The code is 0.12.0; .NET 10 and Microsoft.Maui.Controls 10.0.101.
